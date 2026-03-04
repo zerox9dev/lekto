@@ -15,12 +15,15 @@ interface Props {
 
 interface SyncResponse {
   totalFetched: number
+  filteredNonLesson: number
   processedTimedEvents: number
   imported: number
   updated: number
   cancelled: number
   skippedAllDay: number
   skippedNoStart: number
+  skippedNoStudentMatch: number
+  failedUpserts: number
   sampleEvents: Array<{
     id: string
     summary: string | null
@@ -62,7 +65,10 @@ export function GoogleCalendarBlock({ token }: Props) {
   async function handleDisconnect() {
     setDis(true)
     const supabase = createClient()
-    const { error } = await supabase.from('google_calendar_tokens').delete().neq('id', '')
+    const { error } = await supabase
+      .from('google_calendar_tokens')
+      .delete()
+      .eq('user_id', token?.user_id ?? '')
     setDis(false)
     if (error) { toast.error(error.message); return }
     toast.success('Google Calendar отключён')
@@ -119,10 +125,16 @@ export function GoogleCalendarBlock({ token }: Props) {
                 Получено событий: {lastSyncResult.totalFetched}, с временем: {lastSyncResult.processedTimedEvents}
               </p>
               <p className="text-xs text-gray-500">
+                Отфильтровано как не уроки Preply: {lastSyncResult.filteredNonLesson}
+              </p>
+              <p className="text-xs text-gray-500">
                 Импортировано: {lastSyncResult.imported}, обновлено: {lastSyncResult.updated}, отменено: {lastSyncResult.cancelled}
               </p>
               <p className="text-xs text-gray-500">
                 Пропущено: весь день {lastSyncResult.skippedAllDay}, без времени начала {lastSyncResult.skippedNoStart}
+              </p>
+              <p className="text-xs text-gray-500">
+                Пропущено: не найден студент {lastSyncResult.skippedNoStudentMatch}, ошибки записи {lastSyncResult.failedUpserts}
               </p>
               {lastSyncResult.sampleEvents.length > 0 && (
                 <div className="space-y-1">

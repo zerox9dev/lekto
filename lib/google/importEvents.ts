@@ -17,12 +17,15 @@ interface GoogleEventsResponse {
 
 export interface GoogleSyncResult {
   totalFetched: number
+  filteredNonLesson: number
   processedTimedEvents: number
   imported: number
   updated: number
   cancelled: number
   skippedAllDay: number
   skippedNoStart: number
+  skippedNoStudentMatch: number
+  failedUpserts: number
   syncRange: { from: string; to: string } | null
   nextSyncTokenReceived: boolean
   sampleEvents: Array<{
@@ -32,6 +35,22 @@ export interface GoogleSyncResult {
     start: string | null
     allDay: boolean
   }>
+}
+
+function normalizeText(input: string): string {
+  return input.trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+function isPreplyLessonTitle(summary?: string): boolean {
+  if (!summary) return false
+  return /-\s*preply lesson\s*$/i.test(summary.trim())
+}
+
+function extractPreplyStudentName(summary?: string): string | null {
+  if (!summary) return null
+  const match = summary.trim().match(/^(.*?)\s*-\s*preply lesson\s*$/i)
+  if (!match?.[1]) return null
+  return match[1].trim()
 }
 
 export async function importGoogleEvents(userId: string): Promise<GoogleSyncResult> {
@@ -89,12 +108,15 @@ export async function importGoogleEvents(userId: string): Promise<GoogleSyncResu
 
   const result: GoogleSyncResult = {
     totalFetched: events.length,
+    filteredNonLesson: 0,
     processedTimedEvents: 0,
     imported: 0,
     updated: 0,
     cancelled: 0,
     skippedAllDay: 0,
     skippedNoStart: 0,
+    skippedNoStudentMatch: 0,
+    failedUpserts: 0,
     syncRange,
     nextSyncTokenReceived: Boolean(data.nextSyncToken),
     sampleEvents: events.slice(0, 5).map((event) => ({
@@ -106,7 +128,13 @@ export async function importGoogleEvents(userId: string): Promise<GoogleSyncResu
     })),
   }
 
-  const timedEvents = events.filter((event) => {
+  const lessonCandidates = events.filter((event) => {
+    const isLesson = isPreplyLessonTitle(event.summary)
+    if (!isLesson) result.filteredNonLesson += 1
+    return isLesson
+  })
+
+  const timedEvents = lessonCandidates.filter((event) => {
     if (!event.start) {
       result.skippedNoStart += 1
       return false
@@ -154,8 +182,18 @@ export async function importGoogleEvents(userId: string): Promise<GoogleSyncResu
       Math.round((new Date(endAt).getTime() - new Date(scheduledAt).getTime()) / 60000)
     )
 
+    const preplyStudentName = extractPreplyStudentName(event.summary)
+    const normalizedCandidate = preplyStudentName ? normalizeText(preplyStudentName) : null
+
     const matchedStudent =
-      students?.find((s) => event.summary?.toLowerCase().includes(s.name.toLowerCase())) ?? null
+      students?.find((s) => normalizeText(s.name) === normalizedCandidate) ??
+      students?.find((s) => event.summary?.toLowerCase().includes(s.name.toLowerCase())) ??
+      null
+
+    if (!matchedStudent) {
+      result.skippedNoStudentMatch += 1
+      continue
+    }
 
     const { error } = await supabase.from('lessons').upsert(
       {
@@ -175,6 +213,7 @@ export async function importGoogleEvents(userId: string): Promise<GoogleSyncResu
 
     if (error) {
       // Continue processing rest of events and surface aggregate progress in UI.
+      result.failedUpserts += 1
       continue
     }
 
