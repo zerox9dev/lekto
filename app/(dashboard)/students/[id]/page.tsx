@@ -54,8 +54,6 @@ export default async function StudentDetailPage({
 
   const activeHomework = homework.filter((h) => h.status !== 'reviewed')
   const reviewedHomework = homework.filter((h) => h.status === 'reviewed')
-  const effectiveEmail = student.email ?? (isEmail(student.contact) ? student.contact : null)
-
   return (
     <div className="max-w-3xl">
       {/* Top nav */}
@@ -72,7 +70,7 @@ export default async function StudentDetailPage({
           <h1 className="text-xl font-semibold text-gray-900 tracking-tight">{student.name}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <StudentInviteButton studentId={id} hasEmail={Boolean(effectiveEmail)} />
+          <StudentInviteButton studentId={id} />
           <Button asChild variant="secondary" size="sm">
             <Link href={`/students/${id}/edit`}>Редактировать</Link>
           </Button>
@@ -108,10 +106,12 @@ export default async function StudentDetailPage({
             </div>
           </div>
         )}
-        {effectiveEmail && (
+        {(student.email ?? (isEmail(student.contact) ? student.contact : null)) && (
           <div>
             <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Email</p>
-            <p className="text-sm text-gray-700">{effectiveEmail}</p>
+            <p className="text-sm text-gray-700">
+              {student.email ?? (isEmail(student.contact) ? student.contact : null)}
+            </p>
           </div>
         )}
         {student.portal_active != null && (

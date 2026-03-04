@@ -30,6 +30,7 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
+  const needsNoIndex = pathname.startsWith('/portal/') || pathname.startsWith('/join/')
 
   const isDashboardRoute = pathname.startsWith('/dashboard')
   const isStudentRoute = pathname.startsWith('/student')
@@ -74,9 +75,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  if (needsNoIndex) {
+    supabaseResponse.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet')
+  }
+
   return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/student/:path*', '/login'],
+  matcher: ['/dashboard/:path*', '/student/:path*', '/portal/:path*', '/join/:path*', '/login'],
 }

@@ -6,18 +6,12 @@ import { Button } from '@/components/ui/Button'
 
 interface StudentInviteButtonProps {
   studentId: string
-  hasEmail: boolean
 }
 
-export function StudentInviteButton({ studentId, hasEmail }: StudentInviteButtonProps) {
+export function StudentInviteButton({ studentId }: StudentInviteButtonProps) {
   const [loading, setLoading] = useState(false)
 
   async function handleInvite() {
-    if (!hasEmail) {
-      toast.error('Добавьте email ученика, чтобы отправить приглашение')
-      return
-    }
-
     setLoading(true)
     const res = await fetch('/api/student-portal/invite', {
       method: 'POST',
@@ -28,24 +22,21 @@ export function StudentInviteButton({ studentId, hasEmail }: StudentInviteButton
 
     const data = (await res.json().catch(() => ({}))) as {
       error?: string
-      directLoginLink?: string | null
       inviteLink?: string
       email?: string
     }
 
-    if (!res.ok || (!data.directLoginLink && !data.inviteLink)) {
+    if (!res.ok || !data.inviteLink) {
       toast.error(data.error ?? 'Не удалось создать приглашение')
       return
     }
 
-    const linkToShare = data.directLoginLink ?? data.inviteLink!
-
     try {
-      await navigator.clipboard.writeText(linkToShare)
-      toast.success(`Ссылка входа скопирована. Отправьте ученику на ${data.email}.`)
+      await navigator.clipboard.writeText(data.inviteLink)
+      toast.success('Публичная ссылка скопирована. Отправьте её ученику.')
     } catch {
-      toast.success('Ссылка входа создана')
-      toast.message(linkToShare)
+      toast.success('Публичная ссылка создана')
+      toast.message(data.inviteLink)
     }
   }
 
