@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { CheckCircle2 } from 'lucide-react'
 import { InlineStatusSelect } from '@/components/shared/InlineStatusSelect'
+import { InlinePaidToggle } from '@/components/shared/InlinePaidToggle'
 import { AttachStudentButton } from './AttachStudentButton'
 import { formatRelativeDay, formatDuration } from '@/lib/utils/format'
 import type { Lesson, Student } from '@/types'
@@ -76,11 +76,7 @@ export function LessonRow({ lesson, showStudent = true, students }: LessonRowPro
       </td>
 
       <td className="py-3 text-center">
-        {lesson.is_paid ? (
-          <CheckCircle2 className="w-4 h-4 text-green-500 mx-auto" />
-        ) : (
-          <span className="text-xs text-gray-300">—</span>
-        )}
+        <InlinePaidToggle lessonId={lesson.id} isPaid={lesson.is_paid} />
       </td>
     </tr>
   )
