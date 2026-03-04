@@ -3,6 +3,11 @@ import { z } from 'zod'
 // Схема для react-hook-form (price как строка — так браузер отдаёт из input[type=number])
 export const studentFormSchema = z.object({
   name: z.string().min(1, 'Обязательное поле'),
+  email: z
+    .string()
+    .trim()
+    .optional()
+    .refine((v) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), 'Некорректный email'),
   contact: z.string().optional(),
   level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']).optional(),
   price_per_hour: z.string().optional(),

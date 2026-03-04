@@ -31,19 +31,52 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Защита dashboard-роутов
-  if (!user && pathname.startsWith('/dashboard')) {
+  const isDashboardRoute = pathname.startsWith('/dashboard')
+  const isStudentRoute = pathname.startsWith('/student')
+
+  // Защита приватных роутов
+  if (!user && (isDashboardRoute || isStudentRoute)) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Если залогинен и идёт на /login — редиректим на dashboard
-  if (user && pathname === '/login') {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  if (user) {
+    const [{ data: tutorSettings }, { data: studentRow }] = await Promise.all([
+      supabase
+        .from('tutor_settings')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle(),
+      supabase
+        .from('students')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .maybeSingle(),
+    ])
+
+    const isTutor = Boolean(tutorSettings)
+    const isStudent = Boolean(studentRow)
+
+    if (pathname === '/login') {
+      if (isTutor) {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+      if (isStudent) {
+        return NextResponse.redirect(new URL('/student/homework', request.url))
+      }
+    }
+
+    if (isDashboardRoute && !isTutor) {
+      return NextResponse.redirect(new URL('/student/homework', request.url))
+    }
+
+    if (isStudentRoute && !isStudent) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
   }
 
   return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/login'],
+  matcher: ['/dashboard/:path*', '/student/:path*', '/login'],
 }

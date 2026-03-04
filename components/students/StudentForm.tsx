@@ -35,6 +35,7 @@ export function StudentForm({ student }: StudentFormProps) {
     resolver: zodResolver(studentFormSchema),
     defaultValues: {
       name: student?.name ?? '',
+      email: student?.email ?? '',
       contact: student?.contact ?? '',
       level: (student?.level as StudentFormData['level']) ?? undefined,
       price_per_hour: student?.price_per_hour?.toString() ?? '',
@@ -50,6 +51,7 @@ export function StudentForm({ student }: StudentFormProps) {
 
     const payload = {
       name: data.name,
+      email: data.email?.trim() || null,
       contact: data.contact || null,
       level: data.level || null,
       price_per_hour: parsePricePerHour(data.price_per_hour),
@@ -115,7 +117,19 @@ export function StudentForm({ student }: StudentFormProps) {
 
       {/* Contact */}
       <div>
-        <Label htmlFor="contact">Контакт (Telegram / телефон / email)</Label>
+        <Label htmlFor="email">Email ученика</Label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="student@example.com"
+          error={errors.email?.message}
+          {...register('email')}
+        />
+      </div>
+
+      {/* Contact */}
+      <div>
+        <Label htmlFor="contact">Контакт (Telegram / телефон)</Label>
         <Input
           id="contact"
           placeholder="@username или +7 900 000 00 00"

@@ -5,8 +5,14 @@ import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { StudentDetailClient } from './StudentDetailClient'
+import { StudentInviteButton } from './StudentInviteButton'
 import { formatCurrency, formatDateTime, formatRelativeDay } from '@/lib/utils/format'
 import type { Lesson, Homework } from '@/types'
+
+function isEmail(value?: string | null): boolean {
+  if (!value) return false
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -48,6 +54,7 @@ export default async function StudentDetailPage({
 
   const activeHomework = homework.filter((h) => h.status !== 'reviewed')
   const reviewedHomework = homework.filter((h) => h.status === 'reviewed')
+  const effectiveEmail = student.email ?? (isEmail(student.contact) ? student.contact : null)
 
   return (
     <div className="max-w-3xl">
@@ -65,6 +72,7 @@ export default async function StudentDetailPage({
           <h1 className="text-xl font-semibold text-gray-900 tracking-tight">{student.name}</h1>
         </div>
         <div className="flex items-center gap-2">
+          <StudentInviteButton studentId={id} hasEmail={Boolean(effectiveEmail)} />
           <Button asChild variant="secondary" size="sm">
             <Link href={`/students/${id}/edit`}>Редактировать</Link>
           </Button>
@@ -98,6 +106,21 @@ export default async function StudentDetailPage({
               <MessageCircle className="w-3.5 h-3.5 text-gray-400" />
               {student.contact}
             </div>
+          </div>
+        )}
+        {effectiveEmail && (
+          <div>
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Email</p>
+            <p className="text-sm text-gray-700">{effectiveEmail}</p>
+          </div>
+        )}
+        {student.portal_active != null && (
+          <div>
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Портал</p>
+            <p className="text-sm text-gray-700">
+              {student.portal_active ? 'Активен' : 'Не активен'}
+              {student.invite_sent_at ? ` · приглашение: ${formatDateTime(student.invite_sent_at)}` : ''}
+            </p>
           </div>
         )}
         {student.price_per_hour != null && (

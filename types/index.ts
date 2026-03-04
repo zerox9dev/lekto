@@ -27,6 +27,11 @@ export interface Student {
   tutor_id: string
   name: string
   contact: string | null
+  email?: string | null
+  auth_user_id?: string | null
+  invite_token?: string | null
+  invite_sent_at?: string | null
+  portal_active?: boolean | null
   level: string | null
   subject_id: string | null
   price_per_hour: number | null
@@ -76,6 +81,17 @@ export interface PreplyStudentMapping {
   student_id: string
   created_at: string
   updated_at: string
+}
+
+export type MessageSenderRole = 'tutor' | 'student'
+
+export interface Message {
+  id: string
+  student_id: string
+  sender_role: MessageSenderRole
+  body: string
+  read_at: string | null
+  created_at: string
 }
 
 export interface Homework {
