@@ -12,6 +12,7 @@ import type { GoogleCalendarToken } from '@/types'
 
 interface Props {
   token: GoogleCalendarToken | null
+  students: Array<{ id: string; name: string }>
 }
 
 interface SyncResponse {
@@ -26,6 +27,8 @@ interface SyncResponse {
   skippedNoStart: number
   skippedNoStudentMatch: number
   failedUpserts: number
+  sampleErrors: string[]
+  unmappedNames: string[]
   sampleEvents: Array<{
     id: string
     summary: string | null
@@ -41,14 +44,16 @@ interface CalendarOption {
   primary: boolean
 }
 
-export function GoogleCalendarBlock({ token }: Props) {
+export function GoogleCalendarBlock({ token, students }: Props) {
   const router = useRouter()
   const [syncing, setSyncing]     = useState(false)
   const [disconnecting, setDis]   = useState(false)
   const [loadingCalendars, setLoadingCalendars] = useState(false)
   const [savingCalendar, setSavingCalendar] = useState(false)
+  const [savingMappingFor, setSavingMappingFor] = useState<string | null>(null)
   const [calendarOptions, setCalendarOptions] = useState<CalendarOption[]>([])
   const [selectedCalendarId, setSelectedCalendarId] = useState(token?.calendar_id ?? 'primary')
+  const [mappingSelections, setMappingSelections] = useState<Record<string, string>>({})
   const [lastSyncResult, setLastSyncResult] = useState<SyncResponse | null>(null)
 
   useEffect(() => {
@@ -71,9 +76,13 @@ export function GoogleCalendarBlock({ token }: Props) {
     }
   }, [token])
 
-  async function handleSync() {
+  async function handleSync(manualMapping = false) {
     setSyncing(true)
-    const res = await fetch('/api/auth/google/sync', { method: 'POST' })
+    const res = await fetch('/api/auth/google/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ manualMapping }),
+    })
     setSyncing(false)
     if (res.ok) {
       const data = (await res.json()) as SyncResponse
@@ -92,6 +101,30 @@ export function GoogleCalendarBlock({ token }: Props) {
       const errorData = await res.json().catch(() => ({ error: 'Ошибка синхронизации' }))
       toast.error(errorData.error ?? 'Ошибка синхронизации')
     }
+  }
+
+  async function saveMapping(preplyName: string) {
+    const studentId = mappingSelections[preplyName]
+    if (!studentId) {
+      toast.error('Выберите ученика для маппинга')
+      return
+    }
+
+    setSavingMappingFor(preplyName)
+    const res = await fetch('/api/auth/google/preply-mappings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ preplyName, studentId }),
+    })
+    setSavingMappingFor(null)
+
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({ error: 'Ошибка сохранения маппинга' }))
+      toast.error(payload.error ?? 'Ошибка сохранения маппинга')
+      return
+    }
+
+    toast.success(`Маппинг сохранён: ${preplyName}`)
   }
 
   async function handleDisconnect() {
@@ -151,10 +184,18 @@ export function GoogleCalendarBlock({ token }: Props) {
               variant="secondary"
               size="sm"
               loading={syncing}
-              onClick={handleSync}
+              onClick={() => handleSync(false)}
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              Синхронизировать сейчас
+              Синхронизировать (авто)
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              loading={syncing}
+              onClick={() => handleSync(true)}
+            >
+              Ручная синхронизация
             </Button>
             <Button
               variant="destructive"
@@ -228,6 +269,50 @@ export function GoogleCalendarBlock({ token }: Props) {
               <p className="text-xs text-gray-500">
                 Пропущено: не найден студент {lastSyncResult.skippedNoStudentMatch}, ошибки записи {lastSyncResult.failedUpserts}
               </p>
+              {lastSyncResult.sampleErrors.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-red-600">Ошибки импорта (примеры):</p>
+                  {lastSyncResult.sampleErrors.map((err, idx) => (
+                    <p key={`${idx}-${err}`} className="text-xs text-red-500 truncate">
+                      {err}
+                    </p>
+                  ))}
+                </div>
+              )}
+              {lastSyncResult.unmappedNames.length > 0 && (
+                <div className="space-y-2 pt-1">
+                  <p className="text-xs font-medium text-gray-600">
+                    Ручной маппинг (имя из Preply -&gt; ученик Lekto)
+                  </p>
+                  {lastSyncResult.unmappedNames.map((name) => (
+                    <div key={name} className="flex items-center gap-2">
+                      <p className="text-xs text-gray-600 min-w-[140px] truncate">{name}</p>
+                      <select
+                        value={mappingSelections[name] ?? ''}
+                        onChange={(e) =>
+                          setMappingSelections((prev) => ({ ...prev, [name]: e.target.value }))
+                        }
+                        className="h-8 w-full rounded-lg border border-gray-200 bg-white px-2 text-xs text-gray-900"
+                      >
+                        <option value="">Выберите ученика</option>
+                        {students.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name}
+                          </option>
+                        ))}
+                      </select>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        loading={savingMappingFor === name}
+                        onClick={() => saveMapping(name)}
+                      >
+                        Сохранить
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
               {lastSyncResult.sampleEvents.length > 0 && (
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-gray-600">Примеры событий из Google:</p>

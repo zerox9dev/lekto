@@ -27,6 +27,8 @@ export interface GoogleSyncResult {
   skippedNoStart: number
   skippedNoStudentMatch: number
   failedUpserts: number
+  sampleErrors: string[]
+  unmappedNames: string[]
   syncRange: { from: string; to: string } | null
   nextSyncTokenReceived: boolean
   sampleEvents: Array<{
@@ -54,7 +56,14 @@ function extractPreplyStudentName(summary?: string): string | null {
   return match[1].trim()
 }
 
-export async function importGoogleEvents(userId: string): Promise<GoogleSyncResult> {
+interface ImportOptions {
+  manualMapping?: boolean
+}
+
+export async function importGoogleEvents(
+  userId: string,
+  options: ImportOptions = {}
+): Promise<GoogleSyncResult> {
   const supabase = createServiceClient()
   const accessToken = await getAccessToken(userId)
 
@@ -109,6 +118,15 @@ export async function importGoogleEvents(userId: string): Promise<GoogleSyncResu
 
   const knownStudents = [...(students ?? [])]
 
+  const { data: mappings } = await supabase
+    .from('preply_student_mappings')
+    .select('preply_name, student_id')
+    .eq('user_id', userId)
+
+  const mappingByName = new Map(
+    (mappings ?? []).map((m) => [normalizeText(m.preply_name), m.student_id] as const)
+  )
+
   const result: GoogleSyncResult = {
     totalFetched: events.length,
     filteredNonLesson: 0,
@@ -121,6 +139,8 @@ export async function importGoogleEvents(userId: string): Promise<GoogleSyncResu
     skippedNoStart: 0,
     skippedNoStudentMatch: 0,
     failedUpserts: 0,
+    sampleErrors: [],
+    unmappedNames: [],
     syncRange,
     nextSyncTokenReceived: Boolean(data.nextSyncToken),
     sampleEvents: events.slice(0, 5).map((event) => ({
@@ -190,11 +210,22 @@ export async function importGoogleEvents(userId: string): Promise<GoogleSyncResu
     const normalizedCandidate = preplyStudentName ? normalizeText(preplyStudentName) : null
 
     let matchedStudent =
+      (normalizedCandidate && mappingByName.has(normalizedCandidate)
+        ? knownStudents.find((s) => s.id === mappingByName.get(normalizedCandidate))
+        : null) ??
       knownStudents.find((s) => normalizeText(s.name) === normalizedCandidate) ??
       knownStudents.find((s) => event.summary?.toLowerCase().includes(s.name.toLowerCase())) ??
       null
 
     if (!matchedStudent) {
+      if (options.manualMapping) {
+        result.skippedNoStudentMatch += 1
+        if (preplyStudentName && !result.unmappedNames.includes(preplyStudentName)) {
+          result.unmappedNames.push(preplyStudentName)
+        }
+        continue
+      }
+
       const studentName = preplyStudentName ?? event.summary?.trim() ?? 'Preply student'
       const { data: createdStudent, error: createStudentError } = await supabase
         .from('students')
@@ -216,25 +247,34 @@ export async function importGoogleEvents(userId: string): Promise<GoogleSyncResu
       result.createdStudents += 1
     }
 
-    const { error } = await supabase.from('lessons').upsert(
-      {
-        google_event_id: event.id,
-        synced_from_google: true,
-        tutor_id: userId,
-        student_id: matchedStudent?.id ?? null,
-        scheduled_at: scheduledAt,
-        duration_min: durationMin,
-        topic: event.summary ?? null,
-        notes: event.description ?? null,
-        status: 'planned',
-        is_paid: false,
-      },
-      { onConflict: 'google_event_id' }
-    )
+    const lessonPayload = {
+      google_event_id: event.id,
+      synced_from_google: true,
+      tutor_id: userId,
+      student_id: matchedStudent?.id ?? null,
+      scheduled_at: scheduledAt,
+      duration_min: durationMin,
+      topic: event.summary ?? null,
+      notes: event.description ?? null,
+      status: 'planned',
+      is_paid: false,
+    }
+
+    const { error } = existingIds.has(event.id)
+      ? await supabase
+          .from('lessons')
+          .update(lessonPayload)
+          .eq('google_event_id', event.id)
+      : await supabase
+          .from('lessons')
+          .insert(lessonPayload)
 
     if (error) {
       // Continue processing rest of events and surface aggregate progress in UI.
       result.failedUpserts += 1
+      if (result.sampleErrors.length < 5) {
+        result.sampleErrors.push(error.message)
+      }
       continue
     }
 

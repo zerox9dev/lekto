@@ -6,7 +6,7 @@ import { ChangePasswordForm } from './ChangePasswordForm'
 import { SignOutButton } from './SignOutButton'
 import { GoogleCalendarBlock } from './GoogleCalendarBlock'
 import { DeleteAccountButton } from './DeleteAccountButton'
-import type { TutorSettings, Subject, GoogleCalendarToken } from '@/types'
+import type { TutorSettings, Subject, GoogleCalendarToken, Student } from '@/types'
 
 export const metadata = { title: 'Настройки — Lekto' }
 
@@ -15,7 +15,7 @@ export default async function SettingsPage() {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [settingsResult, subjectsResult, gcalResult] = await Promise.all([
+  const [settingsResult, subjectsResult, gcalResult, studentsResult] = await Promise.all([
     supabase
       .from('tutor_settings')
       .select('*')
@@ -30,11 +30,17 @@ export default async function SettingsPage() {
       .select('*')
       .eq('user_id', user!.id)
       .maybeSingle(),
+    supabase
+      .from('students')
+      .select('id, name')
+      .eq('status', 'active')
+      .order('name'),
   ])
 
   const settings = settingsResult.data as TutorSettings | null
   const subjects = (subjectsResult.data ?? []) as Subject[]
   const gcalToken = gcalResult.data as GoogleCalendarToken | null
+  const students = (studentsResult.data ?? []) as Pick<Student, 'id' | 'name'>[]
   const email = user?.email ?? ''
 
   return (
@@ -53,7 +59,7 @@ export default async function SettingsPage() {
 
       {/* Google Calendar card */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-4">
-        <GoogleCalendarBlock token={gcalToken} />
+        <GoogleCalendarBlock token={gcalToken} students={students} />
       </div>
 
       {/* Account card */}

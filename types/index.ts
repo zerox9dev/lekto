@@ -69,6 +69,15 @@ export interface GoogleCalendarToken {
   updated_at: string
 }
 
+export interface PreplyStudentMapping {
+  id: string
+  user_id: string
+  preply_name: string
+  student_id: string
+  created_at: string
+  updated_at: string
+}
+
 export interface Homework {
   id: string
   student_id: string
