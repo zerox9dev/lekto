@@ -1,52 +1,44 @@
 -- Migration: 004_student_portal.sql
--- Student Portal — invite system, student auth, chat
+-- Student portal: magic link auth, messages
 
 -- ============================================================
--- students — добавляем поля для портала
+-- Add student auth fields to students table
 -- ============================================================
 ALTER TABLE students
-  ADD COLUMN IF NOT EXISTS email          TEXT,
-  ADD COLUMN IF NOT EXISTS invite_token   UUID,
-  ADD COLUMN IF NOT EXISTS invite_sent_at TIMESTAMPTZ,
-  ADD COLUMN IF NOT EXISTS portal_active  BOOLEAN NOT NULL DEFAULT FALSE,
-  ADD COLUMN IF NOT EXISTS auth_user_id   UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+  ADD COLUMN email          TEXT,
+  ADD COLUMN auth_user_id   UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  ADD COLUMN invite_token   TEXT UNIQUE,
+  ADD COLUMN invite_sent_at TIMESTAMPTZ,
+  ADD COLUMN portal_active  BOOLEAN DEFAULT FALSE;
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_students_invite_token
-  ON students(invite_token) WHERE invite_token IS NOT NULL;
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_students_auth_user_id
-  ON students(auth_user_id) WHERE auth_user_id IS NOT NULL;
-
--- ============================================================
--- homework — добавляем текстовый ответ студента
--- ============================================================
-ALTER TABLE homework
-  ADD COLUMN IF NOT EXISTS student_comment TEXT;
+CREATE INDEX idx_students_auth_user ON students(auth_user_id);
+CREATE INDEX idx_students_invite_token ON students(invite_token);
 
 -- ============================================================
 -- messages
--- Чат между репетитором и студентом.
+-- Simple chat between tutor and one student.
+-- sender_role: 'tutor' | 'student'
 -- ============================================================
-CREATE TABLE IF NOT EXISTS messages (
+CREATE TABLE messages (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   student_id  UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
   sender_role TEXT NOT NULL CHECK (sender_role IN ('tutor', 'student')),
-  body        TEXT NOT NULL CHECK (char_length(body) <= 2000),
+  body        TEXT NOT NULL CHECK (char_length(body) > 0),
   read_at     TIMESTAMPTZ,
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_messages_student     ON messages(student_id);
-CREATE INDEX IF NOT EXISTS idx_messages_created_at  ON messages(created_at);
-CREATE INDEX IF NOT EXISTS idx_messages_unread
-  ON messages(student_id, sender_role, read_at) WHERE read_at IS NULL;
+CREATE INDEX idx_messages_student    ON messages(student_id);
+CREATE INDEX idx_messages_created    ON messages(created_at);
 
 -- ============================================================
--- RLS — messages (tutor full CRUD, student own conversation)
+-- RLS — messages
+-- Tutor: full access to messages where student belongs to them
+-- Student: access to messages where auth_user_id = auth.uid()
 -- ============================================================
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 
--- Репетитор: полный доступ к сообщениям своих студентов
+-- Tutor policy
 CREATE POLICY "messages_tutor" ON messages
   FOR ALL USING (
     EXISTS (
@@ -63,7 +55,7 @@ CREATE POLICY "messages_tutor" ON messages
     )
   );
 
--- Студент: доступ только к своим сообщениям
+-- Student policy
 CREATE POLICY "messages_student" ON messages
   FOR ALL USING (
     EXISTS (
@@ -81,15 +73,14 @@ CREATE POLICY "messages_student" ON messages
   );
 
 -- ============================================================
--- RLS — students: студент видит свой ряд
+-- Update RLS for existing tables — add student self-access
+-- Students can read their own row
 -- ============================================================
-CREATE POLICY "students_self" ON students
+CREATE POLICY "students_self_read" ON students
   FOR SELECT USING (auth_user_id = auth.uid());
 
--- ============================================================
--- RLS — lessons: студент видит свои уроки
--- ============================================================
-CREATE POLICY "lessons_student" ON lessons
+-- Students can read their own lessons
+CREATE POLICY "lessons_student_read" ON lessons
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM students
@@ -98,10 +89,9 @@ CREATE POLICY "lessons_student" ON lessons
     )
   );
 
--- ============================================================
--- RLS — homework: студент видит своё ДЗ и может обновить
--- ============================================================
-CREATE POLICY "homework_student_select" ON homework
+-- Students can read + update their own homework
+-- (update: to upload file_url and change status to 'submitted')
+CREATE POLICY "homework_student_read" ON homework
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM students
@@ -110,7 +100,7 @@ CREATE POLICY "homework_student_select" ON homework
     )
   );
 
-CREATE POLICY "homework_student_update" ON homework
+CREATE POLICY "homework_student_submit" ON homework
   FOR UPDATE USING (
     EXISTS (
       SELECT 1 FROM students
@@ -119,15 +109,12 @@ CREATE POLICY "homework_student_update" ON homework
     )
   )
   WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM students
-      WHERE students.id = homework.student_id
-        AND students.auth_user_id = auth.uid()
-    )
+    status IN ('submitted') -- student can only set status to submitted
   );
 
 -- ============================================================
--- Supabase Realtime — включить для messages
--- Выполнить в Supabase Dashboard → Database → Replication:
---   ALTER PUBLICATION supabase_realtime ADD TABLE messages;
+-- Supabase Realtime — enable for messages
+-- Run in Supabase Dashboard: Database → Replication → messages ✓
+-- Or via CLI: supabase db push after adding to replication publication
 -- ============================================================
+-- ALTER PUBLICATION supabase_realtime ADD TABLE messages;
