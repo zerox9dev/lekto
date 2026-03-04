@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
+import { Label } from '@/components/ui/Label'
 import { CalendarDays, RefreshCw, Unlink } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils/format'
 import type { GoogleCalendarToken } from '@/types'
@@ -33,11 +34,41 @@ interface SyncResponse {
   }>
 }
 
+interface CalendarOption {
+  id: string
+  name: string
+  primary: boolean
+}
+
 export function GoogleCalendarBlock({ token }: Props) {
   const router = useRouter()
   const [syncing, setSyncing]     = useState(false)
   const [disconnecting, setDis]   = useState(false)
+  const [loadingCalendars, setLoadingCalendars] = useState(false)
+  const [savingCalendar, setSavingCalendar] = useState(false)
+  const [calendarOptions, setCalendarOptions] = useState<CalendarOption[]>([])
+  const [selectedCalendarId, setSelectedCalendarId] = useState(token?.calendar_id ?? 'primary')
   const [lastSyncResult, setLastSyncResult] = useState<SyncResponse | null>(null)
+
+  useEffect(() => {
+    if (!token) return
+    let cancelled = false
+    async function loadCalendars() {
+      setLoadingCalendars(true)
+      const res = await fetch('/api/auth/google/calendars')
+      setLoadingCalendars(false)
+      if (!res.ok) return
+
+      const data = (await res.json()) as { calendars?: CalendarOption[] }
+      if (!cancelled) {
+        setCalendarOptions(data.calendars ?? [])
+      }
+    }
+    loadCalendars().catch(() => undefined)
+    return () => {
+      cancelled = true
+    }
+  }, [token])
 
   async function handleSync() {
     setSyncing(true)
@@ -72,6 +103,25 @@ export function GoogleCalendarBlock({ token }: Props) {
     setDis(false)
     if (error) { toast.error(error.message); return }
     toast.success('Google Calendar отключён')
+    router.refresh()
+  }
+
+  async function handleSaveCalendar() {
+    setSavingCalendar(true)
+    const res = await fetch('/api/auth/google/calendar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ calendarId: selectedCalendarId }),
+    })
+    setSavingCalendar(false)
+
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({ error: 'Ошибка сохранения календаря' }))
+      toast.error(payload.error ?? 'Ошибка сохранения календаря')
+      return
+    }
+
+    toast.success('Календарь для импорта сохранён')
     router.refresh()
   }
 
@@ -114,6 +164,44 @@ export function GoogleCalendarBlock({ token }: Props) {
               <Unlink className="w-3.5 h-3.5" />
               Отключить
             </Button>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="calendar-id">Календарь для импорта</Label>
+            <div className="flex items-center gap-2">
+              <select
+                id="calendar-id"
+                value={selectedCalendarId}
+                onChange={(e) => setSelectedCalendarId(e.target.value)}
+                className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-500"
+                disabled={loadingCalendars || savingCalendar}
+              >
+                {calendarOptions.length === 0 ? (
+                  <option value={token.calendar_id}>
+                    {token.calendar_id}
+                  </option>
+                ) : (
+                  calendarOptions.map((calendar) => (
+                    <option key={calendar.id} value={calendar.id}>
+                      {calendar.name}
+                      {calendar.primary ? ' (primary)' : ''}
+                    </option>
+                  ))
+                )}
+              </select>
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={savingCalendar}
+                onClick={handleSaveCalendar}
+                disabled={!selectedCalendarId || selectedCalendarId === token.calendar_id}
+              >
+                Сохранить
+              </Button>
+            </div>
+            <p className="text-xs text-gray-400">
+              {loadingCalendars ? 'Загружаем доступные календари...' : 'Выберите календарь, откуда импортировать уроки'}
+            </p>
           </div>
 
           {lastSyncResult && (
