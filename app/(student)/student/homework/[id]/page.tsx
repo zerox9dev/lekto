@@ -4,7 +4,9 @@ import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { MarkdownContent } from '@/components/ui/MarkdownContent'
+import { QuizSurvey } from '@/components/homework/QuizSurvey'
 import { formatDate } from '@/lib/utils/format'
+import { normalizeQuizSchema } from '@/lib/homework-quiz'
 import type { Homework } from '@/types'
 import { StudentHomeworkActions } from './StudentHomeworkActions'
 
@@ -38,6 +40,11 @@ export default async function StudentHomeworkDetailPage({
   if (!hw) notFound()
 
   const homework = hw as Homework
+  const quizSchema = normalizeQuizSchema(homework.interactive_tasks)
+  const initialAnswers =
+    homework.student_answers && typeof homework.student_answers === 'object'
+      ? homework.student_answers
+      : {}
 
   return (
     <div className="max-w-2xl">
@@ -60,6 +67,13 @@ export default async function StudentHomeworkDetailPage({
           Дедлайн: {homework.deadline ? formatDate(homework.deadline) : 'без срока'}
         </div>
 
+        {quizSchema && (
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-sm font-semibold text-gray-900 mb-2">Тест / квиз</p>
+            <QuizSurvey schema={quizSchema} data={initialAnswers} mode="display" />
+          </div>
+        )}
+
         {homework.teacher_comment && (
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
             <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Комментарий преподавателя</p>
@@ -67,7 +81,12 @@ export default async function StudentHomeworkDetailPage({
           </div>
         )}
 
-        <StudentHomeworkActions homeworkId={homework.id} status={homework.status} />
+        <StudentHomeworkActions
+          homeworkId={homework.id}
+          status={homework.status}
+          quizSchema={quizSchema}
+          initialAnswers={initialAnswers}
+        />
       </div>
     </div>
   )

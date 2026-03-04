@@ -5,7 +5,9 @@ import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { HomeworkDetailClient } from './HomeworkDetailClient'
+import { QuizSurvey } from '@/components/homework/QuizSurvey'
 import { MarkdownContent, stripRichText } from '@/components/ui/MarkdownContent'
+import { normalizeQuizSchema } from '@/lib/homework-quiz'
 import { formatDate, formatDateTime } from '@/lib/utils/format'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -39,6 +41,11 @@ export default async function HomeworkDetailPage({
 
   const student = Array.isArray(hw.students) ? hw.students[0] : hw.students
   const lesson  = Array.isArray(hw.lessons)  ? hw.lessons[0]  : hw.lessons
+  const quizSchema = normalizeQuizSchema(hw.interactive_tasks)
+  const studentAnswers =
+    hw.student_answers && typeof hw.student_answers === 'object'
+      ? (hw.student_answers as Record<string, unknown>)
+      : {}
 
   const isOverdue =
     hw.status === 'assigned' &&
@@ -126,6 +133,13 @@ export default async function HomeworkDetailPage({
         <h3 className="text-sm font-semibold text-gray-900 mb-3">Описание задания</h3>
         <MarkdownContent content={hw.description} />
       </div>
+
+      {quizSchema && (
+        <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Тест / квиз (ответы ученика)</h3>
+          <QuizSurvey schema={quizSchema} data={studentAnswers} mode="display" />
+        </div>
+      )}
 
       {/* Interactive: status, file, comment, delete */}
       <HomeworkDetailClient

@@ -103,6 +103,8 @@ export interface Homework {
   status: HomeworkStatus
   teacher_comment: string | null
   file_url: string | null
+  interactive_tasks: Record<string, unknown> | null
+  student_answers: Record<string, unknown>
   created_at: string
   updated_at: string
   students?: Pick<Student, 'id' | 'name'>

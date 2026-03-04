@@ -6,6 +6,7 @@ export const homeworkFormSchema = z.object({
   description: z.string().min(1, 'Обязательное поле').max(2000, 'Максимум 2000 символов'),
   deadline:   z.string().optional().nullable(),
   file_url:   z.string().optional().nullable(),
+  interactive_tasks: z.unknown().optional().nullable(),
 })
 
 export type HomeworkFormData = z.infer<typeof homeworkFormSchema>

@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { SelectField } from '@/components/ui/SelectField'
 import { FileUpload } from '@/components/shared/FileUpload'
+import { QuizBuilder } from '@/components/homework/QuizBuilder'
+import { normalizeQuizSchema, type QuizDefinition } from '@/lib/homework-quiz'
 import { formatDateTime } from '@/lib/utils/format'
 import type { Homework, Student, Lesson } from '@/types'
 
@@ -34,6 +36,9 @@ export function HomeworkForm({
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [studentLessons, setStudentLessons] = useState<Lesson[]>([])
+  const [interactiveDraft, setInteractiveDraft] = useState<QuizDefinition | null>(
+    normalizeQuizSchema(homework?.interactive_tasks)
+  )
   const isEdit = !!homework
 
   const {
@@ -47,19 +52,21 @@ export function HomeworkForm({
     resolver: zodResolver(homeworkFormSchema),
     defaultValues: {
       student_id: homework?.student_id ?? defaultStudentId ?? '',
-      lesson_id:  homework?.lesson_id ?? defaultLessonId ?? null,
+      lesson_id: homework?.lesson_id ?? defaultLessonId ?? null,
       description: homework?.description ?? '',
-      deadline:   homework?.deadline ?? '',
-      file_url:   homework?.file_url ?? null,
+      deadline: homework?.deadline ?? '',
+      file_url: homework?.file_url ?? null,
     },
   })
 
   const studentId = watch('student_id')
   const fileUrl = watch('file_url')
 
-  // При смене студента — загружаем его уроки
   useEffect(() => {
-    if (!studentId) { setStudentLessons([]); return }
+    if (!studentId) {
+      setStudentLessons([])
+      return
+    }
     const supabase = createClient()
     supabase
       .from('lessons')
@@ -83,26 +90,35 @@ export function HomeworkForm({
     const supabase = createClient()
 
     const payload = {
-      student_id:  data.student_id,
-      lesson_id:   data.lesson_id || null,
+      student_id: data.student_id,
+      lesson_id: data.lesson_id || null,
       description: data.description,
-      deadline:    data.deadline || null,
-      file_url:    data.file_url || null,
+      deadline: data.deadline || null,
+      file_url: data.file_url || null,
+      interactive_tasks: normalizeQuizSchema(interactiveDraft) ?? {},
     }
 
     if (isEdit) {
       const { error } = await supabase.from('homework').update(payload).eq('id', homework.id)
-      if (error) { toast.error(error.message); setLoading(false); return }
+      if (error) {
+        toast.error(error.message)
+        setLoading(false)
+        return
+      }
       toast.success('Изменения сохранены')
       router.push(`/homework/${homework.id}`)
       router.refresh()
     } else {
       const { data: created, error } = await supabase
         .from('homework')
-        .insert(payload)
+        .insert({ ...payload, student_answers: {} })
         .select()
         .single()
-      if (error || !created) { toast.error(error?.message ?? 'Ошибка'); setLoading(false); return }
+      if (error || !created) {
+        toast.error(error?.message ?? 'Ошибка')
+        setLoading(false)
+        return
+      }
       toast.success('Задание добавлено')
       router.push(`/homework/${created.id}`)
       router.refresh()
@@ -113,7 +129,6 @@ export function HomeworkForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {/* Student */}
       <div>
         <Label required>Ученик</Label>
         <Controller
@@ -134,7 +149,6 @@ export function HomeworkForm({
         />
       </div>
 
-      {/* Lesson */}
       <div>
         <Label>Урок (необязательно)</Label>
         <Controller
@@ -152,7 +166,6 @@ export function HomeworkForm({
         />
       </div>
 
-      {/* Description */}
       <div>
         <Label required>Описание задания</Label>
         <Textarea
@@ -163,13 +176,16 @@ export function HomeworkForm({
         />
       </div>
 
-      {/* Deadline */}
       <div>
         <Label htmlFor="deadline">Дедлайн</Label>
         <Input id="deadline" type="date" {...register('deadline')} />
       </div>
 
-      {/* File Upload */}
+      <div className="space-y-2">
+        <Label>Интерактивный тест / квиз (необязательно)</Label>
+        <QuizBuilder value={interactiveDraft} onChange={setInteractiveDraft} />
+      </div>
+
       <div>
         <Label>Файл (PDF, JPG, PNG — до 10 МБ)</Label>
         <FileUpload
@@ -180,7 +196,6 @@ export function HomeworkForm({
         />
       </div>
 
-      {/* Actions */}
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="secondary" onClick={() => router.back()}>
           Отмена

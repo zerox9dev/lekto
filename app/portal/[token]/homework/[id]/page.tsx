@@ -5,7 +5,9 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { getPortalStudentByToken } from '@/lib/student-portal'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { MarkdownContent } from '@/components/ui/MarkdownContent'
+import { QuizSurvey } from '@/components/homework/QuizSurvey'
 import { formatDate } from '@/lib/utils/format'
+import { normalizeQuizSchema } from '@/lib/homework-quiz'
 import type { Homework } from '@/types'
 
 export default async function PortalHomeworkDetailPage({
@@ -27,6 +29,7 @@ export default async function PortalHomeworkDetailPage({
 
   if (!hw) notFound()
   const homework = hw as Homework
+  const quizSchema = normalizeQuizSchema(homework.interactive_tasks)
 
   return (
     <div className="max-w-2xl">
@@ -46,6 +49,12 @@ export default async function PortalHomeworkDetailPage({
         <div className="text-sm text-gray-500">
           Дедлайн: {homework.deadline ? formatDate(homework.deadline) : 'без срока'}
         </div>
+        {quizSchema && (
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-sm font-semibold text-gray-900 mb-2">Тест / квиз</p>
+            <QuizSurvey schema={quizSchema} mode="display" />
+          </div>
+        )}
         {homework.teacher_comment && (
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
             <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Комментарий преподавателя</p>

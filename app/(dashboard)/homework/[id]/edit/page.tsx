@@ -22,7 +22,7 @@ export default async function EditHomeworkPage({
   if (!hwResult.data) notFound()
 
   return (
-    <div className="max-w-lg">
+    <div className="">
       <div className="flex items-center gap-3 mb-6">
         <Link
           href={`/homework/${id}`}

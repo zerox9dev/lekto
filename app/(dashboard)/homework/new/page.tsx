@@ -20,7 +20,7 @@ export default async function NewHomeworkPage({
     .order('name')
 
   return (
-    <div className="max-w-lg">
+    <div className="">
       <div className="flex items-center gap-3 mb-6">
         <Link
           href="/homework"
