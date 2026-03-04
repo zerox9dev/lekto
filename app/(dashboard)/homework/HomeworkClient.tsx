@@ -41,6 +41,22 @@ function isOverdue(hw: HomeworkWithStudent): boolean {
   return new Date(hw.deadline) < new Date(new Date().toDateString())
 }
 
+function getHomeworkPreview(description: string): string {
+  const firstMeaningfulLine =
+    description
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .find((line) => line.length > 0 && !/^[-|:\s]+$/.test(line)) ?? description
+
+  const normalized = stripRichText(firstMeaningfulLine)
+    .replace(/\|+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  if (!normalized) return '—'
+  return normalized.length > 110 ? `${normalized.slice(0, 107)}...` : normalized
+}
+
 export function HomeworkClient({ homework, students }: HomeworkClientProps) {
   const router = useRouter()
   const [studentFilter, setStudentFilter] = useState('all')
@@ -122,7 +138,7 @@ export function HomeworkClient({ homework, students }: HomeworkClientProps) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100">
-              <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Описание</th>
+              <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Название</th>
               <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Ученик</th>
               <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Дедлайн</th>
               <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Статус</th>
@@ -178,12 +194,12 @@ function HwRow({
   deleting?: boolean
   onDelete: (homeworkId: string) => Promise<void> | void
 }) {
-  const plain = stripRichText(hw.description)
+  const preview = getHomeworkPreview(hw.description)
   return (
     <tr className={`hover:bg-gray-50/50 transition-colors ${hw.status === 'reviewed' ? 'opacity-60' : ''}`}>
-      <td className="px-5 py-3 max-w-xs">
-        <Link href={`/homework/${hw.id}`} className="text-gray-700 hover:text-gray-900 line-clamp-2 block">
-          {plain || '—'}
+      <td className="px-5 py-3 max-w-[520px]">
+        <Link href={`/homework/${hw.id}`} className="text-gray-700 hover:text-gray-900 block truncate">
+          {preview}
         </Link>
       </td>
       <td className="px-5 py-3 whitespace-nowrap">
