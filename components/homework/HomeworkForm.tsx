@@ -10,9 +10,9 @@ import { homeworkFormSchema, type HomeworkFormData } from '@/lib/validations/hom
 import { Button } from '@/components/ui/Button'
 import { Label } from '@/components/ui/Label'
 import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
 import { SelectField } from '@/components/ui/SelectField'
 import { FileUpload } from '@/components/shared/FileUpload'
-import { RichTextEditor } from '@/components/ui/RichTextEditor'
 import { formatDateTime } from '@/lib/utils/format'
 import type { Homework, Student, Lesson } from '@/types'
 
@@ -155,17 +155,11 @@ export function HomeworkForm({
       {/* Description */}
       <div>
         <Label required>Описание задания</Label>
-        <Controller
-          name="description"
-          control={control}
-          render={({ field }) => (
-            <RichTextEditor
-              value={field.value}
-              onChange={field.onChange}
-              placeholder="Выполните упражнение 3 на странице 45..."
-              error={errors.description?.message}
-            />
-          )}
+        <Textarea
+          placeholder="Поддерживается Markdown: **жирный**, *курсив*, списки, `код`, [ссылка](https://...)"
+          error={errors.description?.message}
+          className="min-h-36"
+          {...register('description')}
         />
       </div>
 

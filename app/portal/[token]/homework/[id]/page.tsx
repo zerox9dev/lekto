@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getPortalStudentByToken } from '@/lib/student-portal'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { MarkdownContent } from '@/components/ui/MarkdownContent'
 import { formatDate } from '@/lib/utils/format'
 import type { Homework } from '@/types'
 
@@ -41,14 +42,14 @@ export default async function PortalHomeworkDetailPage({
           <h1 className="text-lg font-semibold text-gray-900">Домашнее задание</h1>
           <StatusBadge status={homework.status} />
         </div>
-        <p className="text-sm text-gray-700 whitespace-pre-wrap">{homework.description}</p>
+        <MarkdownContent content={homework.description} />
         <div className="text-sm text-gray-500">
           Дедлайн: {homework.deadline ? formatDate(homework.deadline) : 'без срока'}
         </div>
         {homework.teacher_comment && (
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
             <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Комментарий преподавателя</p>
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">{homework.teacher_comment}</p>
+            <MarkdownContent content={homework.teacher_comment} />
           </div>
         )}
       </div>

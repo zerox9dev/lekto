@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Paperclip, AlertTriangle } from 'lucide-react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { stripRichText } from '@/components/ui/MarkdownContent'
 import { formatDate, formatTimeAgo } from '@/lib/utils/format'
 import type { Homework, Student } from '@/types'
 
@@ -14,6 +15,7 @@ interface HomeworkCardProps {
 }
 
 export function HomeworkCard({ homework, overdue = false }: HomeworkCardProps) {
+  const preview = stripRichText(homework.description)
   return (
     <Link
       href={`/homework/${homework.id}`}
@@ -51,7 +53,7 @@ export function HomeworkCard({ homework, overdue = false }: HomeworkCardProps) {
       </div>
 
       {/* Description */}
-      <p className="text-sm text-gray-600 line-clamp-2 mb-2">{homework.description}</p>
+      <p className="text-sm text-gray-600 line-clamp-2 mb-2">{preview}</p>
 
       {/* Deadline */}
       {homework.deadline && (

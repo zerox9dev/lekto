@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { MarkdownContent } from '@/components/ui/MarkdownContent'
 import { formatDate } from '@/lib/utils/format'
 import type { Homework } from '@/types'
 import { StudentHomeworkActions } from './StudentHomeworkActions'
@@ -53,7 +54,7 @@ export default async function StudentHomeworkDetailPage({
           <StatusBadge status={homework.status} />
         </div>
 
-        <p className="text-sm text-gray-700 whitespace-pre-wrap">{homework.description}</p>
+        <MarkdownContent content={homework.description} />
 
         <div className="text-sm text-gray-500">
           Дедлайн: {homework.deadline ? formatDate(homework.deadline) : 'без срока'}
@@ -62,7 +63,7 @@ export default async function StudentHomeworkDetailPage({
         {homework.teacher_comment && (
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
             <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Комментарий преподавателя</p>
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">{homework.teacher_comment}</p>
+            <MarkdownContent content={homework.teacher_comment} />
           </div>
         )}
 

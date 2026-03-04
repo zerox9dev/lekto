@@ -65,15 +65,13 @@ export function HomeworkDetailClient({
 
   async function handleDelete() {
     setDeleting(true)
-    const supabase = createClient()
-
-    // Удаляем файл из storage если есть
-    if (fileUrl) {
-      await supabase.storage.from('homework-files').remove([fileUrl])
+    const res = await fetch(`/api/homework/${homeworkId}`, { method: 'DELETE' })
+    setDeleting(false)
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({ error: 'Не удалось удалить задание' }))
+      toast.error(payload.error ?? 'Не удалось удалить задание')
+      return
     }
-
-    const { error } = await supabase.from('homework').delete().eq('id', homeworkId)
-    if (error) { toast.error(error.message); setDeleting(false); return }
     toast.success('Задание удалено')
     router.push('/homework')
     router.refresh()
