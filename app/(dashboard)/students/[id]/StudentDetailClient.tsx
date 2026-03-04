@@ -14,10 +14,12 @@ interface StudentDetailClientProps {
 
 export function StudentDetailClient({ studentId, isArchived }: StudentDetailClientProps) {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const [loadingArchive, setLoadingArchive] = useState(false)
+  const [loadingRestore, setLoadingRestore] = useState(false)
+  const [loadingDelete, setLoadingDelete] = useState(false)
 
   async function handleArchive() {
-    setLoading(true)
+    setLoadingArchive(true)
     const supabase = createClient()
     const { error } = await supabase
       .from('students')
@@ -26,16 +28,17 @@ export function StudentDetailClient({ studentId, isArchived }: StudentDetailClie
 
     if (error) {
       toast.error(error.message)
-      setLoading(false)
+      setLoadingArchive(false)
       return
     }
     toast.success('Ученик архивирован')
     router.push('/students')
     router.refresh()
+    setLoadingArchive(false)
   }
 
   async function handleRestore() {
-    setLoading(true)
+    setLoadingRestore(true)
     const supabase = createClient()
     const { error } = await supabase
       .from('students')
@@ -44,34 +47,75 @@ export function StudentDetailClient({ studentId, isArchived }: StudentDetailClie
 
     if (error) {
       toast.error(error.message)
-      setLoading(false)
+      setLoadingRestore(false)
       return
     }
     toast.success('Ученик восстановлен')
+    router.refresh()
+    setLoadingRestore(false)
+  }
+
+  async function handleDelete() {
+    setLoadingDelete(true)
+    const res = await fetch(`/api/students/${studentId}`, { method: 'DELETE' })
+    setLoadingDelete(false)
+
+    if (!res.ok) {
+      const payload = (await res.json().catch(() => ({ error: 'Не удалось удалить ученика' }))) as {
+        error?: string
+      }
+      toast.error(payload.error ?? 'Не удалось удалить ученика')
+      return
+    }
+
+    toast.success('Ученик удалён')
+    router.push('/students')
     router.refresh()
   }
 
   if (isArchived) {
     return (
-      <Button variant="secondary" size="sm" loading={loading} onClick={handleRestore}>
-        Восстановить
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button variant="secondary" size="sm" loading={loadingRestore} onClick={handleRestore}>
+          Восстановить
+        </Button>
+        <ConfirmDialog
+          trigger={<Button variant="destructive" size="sm">Удалить</Button>}
+          title="Удалить ученика?"
+          description="Ученик, все его уроки, домашки и сообщения будут удалены без возможности восстановления."
+          confirmLabel="Удалить навсегда"
+          variant="destructive"
+          loading={loadingDelete}
+          onConfirm={handleDelete}
+        />
+      </div>
     )
   }
 
   return (
-    <ConfirmDialog
-      trigger={
-        <Button variant="destructive" size="sm">
-          Архивировать
-        </Button>
-      }
-      title="Архивировать ученика?"
-      description="Ученик будет скрыт из активного списка. Его уроки и ДЗ сохранятся."
-      confirmLabel="Архивировать"
-      variant="destructive"
-      loading={loading}
-      onConfirm={handleArchive}
-    />
+    <div className="flex items-center gap-2">
+      <ConfirmDialog
+        trigger={
+          <Button variant="destructive" size="sm">
+            Архивировать
+          </Button>
+        }
+        title="Архивировать ученика?"
+        description="Ученик будет скрыт из активного списка. Его уроки и ДЗ сохранятся."
+        confirmLabel="Архивировать"
+        variant="destructive"
+        loading={loadingArchive}
+        onConfirm={handleArchive}
+      />
+      <ConfirmDialog
+        trigger={<Button variant="secondary" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">Удалить</Button>}
+        title="Удалить ученика?"
+        description="Ученик, все его уроки, домашки и сообщения будут удалены без возможности восстановления."
+        confirmLabel="Удалить навсегда"
+        variant="destructive"
+        loading={loadingDelete}
+        onConfirm={handleDelete}
+      />
+    </div>
   )
 }

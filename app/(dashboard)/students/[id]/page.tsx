@@ -55,7 +55,7 @@ export default async function StudentDetailPage({
   const activeHomework = homework.filter((h) => h.status !== 'reviewed')
   const reviewedHomework = homework.filter((h) => h.status === 'reviewed')
   return (
-    <div className="max-w-3xl">
+    <div className="">
       {/* Top nav */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
