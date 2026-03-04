@@ -5,6 +5,7 @@ import { SubjectsClient } from './SubjectsClient'
 import { ChangePasswordForm } from './ChangePasswordForm'
 import { SignOutButton } from './SignOutButton'
 import { GoogleCalendarBlock } from './GoogleCalendarBlock'
+import { DeleteAccountButton } from './DeleteAccountButton'
 import type { TutorSettings, Subject, GoogleCalendarToken } from '@/types'
 
 export const metadata = { title: 'Настройки — Lekto' }
@@ -64,6 +65,13 @@ export default async function SettingsPage() {
           <div>
             <p className="text-sm text-gray-600 mb-2">Завершить сессию на всех устройствах</p>
             <SignOutButton />
+          </div>
+          <hr className="border-gray-100" />
+          <div>
+            <p className="text-sm text-gray-600 mb-2">
+              Полностью удалить аккаунт и все данные из Lekto
+            </p>
+            <DeleteAccountButton />
           </div>
         </div>
       </div>
