@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 
 interface InviteBody {
   studentId?: string
@@ -62,11 +63,47 @@ export async function POST(req: Request) {
 
   const origin = new URL(req.url).origin
   const inviteLink = `${origin}/join/${token}`
+  const redirectTo = `${origin}/join/${token}`
+  const service = createServiceClient()
+
+  let directLoginLink: string | null = null
+
+  // Preferred: one-click magic link that can be shared by tutor directly.
+  const magicRes = await service.auth.admin.generateLink({
+    type: 'magiclink',
+    email: recipientEmail,
+    options: { redirectTo },
+  })
+
+  if (!magicRes.error) {
+    const payload = magicRes.data as unknown as {
+      properties?: { action_link?: string }
+      action_link?: string
+    }
+    directLoginLink = payload.properties?.action_link ?? payload.action_link ?? null
+  }
+
+  // Fallback for cases where user does not yet exist in auth.
+  if (!directLoginLink) {
+    const inviteRes = await service.auth.admin.generateLink({
+      type: 'invite',
+      email: recipientEmail,
+      options: { redirectTo },
+    })
+    if (!inviteRes.error) {
+      const payload = inviteRes.data as unknown as {
+        properties?: { action_link?: string }
+        action_link?: string
+      }
+      directLoginLink = payload.properties?.action_link ?? payload.action_link ?? null
+    }
+  }
 
   return Response.json(
     {
       ok: true,
       inviteLink,
+      directLoginLink,
       email: recipientEmail,
       studentName: student.name,
     },

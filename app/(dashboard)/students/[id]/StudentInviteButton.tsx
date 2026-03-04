@@ -28,21 +28,24 @@ export function StudentInviteButton({ studentId, hasEmail }: StudentInviteButton
 
     const data = (await res.json().catch(() => ({}))) as {
       error?: string
+      directLoginLink?: string | null
       inviteLink?: string
       email?: string
     }
 
-    if (!res.ok || !data.inviteLink) {
+    if (!res.ok || (!data.directLoginLink && !data.inviteLink)) {
       toast.error(data.error ?? 'Не удалось создать приглашение')
       return
     }
 
+    const linkToShare = data.directLoginLink ?? data.inviteLink!
+
     try {
-      await navigator.clipboard.writeText(data.inviteLink)
-      toast.success(`Ссылка приглашения скопирована. Отправьте ученику на ${data.email}.`)
+      await navigator.clipboard.writeText(linkToShare)
+      toast.success(`Ссылка входа скопирована. Отправьте ученику на ${data.email}.`)
     } catch {
-      toast.success('Ссылка приглашения создана')
-      toast.message(data.inviteLink)
+      toast.success('Ссылка входа создана')
+      toast.message(linkToShare)
     }
   }
 
