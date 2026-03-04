@@ -201,6 +201,7 @@ export async function importGoogleEvents(
 
     const scheduledAt = event.start!.dateTime!
     const endAt = event.end?.dateTime ?? scheduledAt
+    const isPastLesson = new Date(endAt).getTime() < Date.now()
     const durationMin = Math.max(
       1,
       Math.round((new Date(endAt).getTime() - new Date(scheduledAt).getTime()) / 60000)
@@ -256,7 +257,7 @@ export async function importGoogleEvents(
       duration_min: durationMin,
       topic: event.summary ?? null,
       notes: event.description ?? null,
-      status: 'planned',
+      status: isPastLesson ? 'done' : 'planned',
       is_paid: false,
     }
 
