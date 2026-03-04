@@ -147,8 +147,7 @@ export default async function StudentDetailPage({
               {lessons.slice(0, 5).map((lesson) => (
                 <tr
                   key={lesson.id}
-                  className="hover:bg-gray-50/50 transition-colors cursor-pointer"
-                  onClick={() => {}}
+                  className="hover:bg-gray-50/50 transition-colors"
                 >
                   <td className="py-3 text-gray-600 whitespace-nowrap">
                     <Link href={`/lessons/${lesson.id}`} className="hover:text-gray-900">

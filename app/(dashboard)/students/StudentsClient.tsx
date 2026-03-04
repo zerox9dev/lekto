@@ -1,11 +1,19 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Search } from 'lucide-react'
-import { StudentCard } from '@/components/students/StudentCard'
+import { Search, Users, BookOpen } from 'lucide-react'
+import Link from 'next/link'
 import { EmptyState } from '@/components/shared/EmptyState'
-import { Users } from 'lucide-react'
 import type { Student } from '@/types'
+
+const levelColors: Record<string, string> = {
+  A1: 'bg-green-50 text-green-700',
+  A2: 'bg-green-50 text-green-700',
+  B1: 'bg-blue-50 text-blue-700',
+  B2: 'bg-blue-50 text-blue-700',
+  C1: 'bg-purple-50 text-purple-700',
+  C2: 'bg-purple-50 text-purple-700',
+}
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 const STATUS_OPTIONS = [
@@ -86,7 +94,7 @@ export function StudentsClient({ students, currency }: StudentsClientProps) {
         </div>
       )}
 
-      {/* Grid */}
+      {/* Table */}
       {filtered.length === 0 ? (
         hasStudents ? (
           <EmptyState
@@ -101,10 +109,56 @@ export function StudentsClient({ students, currency }: StudentsClientProps) {
           />
         )
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((student) => (
-            <StudentCard key={student.id} student={student} currency={currency} />
-          ))}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100">
+                <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Имя</th>
+                <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Контакт</th>
+                <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Цена/ч</th>
+                <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Уроков</th>
+                <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">ДЗ</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filtered.map((student) => (
+                <tr key={student.id} className={`hover:bg-gray-50/50 transition-colors ${student.status === 'archived' ? 'opacity-50' : ''}`}>
+                  <td className="px-5 py-3">
+                    <Link href={`/students/${student.id}`} className="flex items-center gap-2 hover:text-brand-600 transition-colors">
+                      <span className="font-medium text-gray-900">{student.name}</span>
+                      {student.level && (
+                        <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium ${levelColors[student.level] ?? 'bg-gray-100 text-gray-600'}`}>
+                          {student.level}
+                        </span>
+                      )}
+                    </Link>
+                  </td>
+                  <td className="px-5 py-3 text-gray-500 max-w-[180px] truncate">
+                    {student.contact || <span className="text-gray-300">—</span>}
+                  </td>
+                  <td className="px-5 py-3 text-gray-700 whitespace-nowrap">
+                    {student.price_per_hour != null
+                      ? new Intl.NumberFormat('ru-RU', { style: 'currency', currency, minimumFractionDigits: 0 }).format(student.price_per_hour)
+                      : <span className="text-gray-300">—</span>
+                    }
+                  </td>
+                  <td className="px-5 py-3 text-gray-500">
+                    {student.lesson_count ?? <span className="text-gray-300">—</span>}
+                  </td>
+                  <td className="px-5 py-3">
+                    {(student.active_hw_count ?? 0) > 0 ? (
+                      <span className="flex items-center gap-1 text-xs text-amber-600">
+                        <BookOpen className="w-3 h-3" />
+                        {student.active_hw_count}
+                      </span>
+                    ) : (
+                      <span className="text-gray-300">—</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
