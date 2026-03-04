@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Lekto
+
+Universal tutor management platform. Manage students, lessons, and homework in one place.
+
+**lekto.app** · Built with Next.js 16, Supabase, Radix UI, Tailwind CSS
+
+---
+
+## Features
+
+- Student profiles with levels, contacts, pricing
+- Lesson scheduling and notes
+- Homework assignments with file attachments
+- Dashboard with today's schedule and pending reviews
+- Multi-subject support (any language, subject, or skill)
+- Single-user — built for solo tutors
+
+## Stack
+
+| Layer | Tech |
+|-------|------|
+| Framework | Next.js 16 (App Router) |
+| Database | Supabase (PostgreSQL + Auth + Storage) |
+| UI Primitives | Radix UI |
+| Styling | Tailwind CSS v4 |
+| Forms | react-hook-form + zod |
+| Icons | Lucide React |
+| Toasts | Sonner |
+| Hosting | Vercel |
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# 1. Clone and install
+git clone https://github.com/your-org/lekto
+cd lekto
+npm install
+
+# 2. Set up environment
+cp .env.example .env.local
+# Fill in NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+# 3. Run Supabase migrations (in order)
+# Open Supabase SQL editor and run:
+# supabase/migrations/001_initial_schema.sql
+# supabase/migrations/002_rls_policies.sql
+# supabase/migrations/003_seed_dev.sql  ← dev only
+
+# 4. Start dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+app/
+├── (auth)/login/          # Login page
+└── (dashboard)/           # Protected routes
+    ├── dashboard/
+    ├── students/
+    ├── lessons/
+    ├── homework/
+    └── settings/
+components/
+├── ui/                    # Base primitives (Button, Input, Modal...)
+├── shared/                # App-wide (Sidebar, PageHeader, StatusBadge...)
+├── students/
+├── lessons/
+└── homework/
+lib/
+├── supabase/              # server.ts + client.ts
+├── utils/                 # format.ts (currency, dates)
+└── validations/           # zod schemas
+types/index.ts             # all TypeScript types
+supabase/migrations/       # SQL migration files
+.docs/                     # full project documentation
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Documentation
 
-## Learn More
+All project docs live in `.docs/`:
 
-To learn more about Next.js, take a look at the following resources:
+| File | Contents |
+|------|---------|
+| `.docs/AGENTS.md` | Entry point for AI agents — read first |
+| `.docs/ARCHITECTURE.md` | Auth, DB schema, data fetching patterns |
+| `.docs/STYLEGUIDE.md` | Design tokens, Radix styling, component classes |
+| `.docs/COMPONENTS.md` | Component hierarchy and API reference |
+| `.docs/pages/*.md` | Per-page documentation |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Design
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Minimalist hybrid of cal.com and Preply.
+White backgrounds, hairline borders, indigo accent, Inter font.
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
