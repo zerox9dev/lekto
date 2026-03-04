@@ -92,15 +92,26 @@ cp .env.example .env.local
 
 ---
 
+## Two User Roles
+
+| Role | Auth method | Route group | Access |
+|------|-------------|-------------|--------|
+| Tutor | email + password | `(dashboard)/` | Full CRUD own data |
+| Student | magic link (OTP) | `(student)/` | Read + submit HW + chat |
+
+Middleware detects role by checking `tutor_settings` after auth. Full details → `pages/student-portal.md`
+
+---
+
 ## Core Rules for Agents
 
 ### Never break these:
-1. **Auth guard** — all `(dashboard)/` routes require Supabase session. Middleware must stay.
+1. **Auth guard** — `(dashboard)/*` requires tutor session, `(student)/*` requires student session.
 2. **RLS is security** — never use service role key on client. Never skip RLS.
-3. **Universal platform** — no hardcoded subject names (Polish, English, etc.). Everything driven by `subjects` table.
-4. **No student portal** — MVP is tutor-only. Don't add student-facing routes.
+3. **Universal platform** — no hardcoded subject names. Everything driven by `subjects` table.
+4. **Role isolation** — tutor cannot access `/student/*`, student cannot access `/dashboard/*`.
 5. **TypeScript strict** — no `any`. All types in `/types/index.ts`.
-6. **Currency/locale** — read from `tutor_settings`. Never hardcode "zł" or any currency symbol.
+6. **Currency/locale** — read from `tutor_settings`. Never hardcode any currency symbol.
 
 ### Patterns:
 - Server Components fetch data → pass as props to Client Components
