@@ -18,6 +18,7 @@ interface SyncResponse {
   totalFetched: number
   filteredNonLesson: number
   processedTimedEvents: number
+  createdStudents: number
   imported: number
   updated: number
   cancelled: number
@@ -83,7 +84,7 @@ export function GoogleCalendarBlock({ token }: Props) {
         toast.message('События получены, но не было изменений в уроках')
       } else {
         toast.success(
-          `Импорт: ${data.imported}, обновлено: ${data.updated}, отменено: ${data.cancelled}`
+          `Импорт: ${data.imported}, обновлено: ${data.updated}, создано учеников: ${data.createdStudents}`
         )
       }
       router.refresh()
@@ -217,6 +218,9 @@ export function GoogleCalendarBlock({ token }: Props) {
               </p>
               <p className="text-xs text-gray-500">
                 Импортировано: {lastSyncResult.imported}, обновлено: {lastSyncResult.updated}, отменено: {lastSyncResult.cancelled}
+              </p>
+              <p className="text-xs text-gray-500">
+                Автосоздано учеников: {lastSyncResult.createdStudents}
               </p>
               <p className="text-xs text-gray-500">
                 Пропущено: весь день {lastSyncResult.skippedAllDay}, без времени начала {lastSyncResult.skippedNoStart}

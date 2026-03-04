@@ -19,6 +19,7 @@ export interface GoogleSyncResult {
   totalFetched: number
   filteredNonLesson: number
   processedTimedEvents: number
+  createdStudents: number
   imported: number
   updated: number
   cancelled: number
@@ -106,10 +107,13 @@ export async function importGoogleEvents(userId: string): Promise<GoogleSyncResu
     .eq('tutor_id', userId)
     .eq('status', 'active')
 
+  const knownStudents = [...(students ?? [])]
+
   const result: GoogleSyncResult = {
     totalFetched: events.length,
     filteredNonLesson: 0,
     processedTimedEvents: 0,
+    createdStudents: 0,
     imported: 0,
     updated: 0,
     cancelled: 0,
@@ -185,14 +189,31 @@ export async function importGoogleEvents(userId: string): Promise<GoogleSyncResu
     const preplyStudentName = extractPreplyStudentName(event.summary)
     const normalizedCandidate = preplyStudentName ? normalizeText(preplyStudentName) : null
 
-    const matchedStudent =
-      students?.find((s) => normalizeText(s.name) === normalizedCandidate) ??
-      students?.find((s) => event.summary?.toLowerCase().includes(s.name.toLowerCase())) ??
+    let matchedStudent =
+      knownStudents.find((s) => normalizeText(s.name) === normalizedCandidate) ??
+      knownStudents.find((s) => event.summary?.toLowerCase().includes(s.name.toLowerCase())) ??
       null
 
     if (!matchedStudent) {
-      result.skippedNoStudentMatch += 1
-      continue
+      const studentName = preplyStudentName ?? event.summary?.trim() ?? 'Preply student'
+      const { data: createdStudent, error: createStudentError } = await supabase
+        .from('students')
+        .insert({
+          tutor_id: userId,
+          name: studentName,
+          status: 'active',
+        })
+        .select('id, name')
+        .single()
+
+      if (createStudentError || !createdStudent) {
+        result.skippedNoStudentMatch += 1
+        continue
+      }
+
+      knownStudents.push(createdStudent)
+      matchedStudent = createdStudent
+      result.createdStudents += 1
     }
 
     const { error } = await supabase.from('lessons').upsert(
