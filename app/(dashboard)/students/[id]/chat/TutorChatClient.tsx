@@ -6,37 +6,36 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import type { Message } from '@/types'
 
-interface StudentChatClientProps {
+interface TutorChatClientProps {
   studentId: string
   initialMessages: Message[]
 }
 
-const MAX_MESSAGE_LENGTH = 2000
-
-export function StudentChatClient({ studentId, initialMessages }: StudentChatClientProps) {
+export function TutorChatClient({ studentId, initialMessages }: TutorChatClientProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const supabase = useMemo(() => createClient(), [])
 
-  useEffect(() => {
-    setMessages(initialMessages)
-  }, [initialMessages])
-
-  const markTutorMessagesAsRead = useCallback(async () => {
+  const markStudentMessagesAsRead = useCallback(async () => {
     await supabase
       .from('messages')
       .update({ read_at: new Date().toISOString() })
       .eq('student_id', studentId)
-      .eq('sender_role', 'tutor')
+      .eq('sender_role', 'student')
       .is('read_at', null)
   }, [studentId, supabase])
 
   useEffect(() => {
-    void markTutorMessagesAsRead()
+    setMessages(initialMessages)
+  }, [initialMessages])
+
+  useEffect(() => {
+    void markStudentMessagesAsRead()
+
     const channel = supabase
-      .channel(`chat:${studentId}`)
+      .channel(`chat:tutor:${studentId}`)
       .on(
         'postgres_changes',
         {
@@ -51,8 +50,8 @@ export function StudentChatClient({ studentId, initialMessages }: StudentChatCli
             if (prev.some((m) => m.id === incoming.id)) return prev
             return [...prev, incoming]
           })
-          if (incoming.sender_role === 'tutor') {
-            void markTutorMessagesAsRead()
+          if (incoming.sender_role === 'student') {
+            void markStudentMessagesAsRead()
           }
         }
       )
@@ -61,7 +60,7 @@ export function StudentChatClient({ studentId, initialMessages }: StudentChatCli
     return () => {
       void supabase.removeChannel(channel)
     }
-  }, [markTutorMessagesAsRead, studentId, supabase])
+  }, [markStudentMessagesAsRead, studentId, supabase])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -70,8 +69,8 @@ export function StudentChatClient({ studentId, initialMessages }: StudentChatCli
   async function sendMessage() {
     const text = draft.trim()
     if (!text) return
-    if (text.length > MAX_MESSAGE_LENGTH) {
-      toast.error(`Максимум ${MAX_MESSAGE_LENGTH} символов`)
+    if (text.length > 2000) {
+      toast.error('Максимум 2000 символов')
       return
     }
 
@@ -80,7 +79,7 @@ export function StudentChatClient({ studentId, initialMessages }: StudentChatCli
       .from('messages')
       .insert({
         student_id: studentId,
-        sender_role: 'student',
+        sender_role: 'tutor',
         body: text,
       })
       .select('*')
@@ -106,12 +105,12 @@ export function StudentChatClient({ studentId, initialMessages }: StudentChatCli
   return (
     <div className="bg-white rounded-xl border border-gray-200 h-[70vh] flex flex-col overflow-hidden">
       <div className="px-4 py-3 border-b border-gray-100">
-        <h1 className="text-sm font-semibold text-gray-900">Чат с репетитором</h1>
+        <h1 className="text-sm font-semibold text-gray-900">Чат с учеником</h1>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
         {messages.map((msg) => {
-          const isMine = msg.sender_role === 'student'
+          const isMine = msg.sender_role === 'tutor'
           return (
             <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
               <div
@@ -146,7 +145,7 @@ export function StudentChatClient({ studentId, initialMessages }: StudentChatCli
           }}
           placeholder="Введите сообщение..."
           className="min-h-[40px] max-h-28 w-full resize-y rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/15 focus:border-brand-500"
-          maxLength={MAX_MESSAGE_LENGTH}
+          maxLength={2000}
         />
         <Button size="sm" onClick={sendMessage} loading={sending} disabled={!draft.trim()}>
           Отпр.

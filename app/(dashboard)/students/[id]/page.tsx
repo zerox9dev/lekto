@@ -72,6 +72,12 @@ export default async function StudentDetailPage({
         <div className="flex items-center gap-2">
           <StudentInviteButton studentId={id} />
           <Button asChild variant="secondary" size="sm">
+            <Link href={`/students/${id}/chat`}>
+              <MessageCircle className="w-3.5 h-3.5" />
+              Чат
+            </Link>
+          </Button>
+          <Button asChild variant="secondary" size="sm">
             <Link href={`/students/${id}/edit`}>Редактировать</Link>
           </Button>
           <StudentDetailClient studentId={id} isArchived={student.status === 'archived'} />
