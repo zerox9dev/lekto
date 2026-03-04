@@ -82,7 +82,7 @@ export function LessonsClient({ lessons, students }: LessonsClientProps) {
             </thead>
             <tbody className="divide-y divide-gray-50 [&_td]:px-5 [&_th]:px-5">
               {filtered.map((lesson) => (
-                <LessonRow key={lesson.id} lesson={lesson} showStudent={true} />
+                <LessonRow key={lesson.id} lesson={lesson} showStudent={true} students={students} />
               ))}
             </tbody>
           </table>

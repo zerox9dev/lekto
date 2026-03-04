@@ -39,18 +39,34 @@ export interface Student {
 
 export interface Lesson {
   id: string
-  student_id: string
+  student_id: string | null
   subject_id: string | null
+  tutor_id: string | null
   scheduled_at: string
   duration_min: number
   topic: string | null
   notes: string | null
   status: LessonStatus
   is_paid: boolean
+  google_event_id: string | null
+  synced_from_google: boolean
   created_at: string
   updated_at: string
   students?: Pick<Student, 'id' | 'name' | 'level'>
   subjects?: Subject
+}
+
+export interface GoogleCalendarToken {
+  id: string
+  user_id: string
+  access_token: string
+  refresh_token: string
+  expires_at: string
+  calendar_id: string
+  last_synced_at: string | null
+  sync_token: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface Homework {

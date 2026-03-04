@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, Plus, CalendarDays } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/shared/StatusBadge'
@@ -115,6 +115,14 @@ export default async function LessonDetailPage({
           </div>
         )}
       </div>
+
+      {/* Google Calendar source indicator */}
+      {lesson.synced_from_google && (
+        <div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-3 mb-4 flex items-center gap-2 text-sm text-blue-700">
+          <CalendarDays className="w-4 h-4 flex-shrink-0" />
+          <span>Импортировано из Google Calendar</span>
+        </div>
+      )}
 
       {/* Inline editable: status, payment, notes */}
       <LessonDetailClient

@@ -4,7 +4,8 @@ import { SettingsForm } from './SettingsForm'
 import { SubjectsClient } from './SubjectsClient'
 import { ChangePasswordForm } from './ChangePasswordForm'
 import { SignOutButton } from './SignOutButton'
-import type { TutorSettings, Subject } from '@/types'
+import { GoogleCalendarBlock } from './GoogleCalendarBlock'
+import type { TutorSettings, Subject, GoogleCalendarToken } from '@/types'
 
 export const metadata = { title: 'Настройки — Lekto' }
 
@@ -13,7 +14,7 @@ export default async function SettingsPage() {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [settingsResult, subjectsResult] = await Promise.all([
+  const [settingsResult, subjectsResult, gcalResult] = await Promise.all([
     supabase
       .from('tutor_settings')
       .select('*')
@@ -23,10 +24,16 @@ export default async function SettingsPage() {
       .from('subjects')
       .select('*')
       .order('created_at'),
+    supabase
+      .from('google_calendar_tokens')
+      .select('*')
+      .eq('user_id', user!.id)
+      .maybeSingle(),
   ])
 
   const settings = settingsResult.data as TutorSettings | null
   const subjects = (subjectsResult.data ?? []) as Subject[]
+  const gcalToken = gcalResult.data as GoogleCalendarToken | null
   const email = user?.email ?? ''
 
   return (
@@ -41,6 +48,11 @@ export default async function SettingsPage() {
       {/* Subjects card */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-4">
         <SubjectsClient subjects={subjects} />
+      </div>
+
+      {/* Google Calendar card */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-4">
+        <GoogleCalendarBlock token={gcalToken} />
       </div>
 
       {/* Account card */}

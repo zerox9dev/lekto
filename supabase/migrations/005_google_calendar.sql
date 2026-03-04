@@ -21,7 +21,8 @@ CREATE POLICY "gcal_owner" ON google_calendar_tokens
 
 ALTER TABLE lessons
   ADD COLUMN google_event_id     TEXT,
-  ADD COLUMN synced_from_google  BOOLEAN DEFAULT FALSE;
+  ADD COLUMN synced_from_google  BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN tutor_id            UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 -- Уникальность по google_event_id — не дублировать при повторном импорте
 CREATE UNIQUE INDEX idx_lessons_google_event ON lessons(google_event_id)
@@ -30,3 +31,27 @@ CREATE UNIQUE INDEX idx_lessons_google_event ON lessons(google_event_id)
 CREATE TRIGGER trg_gcal_updated
   BEFORE UPDATE ON google_calendar_tokens
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ============================================================
+-- Update lessons RLS — allow tutor_id ownership for null student_id rows
+-- (Google-imported lessons may have no matched student yet)
+-- ============================================================
+DROP POLICY IF EXISTS "lessons_owner" ON lessons;
+
+CREATE POLICY "lessons_owner" ON lessons
+  FOR ALL USING (
+    (tutor_id IS NOT NULL AND tutor_id = auth.uid())
+    OR EXISTS (
+      SELECT 1 FROM students
+      WHERE students.id = lessons.student_id
+        AND students.tutor_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    (tutor_id IS NOT NULL AND tutor_id = auth.uid())
+    OR EXISTS (
+      SELECT 1 FROM students
+      WHERE students.id = lessons.student_id
+        AND students.tutor_id = auth.uid()
+    )
+  );
