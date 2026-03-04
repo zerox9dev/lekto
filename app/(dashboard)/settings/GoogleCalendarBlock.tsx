@@ -13,20 +13,49 @@ interface Props {
   token: GoogleCalendarToken | null
 }
 
+interface SyncResponse {
+  totalFetched: number
+  processedTimedEvents: number
+  imported: number
+  updated: number
+  cancelled: number
+  skippedAllDay: number
+  skippedNoStart: number
+  sampleEvents: Array<{
+    id: string
+    summary: string | null
+    status: string
+    start: string | null
+    allDay: boolean
+  }>
+}
+
 export function GoogleCalendarBlock({ token }: Props) {
   const router = useRouter()
   const [syncing, setSyncing]     = useState(false)
   const [disconnecting, setDis]   = useState(false)
+  const [lastSyncResult, setLastSyncResult] = useState<SyncResponse | null>(null)
 
   async function handleSync() {
     setSyncing(true)
     const res = await fetch('/api/auth/google/sync', { method: 'POST' })
     setSyncing(false)
     if (res.ok) {
-      toast.success('Синхронизация запущена')
+      const data = (await res.json()) as SyncResponse
+      setLastSyncResult(data)
+      if (data.totalFetched === 0) {
+        toast.message('Событий не найдено в выбранном диапазоне')
+      } else if (data.imported + data.updated + data.cancelled === 0) {
+        toast.message('События получены, но не было изменений в уроках')
+      } else {
+        toast.success(
+          `Импорт: ${data.imported}, обновлено: ${data.updated}, отменено: ${data.cancelled}`
+        )
+      }
       router.refresh()
     } else {
-      toast.error('Ошибка синхронизации')
+      const errorData = await res.json().catch(() => ({ error: 'Ошибка синхронизации' }))
+      toast.error(errorData.error ?? 'Ошибка синхронизации')
     }
   }
 
@@ -80,6 +109,33 @@ export function GoogleCalendarBlock({ token }: Props) {
               Отключить
             </Button>
           </div>
+
+          {lastSyncResult && (
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 space-y-2">
+              <p className="text-xs font-medium text-gray-600">
+                Результат последней синхронизации
+              </p>
+              <p className="text-xs text-gray-500">
+                Получено событий: {lastSyncResult.totalFetched}, с временем: {lastSyncResult.processedTimedEvents}
+              </p>
+              <p className="text-xs text-gray-500">
+                Импортировано: {lastSyncResult.imported}, обновлено: {lastSyncResult.updated}, отменено: {lastSyncResult.cancelled}
+              </p>
+              <p className="text-xs text-gray-500">
+                Пропущено: весь день {lastSyncResult.skippedAllDay}, без времени начала {lastSyncResult.skippedNoStart}
+              </p>
+              {lastSyncResult.sampleEvents.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-gray-600">Примеры событий из Google:</p>
+                  {lastSyncResult.sampleEvents.map((event) => (
+                    <p key={event.id} className="text-xs text-gray-500 truncate">
+                      {event.start ?? 'без даты'} · {event.summary ?? 'Без названия'} · {event.status}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
