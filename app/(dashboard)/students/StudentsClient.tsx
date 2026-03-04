@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Search, Users, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { InlineStatusSelect } from '@/components/shared/InlineStatusSelect'
 import type { Student } from '@/types'
 
 const levelColors: Record<string, string> = {
@@ -21,6 +22,11 @@ const STATUS_OPTIONS = [
   { value: 'archived',  label: 'Архив' },
   { value: 'all',       label: 'Все' },
 ]
+
+const STUDENT_STATUS_EDITOR_OPTIONS = [
+  { value: 'active', label: 'Активен' },
+  { value: 'archived', label: 'Архив' },
+] as const
 
 interface StudentsClientProps {
   students: (Student & { lesson_count?: number; active_hw_count?: number })[]
@@ -116,6 +122,7 @@ export function StudentsClient({ students, currency }: StudentsClientProps) {
                 <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Имя</th>
                 <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Контакт</th>
                 <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Цена/ч</th>
+                <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Статус</th>
                 <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">Уроков</th>
                 <th className="px-5 pb-3 pt-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">ДЗ</th>
               </tr>
@@ -141,6 +148,14 @@ export function StudentsClient({ students, currency }: StudentsClientProps) {
                       ? new Intl.NumberFormat('ru-RU', { style: 'currency', currency, minimumFractionDigits: 0 }).format(student.price_per_hour)
                       : <span className="text-gray-300">—</span>
                     }
+                  </td>
+                  <td className="px-5 py-3">
+                    <InlineStatusSelect
+                      table="students"
+                      rowId={student.id}
+                      value={student.status}
+                      options={STUDENT_STATUS_EDITOR_OPTIONS}
+                    />
                   </td>
                   <td className="px-5 py-3 text-gray-500">
                     {student.lesson_count ?? <span className="text-gray-300">—</span>}

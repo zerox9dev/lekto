@@ -12,7 +12,7 @@ interface SelectFieldProps {
   value?: string
   onValueChange: (value: string) => void
   placeholder?: string
-  options: Option[]
+  options: readonly Option[]
   error?: string
   disabled?: boolean
   className?: string

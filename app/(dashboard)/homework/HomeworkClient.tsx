@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Plus, BookOpen, Paperclip, AlertTriangle } from 'lucide-react'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { SelectField } from '@/components/ui/SelectField'
-import { StatusBadge } from '@/components/shared/StatusBadge'
+import { InlineStatusSelect } from '@/components/shared/InlineStatusSelect'
 import { Button } from '@/components/ui/Button'
 import { stripHtml } from '@/components/ui/RichTextContent'
 import { formatDate, formatTimeAgo } from '@/lib/utils/format'
@@ -26,6 +26,12 @@ const STATUS_FILTER = [
   { value: 'submitted', label: 'Сдано' },
   { value: 'reviewed',  label: 'Проверено' },
 ]
+
+const HOMEWORK_STATUS_OPTIONS = [
+  { value: 'assigned', label: 'Задано' },
+  { value: 'submitted', label: 'Сдано' },
+  { value: 'reviewed', label: 'Проверено' },
+] as const
 
 function isOverdue(hw: HomeworkWithStudent): boolean {
   if (hw.status !== 'assigned' || !hw.deadline) return false
@@ -156,7 +162,12 @@ function HwRow({ hw, overdue }: { hw: HomeworkWithStudent; overdue?: boolean }) 
         )}
       </td>
       <td className="px-5 py-3">
-        <StatusBadge status={hw.status} />
+        <InlineStatusSelect
+          table="homework"
+          rowId={hw.id}
+          value={hw.status}
+          options={HOMEWORK_STATUS_OPTIONS}
+        />
       </td>
       <td className="px-5 py-3 text-center">
         {hw.file_url

@@ -1,6 +1,8 @@
+'use client'
+
 import Link from 'next/link'
 import { CheckCircle2 } from 'lucide-react'
-import { StatusBadge } from '@/components/shared/StatusBadge'
+import { InlineStatusSelect } from '@/components/shared/InlineStatusSelect'
 import { AttachStudentButton } from './AttachStudentButton'
 import { formatRelativeDay, formatDuration } from '@/lib/utils/format'
 import type { Lesson, Student } from '@/types'
@@ -14,6 +16,12 @@ interface LessonRowProps {
   showStudent?: boolean
   students?: Pick<Student, 'id' | 'name'>[]
 }
+
+const LESSON_STATUS_OPTIONS = [
+  { value: 'planned', label: 'Запланирован' },
+  { value: 'done', label: 'Проведён' },
+  { value: 'cancelled', label: 'Отменён' },
+] as const
 
 export function LessonRow({ lesson, showStudent = true, students }: LessonRowProps) {
   const date = new Date(lesson.scheduled_at)
@@ -59,7 +67,12 @@ export function LessonRow({ lesson, showStudent = true, students }: LessonRowPro
       </td>
 
       <td className="py-3 pr-4">
-        <StatusBadge status={lesson.status} />
+        <InlineStatusSelect
+          table="lessons"
+          rowId={lesson.id}
+          value={lesson.status}
+          options={LESSON_STATUS_OPTIONS}
+        />
       </td>
 
       <td className="py-3 text-center">
