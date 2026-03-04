@@ -61,11 +61,10 @@ export default async function DashboardPage() {
       .eq('status', 'submitted')
       .order('deadline', { nullsFirst: false }),
 
-    // 4. Проведённые уроки в месяце (для дохода + неоплаченных)
+    // 4. Уроки в месяце (для дохода/оплат)
     supabase
       .from('lessons')
       .select('*, students(id, name, price_per_hour)')
-      .eq('status', 'done')
       .gte('scheduled_at', monthStart),
 
     // 5. Активные ученики
@@ -81,24 +80,26 @@ export default async function DashboardPage() {
   const todayLessons = (todayLessonsRes.data ?? []) as (Lesson & { students: Pick<Student, 'id' | 'name' | 'level'> | null })[]
   const upcomingLessons = (upcomingRes.data ?? []) as (Lesson & { students: Pick<Student, 'id' | 'name' | 'level'> | null })[]
   const unreviewedHw = (unreviewedHwRes.data ?? []) as (Homework & { students: Pick<Student, 'id' | 'name' | 'level'> | null })[]
-  const doneThisMonth = (doneThisMonthRes.data ?? []) as (Lesson & { students: { price_per_hour: number | null } | null })[]
+  const monthLessons = (doneThisMonthRes.data ?? []) as (Lesson & { students: { price_per_hour: number | null } | null })[]
 
   const currency = settingsRes.data?.currency ?? 'USD'
   const displayName = settingsRes.data?.display_name
 
   const activeStudentsCount = activeStudentsRes.count ?? 0
-  const doneCount = doneThisMonth.length
+  const doneCount = monthLessons.filter((l) => l.status === 'done').length
 
-  // Доход за месяц
-  const monthIncome = doneThisMonth.reduce((sum, l) => {
-    const price = l.students?.price_per_hour ?? 0
-    return sum + price * (l.duration_min / 60)
-  }, 0)
+  // Доход за месяц: учитываем любые оплаченные уроки, включая cancelled.
+  const monthIncome = monthLessons
+    .filter((l) => l.is_paid)
+    .reduce((sum, l) => {
+      const price = l.students?.price_per_hour ?? 0
+      return sum + price * (l.duration_min / 60)
+    }, 0)
 
-  // Неоплаченные уроки
-  const unpaidLessons = doneThisMonth.filter((l) => !l.is_paid)
+  // Неоплаченные уроки (как и раньше — только проведённые)
+  const unpaidLessons = monthLessons.filter((l) => l.status === 'done' && !l.is_paid)
 
-  // Долг (неоплаченная сумма)
+  // Долг (неоплаченная сумма по проведённым)
   const unpaidAmount = unpaidLessons.reduce((sum, l) => {
     const price = l.students?.price_per_hour ?? 0
     return sum + price * (l.duration_min / 60)
