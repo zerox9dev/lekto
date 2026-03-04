@@ -51,14 +51,17 @@ export function SettingsForm({ settings, email }: SettingsFormProps) {
 
     const { error } = await supabase
       .from('tutor_settings')
-      .upsert({
-        user_id:          user.id,
-        display_name:     data.display_name || null,
-        default_price:    isNaN(price as number) ? null : price,
-        default_duration: parseInt(data.default_duration, 10),
-        currency:         data.currency,
-        timezone:         data.timezone,
-      })
+      .upsert(
+        {
+          user_id:          user.id,
+          display_name:     data.display_name || null,
+          default_price:    isNaN(price as number) ? null : price,
+          default_duration: parseInt(data.default_duration, 10),
+          currency:         data.currency,
+          timezone:         data.timezone,
+        },
+        { onConflict: 'user_id' }
+      )
 
     if (error) { toast.error(error.message); setLoading(false); return }
     toast.success('Настройки сохранены')

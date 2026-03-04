@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { HomeworkDetailClient } from './HomeworkDetailClient'
+import { RichTextContent, stripHtml } from '@/components/ui/RichTextContent'
 import { formatDate, formatDateTime } from '@/lib/utils/format'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -58,7 +59,7 @@ export default async function HomeworkDetailPage({
           </Link>
           <span className="text-gray-300 shrink-0">/</span>
           <h1 className="text-xl font-semibold text-gray-900 tracking-tight truncate">
-            {student?.name ?? '—'} · {hw.description.slice(0, 40)}{hw.description.length > 40 ? '…' : ''}
+            {(() => { const plain = stripHtml(hw.description); return `${student?.name ?? '—'} · ${plain.slice(0, 40)}${plain.length > 40 ? '…' : ''}` })()}
           </h1>
         </div>
         <Button asChild variant="secondary" size="sm" className="shrink-0 ml-3">
@@ -119,8 +120,8 @@ export default async function HomeworkDetailPage({
 
       {/* Description */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
-        <h3 className="text-sm font-semibold text-gray-900 mb-2">Описание задания</h3>
-        <p className="text-sm text-gray-700 whitespace-pre-wrap">{hw.description}</p>
+        <h3 className="text-sm font-semibold text-gray-900 mb-3">Описание задания</h3>
+        <RichTextContent html={hw.description} />
       </div>
 
       {/* Interactive: status, file, comment, delete */}
