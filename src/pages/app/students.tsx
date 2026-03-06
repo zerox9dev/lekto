@@ -8,33 +8,33 @@ export function StudentsPage() {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [telegram, setTelegram] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
 
   const handleSave = () => {
     if (!name.trim()) return;
     if (editId) {
-      updateStudent(editId, { name: name.trim(), email: email.trim() || null });
+      updateStudent(editId, { name: name.trim(), telegram: telegram.trim() || null });
     } else {
-      addStudent(name.trim(), email.trim() || undefined);
+      addStudent(name.trim(), telegram.trim() || undefined);
     }
     setOpen(false);
     setName("");
-    setEmail("");
+    setTelegram("");
     setEditId(null);
   };
 
   const handleEdit = (s: typeof students[0]) => {
     setEditId(s.id);
     setName(s.name);
-    setEmail(s.email || "");
+    setTelegram(s.telegram || "");
     setOpen(true);
   };
 
   const handleNew = () => {
     setEditId(null);
     setName("");
-    setEmail("");
+    setTelegram("");
     setOpen(true);
   };
 
@@ -79,7 +79,7 @@ export function StudentsPage() {
               />
               <div className="flex-1 min-w-0">
                 <p className="text-[14px] font-medium truncate">{s.name}</p>
-                {s.email && <p className="text-[12px] text-zinc-400 truncate">{s.email}</p>}
+                {s.telegram && <p className="text-[12px] text-zinc-400 truncate">@{s.telegram.replace(/^@/, "")}</p>}
               </div>
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
@@ -137,11 +137,11 @@ export function StudentsPage() {
                 />
               </div>
               <div>
-                <label className="text-[12px] font-medium text-zinc-500 mb-1 block">Email</label>
+                <label className="text-[12px] font-medium text-zinc-500 mb-1 block">Telegram</label>
                 <input
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ivan@example.com"
+                  value={telegram}
+                  onChange={(e) => setTelegram(e.target.value)}
+                  placeholder="@username"
                   className="w-full h-10 rounded-xl border border-zinc-200 px-3 text-[14px] outline-none focus:border-zinc-400 transition-colors"
                 />
               </div>

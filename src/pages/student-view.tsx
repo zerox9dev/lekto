@@ -320,7 +320,7 @@ function HomeworkCard({ hw }: { hw: Homework }) {
 // ── Lesson Card with nested homework ──
 
 function LessonCard({ lesson, homeworkItems }: { lesson: any; homeworkItems: Homework[] }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const completedCount = homeworkItems.filter((h) => h.completed).length;
 
   return (
@@ -382,8 +382,9 @@ export function StudentView() {
   const studentLessons = student ? lessons.filter((l) => l.student_id === student.id) : [];
   const studentHomework = student ? homework.filter((h) => h.student_id === student.id) : [];
 
-  // Homework not attached to any lesson
-  const unattachedHomework = studentHomework.filter((h) => !h.lesson_id || !studentLessons.find((l) => l.id === h.lesson_id));
+  // Homework not attached to any lesson (empty string or missing lesson)
+  const lessonIds = new Set(studentLessons.map((l) => l.id));
+  const unattachedHomework = studentHomework.filter((h) => !h.lesson_id || !lessonIds.has(h.lesson_id));
 
   if (!student) {
     return (

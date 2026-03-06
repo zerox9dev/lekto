@@ -62,11 +62,11 @@ export function useStore() {
   // ── Students ──
   const students = _data.students;
 
-  const addStudent = useCallback((name: string, email?: string) => {
+  const addStudent = useCallback((name: string, telegram?: string) => {
     const s: Student = {
       id: uid(),
       name,
-      email: email || null,
+      telegram: telegram || null,
       share_id: shareSlug(),
       tutor_id: "local",
       created_at: new Date().toISOString(),

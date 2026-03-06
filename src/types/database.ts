@@ -1,7 +1,7 @@
 export interface Student {
   id: string;
   name: string;
-  email: string | null;
+  telegram: string | null;
   share_id: string;
   tutor_id: string;
   created_at: string;
