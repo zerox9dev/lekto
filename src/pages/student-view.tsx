@@ -368,11 +368,18 @@ export function StudentView() {
       </header>
 
       <main className="max-w-2xl mx-auto px-6 py-8 space-y-8">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight">{student.name}</h1>
-          <p className="text-[13px] text-zinc-400 mt-0.5">
-            {studentLessons.length} {studentLessons.length === 1 ? "урок" : "уроков"} · {studentHomework.length} заданий
-          </p>
+        <div className="flex items-center gap-4">
+          <img
+            src={`https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(student.name)}`}
+            alt={student.name}
+            className="h-12 w-12 rounded-full bg-zinc-100 shrink-0"
+          />
+          <div>
+            <h1 className="text-xl font-bold tracking-tight">{student.name}</h1>
+            <p className="text-[13px] text-zinc-400 mt-0.5">
+              {studentLessons.length} {studentLessons.length === 1 ? "урок" : "уроков"} · {studentHomework.length} заданий
+            </p>
+          </div>
         </div>
 
         {/* Lessons with nested homework */}

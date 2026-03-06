@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Copy, ExternalLink, Trash2, Pencil, Check, X, User } from "lucide-react";
+import { Plus, Copy, ExternalLink, Trash2, Pencil, Check } from "lucide-react";
 import { useStore } from "@/lib/store";
 import * as Dialog from "@radix-ui/react-dialog";
 
@@ -72,9 +72,11 @@ export function StudentsPage() {
         <div className="space-y-2">
           {students.map((s) => (
             <div key={s.id} className="rounded-xl border border-zinc-200 bg-white px-4 py-3 flex items-center gap-4 group hover:border-zinc-300 transition-colors">
-              <div className="h-9 w-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
-                <User className="h-4 w-4 text-zinc-400" />
-              </div>
+              <img
+                src={`https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(s.name)}`}
+                alt={s.name}
+                className="h-9 w-9 rounded-full bg-zinc-100 shrink-0"
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-[14px] font-medium truncate">{s.name}</p>
                 {s.email && <p className="text-[12px] text-zinc-400 truncate">{s.email}</p>}
