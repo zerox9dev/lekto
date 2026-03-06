@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { BookOpen, Sparkles, CheckCircle2, Circle, ChevronDown, ChevronUp, ClipboardCheck } from "lucide-react";
 import { useStore } from "@/lib/store";
-import type { Homework, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent } from "@/types/database";
+import type { Homework, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent } from "@/types/database";
 
 // ── Homework Players ──
 
@@ -232,6 +232,45 @@ function OrderingPlayer({ hw, onSubmit }: { hw: Homework; onSubmit: (answers: st
   );
 }
 
+function CardsPlayer({ hw }: { hw: Homework }) {
+  const content = hw.content as CardsContent;
+  const [index, setIndex] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+  const card = content.cards[index];
+
+  return (
+    <div className="space-y-4">
+      <div
+        onClick={() => setFlipped(!flipped)}
+        className="min-h-[140px] rounded-xl border border-zinc-200 bg-white flex items-center justify-center p-6 cursor-pointer hover:border-zinc-300 transition-colors select-none"
+      >
+        <div className="text-center">
+          <p className="text-[11px] text-zinc-400 mb-2">{flipped ? "Оборот" : "Лицо"}</p>
+          <p className="text-[18px] font-medium">{flipped ? card.back : card.front}</p>
+        </div>
+      </div>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => { setIndex(Math.max(0, index - 1)); setFlipped(false); }}
+          disabled={index === 0}
+          className="px-3 py-1.5 rounded-lg text-[13px] font-medium text-zinc-500 hover:bg-zinc-100 disabled:opacity-30 transition-colors cursor-pointer"
+        >
+          ← Назад
+        </button>
+        <span className="text-[12px] text-zinc-400">{index + 1} / {content.cards.length}</span>
+        <button
+          onClick={() => { setIndex(Math.min(content.cards.length - 1, index + 1)); setFlipped(false); }}
+          disabled={index === content.cards.length - 1}
+          className="px-3 py-1.5 rounded-lg text-[13px] font-medium text-zinc-500 hover:bg-zinc-100 disabled:opacity-30 transition-colors cursor-pointer"
+        >
+          Далее →
+        </button>
+      </div>
+      <p className="text-[11px] text-zinc-400 text-center">Нажмите на карточку, чтобы перевернуть</p>
+    </div>
+  );
+}
+
 // ── Homework Card (embedded in lesson) ──
 
 function HomeworkCard({ hw }: { hw: Homework }) {
@@ -243,7 +282,7 @@ function HomeworkCard({ hw }: { hw: Homework }) {
   };
 
   const typeLabel: Record<string, string> = {
-    quiz: "Тест", fill_blanks: "Вставить слово", matching: "Соединить пары", ordering: "Расставить по порядку", text: "Задание",
+    quiz: "Тест", fill_blanks: "Вставить слово", matching: "Соединить пары", ordering: "Расставить по порядку", cards: "Карточки", text: "Задание",
   };
 
   return (
@@ -266,6 +305,7 @@ function HomeworkCard({ hw }: { hw: Homework }) {
           {hw.type === "fill_blanks" && <FillBlanksPlayer hw={hw} onSubmit={handleResult} />}
           {hw.type === "matching" && <MatchingPlayer hw={hw} onSubmit={handleResult} />}
           {hw.type === "ordering" && <OrderingPlayer hw={hw} onSubmit={handleResult} />}
+          {hw.type === "cards" && <CardsPlayer hw={hw} />}
           {hw.type === "text" && (
             <div className="text-[14px] text-zinc-600 whitespace-pre-wrap">
               {(hw.content as { text: string }).text}

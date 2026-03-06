@@ -18,7 +18,7 @@ export interface Lesson {
   created_at: string;
 }
 
-export type HomeworkType = "quiz" | "fill_blanks" | "matching" | "ordering" | "text";
+export type HomeworkType = "quiz" | "fill_blanks" | "matching" | "ordering" | "text" | "cards";
 
 export interface QuizQuestion {
   question: string;
@@ -40,6 +40,10 @@ export interface OrderingContent {
   correct_order: number[];
 }
 
+export interface CardsContent {
+  cards: { front: string; back: string }[];
+}
+
 export interface Homework {
   id: string;
   lesson_id: string;
@@ -47,7 +51,7 @@ export interface Homework {
   tutor_id: string;
   title: string;
   type: HomeworkType;
-  content: QuizQuestion[] | FillBlanksContent | MatchingContent | OrderingContent | { text: string };
+  content: QuizQuestion[] | FillBlanksContent | MatchingContent | OrderingContent | CardsContent | { text: string };
   completed: boolean;
   student_answers: any | null;
   score: number | null;

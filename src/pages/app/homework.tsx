@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Plus, ClipboardCheck, Pencil, Trash2, CheckCircle2, Circle } from "lucide-react";
 import { useStore } from "@/lib/store";
 import * as Dialog from "@radix-ui/react-dialog";
-import type { HomeworkType, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent } from "@/types/database";
+import type { HomeworkType, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent } from "@/types/database";
 
 const typeLabels: Record<HomeworkType, string> = {
   quiz: "Тест",
   fill_blanks: "Вставить слово",
   matching: "Соединить пары",
   ordering: "Порядок",
+  cards: "Карточки",
   text: "Текст",
 };
 
@@ -44,6 +45,9 @@ export function HomeworkPage() {
   // ── Ordering state ──
   const [orderItems, setOrderItems] = useState(["", ""]);
 
+  // ── Cards state ──
+  const [cards, setCards] = useState([{ front: "", back: "" }]);
+
   // ── Text state ──
   const [textContent, setTextContent] = useState("");
 
@@ -63,6 +67,7 @@ export function HomeworkPage() {
     setFillAnswers([""]);
     setPairs([{ left: "", right: "" }]);
     setOrderItems(["", ""]);
+    setCards([{ front: "", back: "" }]);
     setTextContent("");
   };
 
@@ -74,6 +79,7 @@ export function HomeworkPage() {
       case "fill_blanks": content = { text: fillText, answers: fillAnswers }; break;
       case "matching": content = { pairs }; break;
       case "ordering": content = { items: orderItems, correct_order: orderItems.map((_, i) => i) }; break;
+      case "cards": content = { cards: cards.filter((c) => c.front.trim() || c.back.trim()) }; break;
       case "text": content = { text: textContent }; break;
     }
     addHomework({
@@ -289,6 +295,29 @@ export function HomeworkPage() {
                   ))}
                   <button onClick={() => setOrderItems([...orderItems, ""])}
                     className="text-[12px] text-zinc-400 hover:text-zinc-600 cursor-pointer">+ элемент</button>
+                </div>
+              )}
+
+              {/* Cards */}
+              {hwType === "cards" && (
+                <div className="space-y-3 pt-2">
+                  <label className="text-[12px] font-medium text-zinc-500 block">Карточки (лицо → оборот)</label>
+                  {cards.map((c, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <span className="text-[12px] text-zinc-400 w-5 text-center">{i + 1}</span>
+                      <input value={c.front} onChange={(e) => { const nc = [...cards]; nc[i] = { ...nc[i], front: e.target.value }; setCards(nc); }}
+                        placeholder="Лицо (вопрос/слово)" className="flex-1 h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
+                      <input value={c.back} onChange={(e) => { const nc = [...cards]; nc[i] = { ...nc[i], back: e.target.value }; setCards(nc); }}
+                        placeholder="Оборот (ответ/перевод)" className="flex-1 h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
+                      {cards.length > 1 && (
+                        <button onClick={() => setCards(cards.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-500 cursor-pointer">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button onClick={() => setCards([...cards, { front: "", back: "" }])}
+                    className="text-[12px] text-zinc-400 hover:text-zinc-600 cursor-pointer">+ карточка</button>
                 </div>
               )}
 
