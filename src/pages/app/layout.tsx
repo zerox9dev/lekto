@@ -19,7 +19,7 @@ export function AppLayout() {
     <div className="min-h-screen flex">
       <aside className="hidden md:flex h-screen w-48 flex-col border-r bg-white py-5 px-3 sticky top-0">
         <Link to="/" className="flex items-center gap-2 px-3 mb-8">
-          <div className="h-7 w-7 rounded-md bg-[var(--primary)] text-white font-bold text-xs flex items-center justify-center">L</div>
+          <div className="h-7 w-7 rounded-md bg-primary text-white font-bold text-xs flex items-center justify-center">L</div>
           <span className="font-bold">Lekto</span>
         </Link>
         <nav className="flex-1 flex flex-col gap-0.5">
@@ -27,7 +27,7 @@ export function AppLayout() {
             <NavLink key={item.href} to={item.href} end={item.href === "/app"}
               className={({ isActive }) => cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors",
-                isActive ? "bg-[var(--accent)] font-semibold" : "hover:bg-[var(--accent)]"
+                isActive ? "bg-accent font-semibold" : "hover:bg-accent"
               )}>
               <item.icon className="h-[18px] w-[18px]" />
               {item.label}
@@ -35,10 +35,10 @@ export function AppLayout() {
           ))}
         </nav>
         <div className="space-y-0.5">
-          <NavLink to="/app/settings" className={({ isActive }) => cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors", isActive ? "bg-[var(--accent)] font-semibold" : "hover:bg-[var(--accent)]")}>
+          <NavLink to="/app/settings" className={({ isActive }) => cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors", isActive ? "bg-accent font-semibold" : "hover:bg-accent")}>
             <Settings className="h-[18px] w-[18px]" /> Settings
           </NavLink>
-          <button onClick={signOut} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium w-full hover:bg-[var(--accent)] transition-colors text-[var(--muted-foreground)]">
+          <button onClick={signOut} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium w-full hover:bg-accent transition-colors text-muted-foreground">
             <LogOut className="h-[18px] w-[18px]" /> Sign Out
           </button>
         </div>

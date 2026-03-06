@@ -8,7 +8,7 @@ export function SettingsPage() {
       <div className="rounded-xl border p-6 space-y-4 max-w-lg">
         <div>
           <p className="text-sm font-medium">Email</p>
-          <p className="text-sm text-[var(--muted-foreground)]">{user?.email}</p>
+          <p className="text-sm text-muted-foreground">{user?.email}</p>
         </div>
       </div>
     </div>
