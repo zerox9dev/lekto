@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { BookOpen, ClipboardCheck, Sparkles, CheckCircle2, Circle, ChevronDown, ChevronUp } from "lucide-react";
+import { BookOpen, Sparkles, CheckCircle2, Circle, ChevronDown, ChevronUp, ClipboardCheck } from "lucide-react";
 import { useStore } from "@/lib/store";
 import type { Homework, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent } from "@/types/database";
+
+// ── Homework Players ──
 
 function QuizPlayer({ hw, onSubmit }: { hw: Homework; onSubmit: (answers: number[], score: number) => void }) {
   const questions = hw.content as QuizQuestion[];
@@ -66,7 +68,6 @@ function FillBlanksPlayer({ hw, onSubmit }: { hw: Homework; onSubmit: (answers: 
     onSubmit(answers, score);
   };
 
-  // Split text by ___
   const parts = content.text.split("___");
   let blankIdx = 0;
 
@@ -112,7 +113,6 @@ function MatchingPlayer({ hw, onSubmit }: { hw: Homework; onSubmit: (answers: nu
   const [answers, setAnswers] = useState<(number | null)[]>(new Array(content.pairs.length).fill(null));
   const [submitted, setSubmitted] = useState(false);
 
-  // Shuffle right side once
   const [shuffledRight] = useState(() => {
     const indices = content.pairs.map((_, i) => i);
     for (let i = indices.length - 1; i > 0; i--) {
@@ -232,6 +232,8 @@ function OrderingPlayer({ hw, onSubmit }: { hw: Homework; onSubmit: (answers: st
   );
 }
 
+// ── Homework Card (embedded in lesson) ──
+
 function HomeworkCard({ hw }: { hw: Homework }) {
   const { updateHomework } = useStore();
   const [expanded, setExpanded] = useState(!hw.completed);
@@ -245,21 +247,21 @@ function HomeworkCard({ hw }: { hw: Homework }) {
   };
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+    <div className="rounded-lg border border-zinc-100 bg-zinc-50/50 overflow-hidden">
       <button onClick={() => setExpanded(!expanded)}
-        className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-zinc-50 transition-colors cursor-pointer">
+        className="w-full px-3 py-2.5 flex items-center gap-2.5 text-left hover:bg-zinc-100/50 transition-colors cursor-pointer">
         {hw.completed
           ? <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
           : <Circle className="h-4 w-4 text-zinc-300 shrink-0" />
         }
         <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-medium truncate">{hw.title}</p>
-          <p className="text-[12px] text-zinc-400">{typeLabel[hw.type]}{hw.score !== null ? ` · ${hw.score}%` : ""}</p>
+          <p className="text-[13px] font-medium truncate">{hw.title}</p>
+          <p className="text-[11px] text-zinc-400">{typeLabel[hw.type]}{hw.score !== null ? ` · ${hw.score}%` : ""}</p>
         </div>
-        {expanded ? <ChevronUp className="h-4 w-4 text-zinc-400" /> : <ChevronDown className="h-4 w-4 text-zinc-400" />}
+        {expanded ? <ChevronUp className="h-3.5 w-3.5 text-zinc-400" /> : <ChevronDown className="h-3.5 w-3.5 text-zinc-400" />}
       </button>
       {expanded && (
-        <div className="px-4 pb-4 pt-1">
+        <div className="px-3 pb-3 pt-1">
           {hw.type === "quiz" && <QuizPlayer hw={hw} onSubmit={handleResult} />}
           {hw.type === "fill_blanks" && <FillBlanksPlayer hw={hw} onSubmit={handleResult} />}
           {hw.type === "matching" && <MatchingPlayer hw={hw} onSubmit={handleResult} />}
@@ -275,6 +277,63 @@ function HomeworkCard({ hw }: { hw: Homework }) {
   );
 }
 
+// ── Lesson Card with nested homework ──
+
+function LessonCard({ lesson, homeworkItems }: { lesson: any; homeworkItems: Homework[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const completedCount = homeworkItems.filter((h) => h.completed).length;
+
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+      <button onClick={() => setExpanded(!expanded)}
+        className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-zinc-50 transition-colors cursor-pointer">
+        <div className="h-9 w-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
+          <BookOpen className="h-4 w-4 text-zinc-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[14px] font-medium truncate">{lesson.title}</p>
+          <p className="text-[12px] text-zinc-400">
+            {lesson.date}
+            {homeworkItems.length > 0 && (
+              <span> · {completedCount}/{homeworkItems.length} заданий</span>
+            )}
+          </p>
+        </div>
+        {expanded ? <ChevronUp className="h-4 w-4 text-zinc-400" /> : <ChevronDown className="h-4 w-4 text-zinc-400" />}
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4 space-y-4">
+          {/* Notes */}
+          {lesson.notes && (
+            <div className="text-[13px] text-zinc-600 whitespace-pre-wrap leading-relaxed">
+              {lesson.notes}
+            </div>
+          )}
+
+          {/* Homework inside lesson */}
+          {homeworkItems.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[12px] font-medium text-zinc-500 flex items-center gap-1.5">
+                <ClipboardCheck className="h-3.5 w-3.5" /> Домашние задания
+              </p>
+              {homeworkItems.map((h) => (
+                <HomeworkCard key={h.id} hw={h} />
+              ))}
+            </div>
+          )}
+
+          {homeworkItems.length === 0 && !lesson.notes && (
+            <p className="text-[13px] text-zinc-400">Нет материалов</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main Student View ──
+
 export function StudentView() {
   const { shareId } = useParams<{ shareId: string }>();
   const { students, lessons, homework } = useStore();
@@ -282,6 +341,9 @@ export function StudentView() {
   const student = students.find((s) => s.share_id === shareId);
   const studentLessons = student ? lessons.filter((l) => l.student_id === student.id) : [];
   const studentHomework = student ? homework.filter((h) => h.student_id === student.id) : [];
+
+  // Homework not attached to any lesson
+  const unattachedHomework = studentHomework.filter((h) => !h.lesson_id || !studentLessons.find((l) => l.id === h.lesson_id));
 
   if (!student) {
     return (
@@ -308,50 +370,36 @@ export function StudentView() {
       <main className="max-w-2xl mx-auto px-6 py-8 space-y-8">
         <div>
           <h1 className="text-xl font-bold tracking-tight">{student.name}</h1>
-          <p className="text-[13px] text-zinc-400 mt-0.5">Портал ученика</p>
+          <p className="text-[13px] text-zinc-400 mt-0.5">
+            {studentLessons.length} {studentLessons.length === 1 ? "урок" : "уроков"} · {studentHomework.length} заданий
+          </p>
         </div>
 
-        {/* Lessons */}
-        <section className="space-y-3">
-          <h2 className="text-[14px] font-semibold flex items-center gap-2 text-zinc-700">
-            <BookOpen className="h-4 w-4" /> Уроки ({studentLessons.length})
-          </h2>
-          {studentLessons.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center">
-              <p className="text-[14px] text-zinc-400">Уроков пока нет</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {studentLessons.map((l) => (
-                <div key={l.id} className="rounded-xl border border-zinc-200 bg-white px-4 py-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[14px] font-medium">{l.title}</p>
-                    <span className="text-[12px] text-zinc-400">{l.date}</span>
-                  </div>
-                  {l.notes && <p className="text-[13px] text-zinc-500 mt-2 whitespace-pre-wrap">{l.notes}</p>}
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+        {/* Lessons with nested homework */}
+        {studentLessons.length === 0 && unattachedHomework.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center">
+            <p className="text-[14px] text-zinc-400">Уроков пока нет. Ваш репетитор добавит их сюда.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {studentLessons.map((l) => {
+              const lessonHw = studentHomework.filter((h) => h.lesson_id === l.id);
+              return <LessonCard key={l.id} lesson={l} homeworkItems={lessonHw} />;
+            })}
 
-        {/* Homework */}
-        <section className="space-y-3">
-          <h2 className="text-[14px] font-semibold flex items-center gap-2 text-zinc-700">
-            <ClipboardCheck className="h-4 w-4" /> Домашние задания ({studentHomework.length})
-          </h2>
-          {studentHomework.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center">
-              <p className="text-[14px] text-zinc-400">Заданий пока нет</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {studentHomework.map((h) => (
-                <HomeworkCard key={h.id} hw={h} />
-              ))}
-            </div>
-          )}
-        </section>
+            {/* Unattached homework */}
+            {unattachedHomework.length > 0 && (
+              <div className="space-y-2 pt-2">
+                <p className="text-[12px] font-medium text-zinc-500 flex items-center gap-1.5">
+                  <ClipboardCheck className="h-3.5 w-3.5" /> Дополнительные задания
+                </p>
+                {unattachedHomework.map((h) => (
+                  <HomeworkCard key={h.id} hw={h} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );
