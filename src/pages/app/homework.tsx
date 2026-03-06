@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Plus, ClipboardCheck, Pencil, Trash2, CheckCircle2, Circle } from "lucide-react";
 import { useStore } from "@/lib/store";
 import * as Dialog from "@radix-ui/react-dialog";
-import type { HomeworkType, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent } from "@/types/database";
+import type { HomeworkType, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, Homework } from "@/types/database";
 
 const typeLabels: Record<HomeworkType, string> = {
   quiz: "Тест",
@@ -13,51 +13,29 @@ const typeLabels: Record<HomeworkType, string> = {
   text: "Текст",
 };
 
-function emptyContent(type: HomeworkType) {
-  switch (type) {
-    case "quiz": return [{ question: "", options: ["", ""], correct: 0 }] as QuizQuestion[];
-    case "fill_blanks": return { text: "", answers: [""] } as FillBlanksContent;
-    case "matching": return { pairs: [{ left: "", right: "" }] } as MatchingContent;
-    case "ordering": return { items: ["", ""], correct_order: [0, 1] } as OrderingContent;
-    case "text": return { text: "" };
-  }
-}
-
 export function HomeworkPage() {
-  const { students, lessons, homework, addHomework, deleteHomework } = useStore();
+  const { students, lessons, homework, addHomework, updateHomework, deleteHomework } = useStore();
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [studentId, setStudentId] = useState("");
   const [lessonId, setLessonId] = useState("");
   const [title, setTitle] = useState("");
   const [hwType, setHwType] = useState<HomeworkType>("quiz");
   const [filterStudent, setFilterStudent] = useState("all");
 
-  // ── Quiz builder state ──
   const [questions, setQuestions] = useState<QuizQuestion[]>([{ question: "", options: ["", ""], correct: 0 }]);
-
-  // ── Fill blanks state ──
   const [fillText, setFillText] = useState("");
   const [fillAnswers, setFillAnswers] = useState([""]);
-
-  // ── Matching state ──
   const [pairs, setPairs] = useState([{ left: "", right: "" }]);
-
-  // ── Ordering state ──
   const [orderItems, setOrderItems] = useState(["", ""]);
-
-  // ── Cards state ──
   const [cards, setCards] = useState([{ front: "", back: "" }]);
-
-  // ── Text state ──
   const [textContent, setTextContent] = useState("");
 
-  const studentLessons = lessonId ? [] : lessons.filter((l) => l.student_id === studentId);
   const filtered = filterStudent === "all" ? homework : homework.filter((h) => h.student_id === filterStudent);
-
   const studentName = (id: string) => students.find((s) => s.id === id)?.name ?? "—";
-  const lessonTitle = (id: string) => lessons.find((l) => l.id === id)?.title ?? "—";
 
   const resetForm = () => {
+    setEditId(null);
     setStudentId(students[0]?.id ?? "");
     setLessonId("");
     setTitle("");
@@ -71,30 +49,85 @@ export function HomeworkPage() {
     setTextContent("");
   };
 
+  const loadFromHomework = (h: Homework) => {
+    setEditId(h.id);
+    setStudentId(h.student_id);
+    setLessonId(h.lesson_id || "");
+    setTitle(h.title);
+    setHwType(h.type);
+    switch (h.type) {
+      case "quiz":
+        setQuestions(h.content as QuizQuestion[]);
+        break;
+      case "fill_blanks": {
+        const c = h.content as FillBlanksContent;
+        setFillText(c.text);
+        setFillAnswers(c.answers);
+        break;
+      }
+      case "matching": {
+        const c = h.content as MatchingContent;
+        setPairs(c.pairs);
+        break;
+      }
+      case "ordering": {
+        const c = h.content as OrderingContent;
+        setOrderItems(c.items);
+        break;
+      }
+      case "cards": {
+        const c = h.content as CardsContent;
+        setCards(c.cards);
+        break;
+      }
+      case "text":
+        setTextContent((h.content as { text: string }).text);
+        break;
+    }
+  };
+
+  const buildContent = () => {
+    switch (hwType) {
+      case "quiz": return questions;
+      case "fill_blanks": return { text: fillText, answers: fillAnswers };
+      case "matching": return { pairs };
+      case "ordering": return { items: orderItems, correct_order: orderItems.map((_, i) => i) };
+      case "cards": return { cards: cards.filter((c) => c.front.trim() || c.back.trim()) };
+      case "text": return { text: textContent };
+    }
+  };
+
   const handleSave = () => {
     if (!title.trim() || !studentId) return;
-    let content: any;
-    switch (hwType) {
-      case "quiz": content = questions; break;
-      case "fill_blanks": content = { text: fillText, answers: fillAnswers }; break;
-      case "matching": content = { pairs }; break;
-      case "ordering": content = { items: orderItems, correct_order: orderItems.map((_, i) => i) }; break;
-      case "cards": content = { cards: cards.filter((c) => c.front.trim() || c.back.trim()) }; break;
-      case "text": content = { text: textContent }; break;
+    const content = buildContent();
+    if (editId) {
+      updateHomework(editId, {
+        student_id: studentId,
+        lesson_id: lessonId || "",
+        title: title.trim(),
+        type: hwType,
+        content,
+      });
+    } else {
+      addHomework({
+        lesson_id: lessonId || "",
+        student_id: studentId,
+        tutor_id: "local",
+        title: title.trim(),
+        type: hwType,
+        content,
+        completed: false,
+        student_answers: null,
+        score: null,
+      });
     }
-    addHomework({
-      lesson_id: lessonId || "",
-      student_id: studentId,
-      tutor_id: "local",
-      title: title.trim(),
-      type: hwType,
-      content,
-      completed: false,
-      student_answers: null,
-      score: null,
-    });
     setOpen(false);
     resetForm();
+  };
+
+  const handleEdit = (h: Homework) => {
+    loadFromHomework(h);
+    setOpen(true);
   };
 
   return (
@@ -154,7 +187,10 @@ export function HomeworkPage() {
                 <p className="text-[12px] text-zinc-400">{studentName(h.student_id)} · {typeLabels[h.type]}{h.score !== null ? ` · ${h.score}%` : ""}</p>
               </div>
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => deleteHomework(h.id)} className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-red-50 transition-colors cursor-pointer">
+                <button onClick={() => handleEdit(h)} className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-zinc-100 transition-colors cursor-pointer" title="Редактировать">
+                  <Pencil className="h-3.5 w-3.5 text-zinc-400" />
+                </button>
+                <button onClick={() => deleteHomework(h.id)} className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-red-50 transition-colors cursor-pointer" title="Удалить">
                   <Trash2 className="h-3.5 w-3.5 text-zinc-400 hover:text-red-500" />
                 </button>
               </div>
@@ -163,12 +199,14 @@ export function HomeworkPage() {
         </div>
       )}
 
-      {/* Create Dialog */}
+      {/* Create/Edit Dialog */}
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl z-50 space-y-5">
-            <Dialog.Title className="text-lg font-bold">Новое задание</Dialog.Title>
+            <Dialog.Title className="text-lg font-bold">
+              {editId ? "Редактировать задание" : "Новое задание"}
+            </Dialog.Title>
             <div className="space-y-3">
               <div>
                 <label className="text-[12px] font-medium text-zinc-500 mb-1 block">Ученик *</label>
@@ -205,7 +243,7 @@ export function HomeworkPage() {
                 </div>
               </div>
 
-              {/* Quiz builder */}
+              {/* Quiz */}
               {hwType === "quiz" && (
                 <div className="space-y-4 pt-2">
                   {questions.map((q, qi) => (
@@ -306,9 +344,9 @@ export function HomeworkPage() {
                     <div key={i} className="flex gap-2 items-center">
                       <span className="text-[12px] text-zinc-400 w-5 text-center">{i + 1}</span>
                       <input value={c.front} onChange={(e) => { const nc = [...cards]; nc[i] = { ...nc[i], front: e.target.value }; setCards(nc); }}
-                        placeholder="Лицо (вопрос/слово)" className="flex-1 h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
+                        placeholder="Лицо" className="flex-1 h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
                       <input value={c.back} onChange={(e) => { const nc = [...cards]; nc[i] = { ...nc[i], back: e.target.value }; setCards(nc); }}
-                        placeholder="Оборот (ответ/перевод)" className="flex-1 h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
+                        placeholder="Оборот" className="flex-1 h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
                       {cards.length > 1 && (
                         <button onClick={() => setCards(cards.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-500 cursor-pointer">
                           <Trash2 className="h-3.5 w-3.5" />
@@ -338,7 +376,7 @@ export function HomeworkPage() {
               </Dialog.Close>
               <button onClick={handleSave} disabled={!title.trim() || !studentId}
                 className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 transition-colors disabled:opacity-40 cursor-pointer">
-                Создать
+                {editId ? "Сохранить" : "Создать"}
               </button>
             </div>
           </Dialog.Content>
