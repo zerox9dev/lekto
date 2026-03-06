@@ -44,16 +44,22 @@ export interface CardsContent {
   cards: { front: string; back: string }[];
 }
 
+export interface HomeworkSection {
+  id: string;
+  type: HomeworkType;
+  title: string;
+  content: QuizQuestion[] | FillBlanksContent | MatchingContent | OrderingContent | CardsContent | { text: string };
+}
+
 export interface Homework {
   id: string;
   lesson_id: string;
   student_id: string;
   tutor_id: string;
   title: string;
-  type: HomeworkType;
-  content: QuizQuestion[] | FillBlanksContent | MatchingContent | OrderingContent | CardsContent | { text: string };
+  sections: HomeworkSection[];
   completed: boolean;
-  student_answers: any | null;
-  score: number | null;
+  student_answers: Record<string, any> | null;
+  scores: Record<string, number> | null;
   created_at: string;
 }
