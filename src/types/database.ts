@@ -1,59 +1,55 @@
-// ── Enums ──
-export type HomeworkType = "text" | "quiz" | "fill_blanks" | "matching" | "ordering";
-
-// ── Tables ──
 export interface Student {
   id: string;
-  tutor_id: string;
   name: string;
   email: string | null;
-  notes: string | null;
-  share_id: string; // public URL slug (not indexed)
+  share_id: string;
+  tutor_id: string;
   created_at: string;
 }
 
 export interface Lesson {
   id: string;
-  tutor_id: string;
   student_id: string;
+  tutor_id: string;
   title: string;
   date: string;
-  notes: string | null; // lesson notes / content (markdown)
+  notes: string | null;
   materials_url: string | null;
   created_at: string;
+}
+
+export type HomeworkType = "quiz" | "fill_blanks" | "matching" | "ordering" | "text";
+
+export interface QuizQuestion {
+  question: string;
+  options: string[];
+  correct: number;
+}
+
+export interface FillBlanksContent {
+  text: string; // "The capital of France is ___"
+  answers: string[];
+}
+
+export interface MatchingContent {
+  pairs: { left: string; right: string }[];
+}
+
+export interface OrderingContent {
+  items: string[];
+  correct_order: number[];
 }
 
 export interface Homework {
   id: string;
   lesson_id: string;
-  tutor_id: string;
   student_id: string;
+  tutor_id: string;
   title: string;
   type: HomeworkType;
-  content: HomeworkContent; // JSON — depends on type
-  due_date: string | null;
+  content: QuizQuestion[] | FillBlanksContent | MatchingContent | OrderingContent | { text: string };
   completed: boolean;
-  completed_at: string | null;
-  student_answers: Record<string, unknown> | null;
-  score: number | null; // 0-100
+  student_answers: any | null;
+  score: number | null;
   created_at: string;
 }
-
-// ── Homework content shapes ──
-export type HomeworkContent =
-  | { kind: "text"; prompt: string } // free-text answer
-  | { kind: "quiz"; questions: QuizQuestion[] } // multiple choice
-  | { kind: "fill_blanks"; text: string; blanks: string[] } // fill in blanks
-  | { kind: "matching"; pairs: { left: string; right: string }[] } // match pairs
-  | { kind: "ordering"; items: string[]; correctOrder: number[] }; // put in order
-
-export interface QuizQuestion {
-  question: string;
-  options: string[];
-  correctIndex: number;
-}
-
-// ── Insert types ──
-export type StudentInsert = Omit<Student, "id" | "created_at">;
-export type LessonInsert = Omit<Lesson, "id" | "created_at">;
-export type HomeworkInsert = Omit<Homework, "id" | "created_at">;

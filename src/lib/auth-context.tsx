@@ -12,11 +12,15 @@ interface AuthCtx {
 const Ctx = createContext<AuthCtx>(null!);
 export const useAuth = () => useContext(Ctx);
 
+// Fake user for local dev without Supabase
+const LOCAL_USER = { id: "local", email: "dev@local" } as User;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(supabase ? null : LOCAL_USER);
+  const [loading, setLoading] = useState(!!supabase);
 
   useEffect(() => {
+    if (!supabase) return;
     supabase.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null);
       setLoading(false);
@@ -28,13 +32,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithGoogle = async () => {
+    if (!supabase) return { error: null };
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/app` },
     });
     return { error };
   };
-  const signOut = async () => { await supabase.auth.signOut(); };
+
+  const signOut = async () => {
+    if (supabase) await supabase.auth.signOut();
+    setUser(null);
+  };
 
   return <Ctx.Provider value={{ user, loading, signInWithGoogle, signOut }}>{children}</Ctx.Provider>;
 }
