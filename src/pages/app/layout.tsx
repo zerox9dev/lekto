@@ -1,7 +1,5 @@
 import { Routes, Route, NavLink, Link } from "react-router-dom";
 import { Users, BookOpen, ClipboardCheck, Settings, LogOut } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/lib/auth-context";
 import { StudentsPage } from "./students";
 import { LessonsPage } from "./lessons";
 import { HomeworkPage } from "./homework";
@@ -14,33 +12,28 @@ const nav = [
 ];
 
 export function AppLayout() {
-  const { signOut } = useAuth();
   return (
     <div className="min-h-screen flex">
-      <aside className="hidden md:flex h-screen w-48 flex-col border-r bg-white py-5 px-3 sticky top-0">
+      <aside className="hidden md:flex h-screen w-48 flex-col border-r border-gray-200 bg-white py-5 px-3 sticky top-0">
         <Link to="/" className="flex items-center gap-2 px-3 mb-8">
-          <div className="h-7 w-7 rounded-md bg-primary text-white font-bold text-xs flex items-center justify-center">L</div>
+          <div className="h-7 w-7 rounded-md bg-indigo-500 text-white font-bold text-xs flex items-center justify-center">L</div>
           <span className="font-bold">Lekto</span>
         </Link>
         <nav className="flex-1 flex flex-col gap-0.5">
           {nav.map((item) => (
             <NavLink key={item.href} to={item.href} end={item.href === "/app"}
-              className={({ isActive }) => cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors",
-                isActive ? "bg-accent font-semibold" : "hover:bg-accent"
-              )}>
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors ${isActive ? "bg-gray-100 font-semibold" : "hover:bg-gray-100"}`
+              }>
               <item.icon className="h-[18px] w-[18px]" />
               {item.label}
             </NavLink>
           ))}
         </nav>
         <div className="space-y-0.5">
-          <NavLink to="/app/settings" className={({ isActive }) => cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors", isActive ? "bg-accent font-semibold" : "hover:bg-accent")}>
+          <NavLink to="/app/settings" className={({ isActive }) => `flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors ${isActive ? "bg-gray-100 font-semibold" : "hover:bg-gray-100"}`}>
             <Settings className="h-[18px] w-[18px]" /> Settings
           </NavLink>
-          <button onClick={signOut} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium w-full hover:bg-accent transition-colors text-muted-foreground">
-            <LogOut className="h-[18px] w-[18px]" /> Sign Out
-          </button>
         </div>
       </aside>
       <main className="flex-1 p-6 lg:p-8 max-w-5xl">
