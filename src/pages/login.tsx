@@ -16,20 +16,20 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-indigo-500 flex items-center justify-center">
               <BookOpen className="h-5 w-5 text-white" />
             </div>
           </div>
           <h1 className="text-2xl font-bold">Lekto</h1>
-          <p className="text-sm text-muted-foreground mt-1">Platform for tutors</p>
+          <p className="text-sm text-gray-500 mt-1">Platform for tutors</p>
         </div>
-        <div className="rounded-2xl border p-6 space-y-4">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 space-y-4">
           <button onClick={handleGoogle} disabled={loading}
-            className="w-full h-11 flex items-center justify-center gap-3 rounded-lg border text-sm font-medium hover:bg-muted transition-colors disabled:opacity-50">
+            className="w-full h-11 flex items-center justify-center gap-3 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 cursor-pointer">
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -38,9 +38,9 @@ export function LoginPage() {
             </svg>
             {loading ? "Redirecting..." : "Continue with Google"}
           </button>
-          {error && <p className="text-sm text-destructive text-center">{error}</p>}
+          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
         </div>
-        <p className="text-center text-xs text-muted-foreground">Free forever · No credit card required</p>
+        <p className="text-center text-xs text-gray-400">Free forever · No credit card required</p>
       </div>
     </div>
   );
