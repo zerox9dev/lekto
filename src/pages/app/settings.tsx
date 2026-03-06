@@ -1,9 +1,26 @@
+import { useAuth } from "@/lib/auth-context";
+
 export function SettingsPage() {
+  const { user } = useAuth();
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Settings</h1>
-      <div className="rounded-xl border border-gray-200 p-6 space-y-4 max-w-lg">
-        <p className="text-sm text-gray-500">Settings will appear here.</p>
+      <div>
+        <h1 className="text-xl font-bold tracking-tight">Настройки</h1>
+        <p className="text-[13px] text-zinc-400 mt-0.5">Управление аккаунтом</p>
+      </div>
+
+      <div className="rounded-2xl border border-zinc-200 bg-white p-6 max-w-md">
+        <div className="space-y-4">
+          <div>
+            <label className="text-[12px] font-medium text-zinc-400 uppercase tracking-wider">Email</label>
+            <p className="text-[14px] text-zinc-900 mt-1">{user?.email ?? "—"}</p>
+          </div>
+          <div>
+            <label className="text-[12px] font-medium text-zinc-400 uppercase tracking-wider">ID</label>
+            <p className="text-[14px] text-zinc-500 mt-1 font-mono text-[12px]">{user?.id ?? "—"}</p>
+          </div>
+        </div>
       </div>
     </div>
   );
