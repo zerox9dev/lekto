@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { BookOpen, Sparkles, CheckCircle2, Circle, ChevronDown, ChevronUp, ClipboardCheck } from "lucide-react";
 import { useStore } from "@/lib/store";
+import * as Tabs from "@radix-ui/react-tabs";
 import type { Homework, HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent } from "@/types/database";
 
 const typeLabels: Record<string, string> = {
@@ -92,7 +93,7 @@ function FillBlanksPlayer({ section, onScore }: { section: HomeworkSection; onSc
           </span>
         ))}
       </div>
-      {submitted && <p className="text-[12px] text-zinc-400">Правильные ответы: {content.answers.join(", ")}</p>}
+      {submitted && <p className="text-[12px] text-zinc-400">Ответы: {content.answers.join(", ")}</p>}
       {!submitted && (
         <button onClick={handleSubmit} disabled={answers.some((a) => !a.trim())}
           className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">
@@ -154,9 +155,7 @@ function OrderingPlayer({ section, onScore }: { section: HomeworkSection; onScor
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const move = (i: number, dir: -1 | 1) => {
-    const next = [...items]; [next[i], next[i + dir]] = [next[i + dir], next[i]]; setItems(next);
-  };
+  const move = (i: number, dir: -1 | 1) => { const next = [...items]; [next[i], next[i + dir]] = [next[i + dir], next[i]]; setItems(next); };
 
   const handleSubmit = () => {
     const correct = items.reduce((acc, item, i) => acc + (item === content.items[content.correct_order[i]] ? 1 : 0), 0);
@@ -183,9 +182,7 @@ function OrderingPlayer({ section, onScore }: { section: HomeworkSection; onScor
           </div>
         );
       })}
-      {!submitted && (
-        <button onClick={handleSubmit} className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 cursor-pointer">Проверить</button>
-      )}
+      {!submitted && <button onClick={handleSubmit} className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 cursor-pointer">Проверить</button>}
     </div>
   );
 }
@@ -218,9 +215,8 @@ function CardsPlayer({ section }: { section: HomeworkSection }) {
 
 function SectionPlayer({ section, onScore }: { section: HomeworkSection; onScore: (sectionId: string, score: number) => void }) {
   const handle = (score: number) => onScore(section.id, score);
-
   return (
-    <div className="space-y-3">
+    <div className="rounded-xl border border-zinc-200 bg-white p-4 space-y-3">
       <div className="flex items-center gap-2">
         <span className="text-[11px] font-medium text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-md">{typeLabels[section.type]}</span>
         <span className="text-[13px] font-medium">{section.title}</span>
@@ -230,9 +226,7 @@ function SectionPlayer({ section, onScore }: { section: HomeworkSection; onScore
       {section.type === "matching" && <MatchingPlayer section={section} onScore={handle} />}
       {section.type === "ordering" && <OrderingPlayer section={section} onScore={handle} />}
       {section.type === "cards" && <CardsPlayer section={section} />}
-      {section.type === "text" && (
-        <div className="text-[14px] text-zinc-600 whitespace-pre-wrap">{(section.content as { text: string }).text}</div>
-      )}
+      {section.type === "text" && <div className="text-[14px] text-zinc-600 whitespace-pre-wrap">{(section.content as { text: string }).text}</div>}
     </div>
   );
 }
@@ -241,99 +235,43 @@ function SectionPlayer({ section, onScore }: { section: HomeworkSection; onScore
 
 function HomeworkCard({ hw }: { hw: Homework }) {
   const { updateHomework } = useStore();
-  const [expanded, setExpanded] = useState(!hw.completed);
   const sections = hw.sections || [];
   const scores = hw.scores || {};
   const completedSections = Object.keys(scores).length;
+  const gradable = sections.filter((s) => s.type !== "text" && s.type !== "cards").length;
 
   const handleScore = (sectionId: string, score: number) => {
     const newScores = { ...scores, [sectionId]: score };
-    const allDone = Object.keys(newScores).length >= sections.filter((s) => s.type !== "text" && s.type !== "cards").length;
-    updateHomework(hw.id, {
-      scores: newScores,
-      completed: allDone,
-    });
+    updateHomework(hw.id, { scores: newScores, completed: Object.keys(newScores).length >= gradable });
   };
 
+  const avgScore = completedSections > 0
+    ? Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / completedSections)
+    : null;
+
   return (
-    <div className="rounded-lg border border-zinc-100 bg-zinc-50/50 overflow-hidden">
-      <button onClick={() => setExpanded(!expanded)}
-        className="w-full px-3 py-2.5 flex items-center gap-2.5 text-left hover:bg-zinc-100/50 transition-colors cursor-pointer">
-        {hw.completed
-          ? <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-          : <Circle className="h-4 w-4 text-zinc-300 shrink-0" />
-        }
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-medium truncate">{hw.title}</p>
-          <p className="text-[11px] text-zinc-400">
-            {sections.length} {sections.length === 1 ? "задание" : "заданий"}
-            {completedSections > 0 && ` · ${completedSections} выполнено`}
-          </p>
-        </div>
-        {expanded ? <ChevronUp className="h-3.5 w-3.5 text-zinc-400" /> : <ChevronDown className="h-3.5 w-3.5 text-zinc-400" />}
-      </button>
-      {expanded && (
-        <div className="px-3 pb-3 space-y-4">
-          {sections.map((sec) => (
-            <SectionPlayer key={sec.id} section={sec} onScore={handleScore} />
-          ))}
-        </div>
-      )}
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        {hw.completed ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-zinc-300" />}
+        <span className="text-[14px] font-medium">{hw.title}</span>
+        {avgScore !== null && <span className="text-[12px] text-zinc-400 ml-auto">{avgScore}%</span>}
+      </div>
+      {sections.map((sec) => (
+        <SectionPlayer key={sec.id} section={sec} onScore={handleScore} />
+      ))}
     </div>
   );
 }
 
-// ── Lesson Card ──
-
-function LessonCard({ lesson, homeworkItems }: { lesson: any; homeworkItems: Homework[] }) {
-  const [expanded, setExpanded] = useState(true);
-  const completedCount = homeworkItems.filter((h) => h.completed).length;
-
-  return (
-    <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
-      <button onClick={() => setExpanded(!expanded)}
-        className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-zinc-50 transition-colors cursor-pointer">
-        <div className="h-9 w-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
-          <BookOpen className="h-4 w-4 text-zinc-400" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-medium truncate">{lesson.title}</p>
-          <p className="text-[12px] text-zinc-400">
-            {lesson.date}
-            {homeworkItems.length > 0 && <span> · {completedCount}/{homeworkItems.length} заданий</span>}
-          </p>
-        </div>
-        {expanded ? <ChevronUp className="h-4 w-4 text-zinc-400" /> : <ChevronDown className="h-4 w-4 text-zinc-400" />}
-      </button>
-      {expanded && (
-        <div className="px-4 pb-4 space-y-4">
-          {lesson.notes && <div className="text-[13px] text-zinc-600 whitespace-pre-wrap leading-relaxed">{lesson.notes}</div>}
-          {homeworkItems.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-[12px] font-medium text-zinc-500 flex items-center gap-1.5">
-                <ClipboardCheck className="h-3.5 w-3.5" /> Домашние задания
-              </p>
-              {homeworkItems.map((h) => <HomeworkCard key={h.id} hw={h} />)}
-            </div>
-          )}
-          {homeworkItems.length === 0 && !lesson.notes && <p className="text-[13px] text-zinc-400">Нет материалов</p>}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Main ──
+// ── Main Student View ──
 
 export function StudentView() {
   const { shareId } = useParams<{ shareId: string }>();
   const { students, lessons, homework } = useStore();
 
   const student = students.find((s) => s.share_id === shareId);
-  const studentLessons = student ? lessons.filter((l) => l.student_id === student.id) : [];
+  const studentLessons = student ? lessons.filter((l) => l.student_id === student.id).sort((a, b) => b.date.localeCompare(a.date)) : [];
   const studentHomework = student ? homework.filter((h) => h.student_id === student.id) : [];
-  const lessonIds = new Set(studentLessons.map((l) => l.id));
-  const unattachedHomework = studentHomework.filter((h) => !h.lesson_id || !lessonIds.has(h.lesson_id));
 
   if (!student) {
     return (
@@ -346,6 +284,8 @@ export function StudentView() {
     );
   }
 
+  const completedHw = studentHomework.filter((h) => h.completed).length;
+
   return (
     <div className="min-h-screen bg-zinc-50">
       <header className="bg-white border-b border-zinc-200">
@@ -356,37 +296,63 @@ export function StudentView() {
           <span className="font-semibold text-[14px] tracking-tight">Lekto</span>
         </div>
       </header>
-      <main className="max-w-2xl mx-auto px-6 py-8 space-y-8">
+
+      <main className="max-w-2xl mx-auto px-6 py-8 space-y-6">
+        {/* Header */}
         <div className="flex items-center gap-4">
           <img src={`https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(student.name)}`}
             alt={student.name} className="h-12 w-12 rounded-full bg-zinc-100 shrink-0" />
           <div>
             <h1 className="text-xl font-bold tracking-tight">{student.name}</h1>
             <p className="text-[13px] text-zinc-400 mt-0.5">
-              {studentLessons.length} {studentLessons.length === 1 ? "урок" : "уроков"} · {studentHomework.length} заданий
+              {studentLessons.length} уроков · {completedHw}/{studentHomework.length} заданий
             </p>
           </div>
         </div>
 
-        {studentLessons.length === 0 && unattachedHomework.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center">
-            <p className="text-[14px] text-zinc-400">Уроков пока нет. Ваш репетитор добавит их сюда.</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {studentLessons.map((l) => (
-              <LessonCard key={l.id} lesson={l} homeworkItems={studentHomework.filter((h) => h.lesson_id === l.id)} />
-            ))}
-            {unattachedHomework.length > 0 && (
-              <div className="space-y-2 pt-2">
-                <p className="text-[12px] font-medium text-zinc-500 flex items-center gap-1.5">
-                  <ClipboardCheck className="h-3.5 w-3.5" /> Дополнительные задания
-                </p>
-                {unattachedHomework.map((h) => <HomeworkCard key={h.id} hw={h} />)}
+        {/* Tabs */}
+        <Tabs.Root defaultValue="lessons">
+          <Tabs.List className="flex gap-1 border-b border-zinc-200 mb-5">
+            <Tabs.Trigger value="lessons"
+              className="px-4 py-2 text-[13px] font-medium text-zinc-400 border-b-2 border-transparent data-[state=active]:text-zinc-900 data-[state=active]:border-zinc-900 transition-colors cursor-pointer flex items-center gap-1.5">
+              <BookOpen className="h-3.5 w-3.5" /> Уроки
+            </Tabs.Trigger>
+            <Tabs.Trigger value="homework"
+              className="px-4 py-2 text-[13px] font-medium text-zinc-400 border-b-2 border-transparent data-[state=active]:text-zinc-900 data-[state=active]:border-zinc-900 transition-colors cursor-pointer flex items-center gap-1.5">
+              <ClipboardCheck className="h-3.5 w-3.5" /> Домашки
+            </Tabs.Trigger>
+          </Tabs.List>
+
+          {/* Lessons */}
+          <Tabs.Content value="lessons" className="space-y-3">
+            {studentLessons.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center">
+                <p className="text-[14px] text-zinc-400">Уроков пока нет</p>
               </div>
+            ) : (
+              studentLessons.map((l) => (
+                <div key={l.id} className="rounded-xl border border-zinc-200 bg-white p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[14px] font-medium">{l.title}</p>
+                    <span className="text-[12px] text-zinc-400">{l.date}</span>
+                  </div>
+                  {l.notes && <p className="text-[13px] text-zinc-500 whitespace-pre-wrap leading-relaxed">{l.notes}</p>}
+                </div>
+              ))
             )}
-          </div>
-        )}
+          </Tabs.Content>
+
+          {/* Homework */}
+          <Tabs.Content value="homework" className="space-y-6">
+            {studentHomework.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center">
+                <p className="text-[14px] text-zinc-400">Заданий пока нет</p>
+              </div>
+            ) : (
+              studentHomework.map((h) => <HomeworkCard key={h.id} hw={h} />)
+            )}
+          </Tabs.Content>
+        </Tabs.Root>
       </main>
     </div>
   );
