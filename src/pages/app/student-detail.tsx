@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Plus, BookOpen, ClipboardCheck, Pencil, Trash2, Copy, Check, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle } from "lucide-react";
+import { ArrowLeft, Plus, BookOpen, ClipboardCheck, Pencil, Trash2, Copy, Check, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle, GripVertical, CopyPlus, Eye, EyeOff, X } from "lucide-react";
 import { useStore } from "@/lib/store";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { HomeworkType, HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, Homework, Lesson } from "@/types/database";
@@ -10,52 +10,94 @@ const typeLabels: Record<HomeworkType, string> = {
   ordering: "Порядок", cards: "Карточки", text: "Текст",
 };
 
-// ── Section Editors (same as before, compact) ──
+const typeIcons: Record<HomeworkType, string> = {
+  quiz: "📝", fill_blanks: "✏️", matching: "🔗", ordering: "📋", cards: "🃏", text: "📄",
+};
+
+// ══════════════════════════════════════════════════════
+// Section Editors
+// ══════════════════════════════════════════════════════
 
 function QuizEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
   const questions = section.content as QuizQuestion[];
   const setQ = (nq: QuizQuestion[]) => onChange({ ...section, content: nq });
+
   return (
     <div className="space-y-3">
       {questions.map((q, qi) => (
         <div key={qi} className="rounded-lg border border-zinc-100 p-3 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-zinc-400">Вопрос {qi + 1}</span>
-            {questions.length > 1 && <button onClick={() => setQ(questions.filter((_, i) => i !== qi))} className="text-[11px] text-red-400 cursor-pointer">Удалить</button>}
+            {questions.length > 1 && (
+              <button onClick={() => setQ(questions.filter((_, i) => i !== qi))} className="text-[11px] text-red-400 hover:text-red-500 cursor-pointer">Удалить</button>
+            )}
           </div>
           <input value={q.question} onChange={(e) => { const nq = [...questions]; nq[qi] = { ...nq[qi], question: e.target.value }; setQ(nq); }}
-            placeholder="Вопрос" className="w-full h-8 rounded-lg border border-zinc-200 px-2.5 text-[13px] outline-none focus:border-zinc-400" />
+            placeholder="Вопрос" className="w-full h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
           {q.options.map((opt, oi) => (
             <div key={oi} className="flex items-center gap-2">
               <button onClick={() => { const nq = [...questions]; nq[qi] = { ...nq[qi], correct: oi }; setQ(nq); }}
-                className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 cursor-pointer ${q.correct === oi ? "border-emerald-500 bg-emerald-500" : "border-zinc-300"}`}>
-                {q.correct === oi && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                className={`h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 cursor-pointer transition-colors ${q.correct === oi ? "border-emerald-500 bg-emerald-500" : "border-zinc-300 hover:border-zinc-400"}`}>
+                {q.correct === oi && <div className="h-2 w-2 rounded-full bg-white" />}
               </button>
               <input value={opt} onChange={(e) => { const nq = [...questions]; nq[qi] = { ...nq[qi], options: nq[qi].options.map((o, i) => i === oi ? e.target.value : o) }; setQ(nq); }}
-                placeholder={`Вариант ${oi + 1}`} className="flex-1 h-8 rounded-lg border border-zinc-200 px-2.5 text-[13px] outline-none focus:border-zinc-400" />
+                placeholder={`Вариант ${oi + 1}`} className="flex-1 h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
+              {q.options.length > 2 && (
+                <button onClick={() => {
+                  const nq = [...questions];
+                  const newOpts = nq[qi].options.filter((_, i) => i !== oi);
+                  const newCorrect = q.correct === oi ? 0 : q.correct > oi ? q.correct - 1 : q.correct;
+                  nq[qi] = { ...nq[qi], options: newOpts, correct: newCorrect };
+                  setQ(nq);
+                }} className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-red-50 shrink-0 cursor-pointer">
+                  <X className="h-3 w-3 text-zinc-300 hover:text-red-400" />
+                </button>
+              )}
             </div>
           ))}
           <button onClick={() => { const nq = [...questions]; nq[qi] = { ...nq[qi], options: [...nq[qi].options, ""] }; setQ(nq); }}
-            className="text-[11px] text-zinc-400 cursor-pointer">+ вариант</button>
+            className="text-[11px] text-zinc-400 hover:text-zinc-600 cursor-pointer">+ вариант</button>
         </div>
       ))}
       <button onClick={() => setQ([...questions, { question: "", options: ["", ""], correct: 0 }])}
-        className="text-[12px] text-zinc-500 font-medium cursor-pointer">+ Вопрос</button>
+        className="text-[12px] text-zinc-500 font-medium hover:text-zinc-700 cursor-pointer">+ Вопрос</button>
     </div>
   );
 }
 
 function FillBlanksEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
   const c = section.content as FillBlanksContent;
+  const blanksCount = (c.text.match(/___/g) || []).length;
+
+  // Auto-sync answers array with blanks count
+  const syncAnswers = (text: string) => {
+    const count = (text.match(/___/g) || []).length;
+    let answers = [...c.answers];
+    if (count > answers.length) answers = [...answers, ...new Array(count - answers.length).fill("")];
+    else if (count < answers.length) answers = answers.slice(0, count);
+    onChange({ ...section, content: { text, answers } });
+  };
+
   return (
-    <div className="space-y-2">
-      <textarea value={c.text} onChange={(e) => onChange({ ...section, content: { ...c, text: e.target.value } })}
-        placeholder="Текст с ___ для пропусков" rows={2} className="w-full rounded-lg border border-zinc-200 px-2.5 py-2 text-[13px] outline-none focus:border-zinc-400 resize-none" />
-      {c.answers.map((a, i) => (
-        <input key={i} value={a} onChange={(e) => { const na = [...c.answers]; na[i] = e.target.value; onChange({ ...section, content: { ...c, answers: na } }); }}
-          placeholder={`Ответ ${i + 1}`} className="w-full h-8 rounded-lg border border-zinc-200 px-2.5 text-[13px] outline-none focus:border-zinc-400" />
-      ))}
-      <button onClick={() => onChange({ ...section, content: { ...c, answers: [...c.answers, ""] } })} className="text-[11px] text-zinc-400 cursor-pointer">+ ответ</button>
+    <div className="space-y-3">
+      <div>
+        <textarea value={c.text} onChange={(e) => syncAnswers(e.target.value)}
+          placeholder='Текст с ___ для пропусков. Пример: "I ___ a student"' rows={3}
+          className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-[13px] outline-none focus:border-zinc-400 resize-none" />
+        <p className="text-[11px] text-zinc-400 mt-1">Используй ___ (три подчёркивания) для пропусков. Найдено: {blanksCount}</p>
+      </div>
+      {c.answers.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-medium text-zinc-400">Правильные ответы:</p>
+          {c.answers.map((a, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-[11px] text-zinc-400 w-5 text-center shrink-0">{i + 1}.</span>
+              <input value={a} onChange={(e) => { const na = [...c.answers]; na[i] = e.target.value; onChange({ ...section, content: { ...c, answers: na } }); }}
+                placeholder={`Ответ для пропуска ${i + 1}`} className="flex-1 h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -67,14 +109,20 @@ function MatchingEditor({ section, onChange }: { section: HomeworkSection; onCha
       {c.pairs.map((p, i) => (
         <div key={i} className="flex gap-2 items-center">
           <input value={p.left} onChange={(e) => { const np = [...c.pairs]; np[i] = { ...np[i], left: e.target.value }; onChange({ ...section, content: { pairs: np } }); }}
-            placeholder="Слева" className="flex-1 h-8 rounded-lg border border-zinc-200 px-2.5 text-[13px] outline-none focus:border-zinc-400" />
+            placeholder="Слева" className="flex-1 h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
           <span className="text-zinc-300 text-[12px]">→</span>
           <input value={p.right} onChange={(e) => { const np = [...c.pairs]; np[i] = { ...np[i], right: e.target.value }; onChange({ ...section, content: { pairs: np } }); }}
-            placeholder="Справа" className="flex-1 h-8 rounded-lg border border-zinc-200 px-2.5 text-[13px] outline-none focus:border-zinc-400" />
-          {c.pairs.length > 1 && <button onClick={() => onChange({ ...section, content: { pairs: c.pairs.filter((_, j) => j !== i) } })} className="text-red-400 cursor-pointer"><Trash2 className="h-3 w-3" /></button>}
+            placeholder="Справа" className="flex-1 h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
+          {c.pairs.length > 1 && (
+            <button onClick={() => onChange({ ...section, content: { pairs: c.pairs.filter((_, j) => j !== i) } })}
+              className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-red-50 shrink-0 cursor-pointer">
+              <X className="h-3 w-3 text-zinc-300 hover:text-red-400" />
+            </button>
+          )}
         </div>
       ))}
-      <button onClick={() => onChange({ ...section, content: { pairs: [...c.pairs, { left: "", right: "" }] } })} className="text-[11px] text-zinc-400 cursor-pointer">+ пара</button>
+      <button onClick={() => onChange({ ...section, content: { pairs: [...c.pairs, { left: "", right: "" }] } })}
+        className="text-[11px] text-zinc-400 hover:text-zinc-600 cursor-pointer">+ пара</button>
     </div>
   );
 }
@@ -83,14 +131,26 @@ function OrderingEditor({ section, onChange }: { section: HomeworkSection; onCha
   const c = section.content as OrderingContent;
   return (
     <div className="space-y-2">
+      <p className="text-[11px] text-zinc-400">Элементы в правильном порядке (ученик увидит перемешанные):</p>
       {c.items.map((item, i) => (
         <div key={i} className="flex gap-2 items-center">
-          <span className="text-[11px] text-zinc-400 w-4 text-center">{i + 1}</span>
-          <input value={item} onChange={(e) => { const ni = [...c.items]; ni[i] = e.target.value; onChange({ ...section, content: { items: ni, correct_order: ni.map((_, j) => j) } }); }}
-            placeholder={`Элемент ${i + 1}`} className="flex-1 h-8 rounded-lg border border-zinc-200 px-2.5 text-[13px] outline-none focus:border-zinc-400" />
+          <span className="text-[11px] text-zinc-400 w-5 text-center shrink-0">{i + 1}</span>
+          <input value={item} onChange={(e) => {
+            const ni = [...c.items]; ni[i] = e.target.value;
+            onChange({ ...section, content: { items: ni, correct_order: ni.map((_, j) => j) } });
+          }} placeholder={`Элемент ${i + 1}`} className="flex-1 h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
+          {c.items.length > 2 && (
+            <button onClick={() => {
+              const ni = c.items.filter((_, j) => j !== i);
+              onChange({ ...section, content: { items: ni, correct_order: ni.map((_, j) => j) } });
+            }} className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-red-50 shrink-0 cursor-pointer">
+              <X className="h-3 w-3 text-zinc-300 hover:text-red-400" />
+            </button>
+          )}
         </div>
       ))}
-      <button onClick={() => onChange({ ...section, content: { items: [...c.items, ""], correct_order: [...c.items, ""].map((_, i) => i) } })} className="text-[11px] text-zinc-400 cursor-pointer">+ элемент</button>
+      <button onClick={() => onChange({ ...section, content: { items: [...c.items, ""], correct_order: [...c.items, ""].map((_, i) => i) } })}
+        className="text-[11px] text-zinc-400 hover:text-zinc-600 cursor-pointer">+ элемент</button>
     </div>
   );
 }
@@ -102,35 +162,75 @@ function CardsEditor({ section, onChange }: { section: HomeworkSection; onChange
       {c.cards.map((card, i) => (
         <div key={i} className="flex gap-2 items-center">
           <input value={card.front} onChange={(e) => { const nc = [...c.cards]; nc[i] = { ...nc[i], front: e.target.value }; onChange({ ...section, content: { cards: nc } }); }}
-            placeholder="Лицо" className="flex-1 h-8 rounded-lg border border-zinc-200 px-2.5 text-[13px] outline-none focus:border-zinc-400" />
+            placeholder="Лицо" className="flex-1 h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
           <input value={card.back} onChange={(e) => { const nc = [...c.cards]; nc[i] = { ...nc[i], back: e.target.value }; onChange({ ...section, content: { cards: nc } }); }}
-            placeholder="Оборот" className="flex-1 h-8 rounded-lg border border-zinc-200 px-2.5 text-[13px] outline-none focus:border-zinc-400" />
-          {c.cards.length > 1 && <button onClick={() => onChange({ ...section, content: { cards: c.cards.filter((_, j) => j !== i) } })} className="text-red-400 cursor-pointer"><Trash2 className="h-3 w-3" /></button>}
+            placeholder="Оборот" className="flex-1 h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
+          {c.cards.length > 1 && (
+            <button onClick={() => onChange({ ...section, content: { cards: c.cards.filter((_, j) => j !== i) } })}
+              className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-red-50 shrink-0 cursor-pointer">
+              <X className="h-3 w-3 text-zinc-300 hover:text-red-400" />
+            </button>
+          )}
         </div>
       ))}
-      <button onClick={() => onChange({ ...section, content: { cards: [...c.cards, { front: "", back: "" }] } })} className="text-[11px] text-zinc-400 cursor-pointer">+ карточка</button>
+      <button onClick={() => onChange({ ...section, content: { cards: [...c.cards, { front: "", back: "" }] } })}
+        className="text-[11px] text-zinc-400 hover:text-zinc-600 cursor-pointer">+ карточка</button>
     </div>
   );
 }
 
 function TextEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
   const c = section.content as { text: string };
-  return <textarea value={c.text} onChange={(e) => onChange({ ...section, content: { text: e.target.value } })}
-    placeholder="Текст задания..." rows={3} className="w-full rounded-lg border border-zinc-200 px-2.5 py-2 text-[13px] outline-none focus:border-zinc-400 resize-none" />;
+  return (
+    <div>
+      <textarea value={c.text} onChange={(e) => onChange({ ...section, content: { text: e.target.value } })}
+        placeholder="Текст задания, правило, ссылка на материал..." rows={4}
+        className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-[13px] outline-none focus:border-zinc-400 resize-y min-h-[80px]" />
+      <p className="text-[11px] text-zinc-400 mt-1">Ученик увидит этот текст как задание (не оценивается)</p>
+    </div>
+  );
 }
 
-function SectionEditor({ section, onChange, onDelete, index }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void; onDelete: () => void; index: number }) {
+function SectionEditor({ section, onChange, onDelete, onDuplicate, onMoveUp, onMoveDown, isFirst, isLast, index }: {
+  section: HomeworkSection; onChange: (s: HomeworkSection) => void;
+  onDelete: () => void; onDuplicate: () => void;
+  onMoveUp: () => void; onMoveDown: () => void;
+  isFirst: boolean; isLast: boolean; index: number;
+}) {
   const editors: Record<HomeworkType, any> = { quiz: QuizEditor, fill_blanks: FillBlanksEditor, matching: MatchingEditor, ordering: OrderingEditor, cards: CardsEditor, text: TextEditor };
   const Editor = editors[section.type];
+
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-[12px] font-medium text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded-md">{typeLabels[section.type]}</span>
-        <button onClick={onDelete} className="text-[11px] text-red-400 cursor-pointer">Удалить</button>
+    <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-zinc-50 border-b border-zinc-100">
+        <span className="text-[14px]">{typeIcons[section.type]}</span>
+        <span className="text-[12px] font-medium text-zinc-600">{typeLabels[section.type]}</span>
+        <span className="text-[11px] text-zinc-400">#{index + 1}</span>
+        <div className="flex-1" />
+        {/* Move buttons */}
+        <button onClick={onMoveUp} disabled={isFirst}
+          className="h-6 w-6 rounded flex items-center justify-center hover:bg-zinc-200 disabled:opacity-20 cursor-pointer">
+          <ChevronUp className="h-3.5 w-3.5 text-zinc-400" />
+        </button>
+        <button onClick={onMoveDown} disabled={isLast}
+          className="h-6 w-6 rounded flex items-center justify-center hover:bg-zinc-200 disabled:opacity-20 cursor-pointer">
+          <ChevronDown className="h-3.5 w-3.5 text-zinc-400" />
+        </button>
+        <div className="w-px h-4 bg-zinc-200" />
+        <button onClick={onDuplicate} className="h-6 w-6 rounded flex items-center justify-center hover:bg-zinc-200 cursor-pointer" title="Дублировать">
+          <CopyPlus className="h-3.5 w-3.5 text-zinc-400" />
+        </button>
+        <button onClick={onDelete} className="h-6 w-6 rounded flex items-center justify-center hover:bg-red-50 cursor-pointer" title="Удалить">
+          <Trash2 className="h-3.5 w-3.5 text-zinc-400 hover:text-red-500" />
+        </button>
       </div>
-      <input value={section.title} onChange={(e) => onChange({ ...section, title: e.target.value })}
-        placeholder="Название секции" className="w-full h-8 rounded-lg border border-zinc-200 px-2.5 text-[13px] font-medium outline-none focus:border-zinc-400" />
-      <Editor section={section} onChange={onChange} />
+      {/* Content */}
+      <div className="p-4 space-y-3">
+        <input value={section.title} onChange={(e) => onChange({ ...section, title: e.target.value })}
+          placeholder="Название секции" className="w-full h-9 rounded-lg border border-zinc-200 px-3 text-[14px] font-medium outline-none focus:border-zinc-400" />
+        <Editor section={section} onChange={onChange} />
+      </div>
     </div>
   );
 }
@@ -139,7 +239,7 @@ function emptySection(type: HomeworkType): HomeworkSection {
   const id = crypto.randomUUID();
   switch (type) {
     case "quiz": return { id, type, title: "Тест", content: [{ question: "", options: ["", ""], correct: 0 }] };
-    case "fill_blanks": return { id, type, title: "Вставить слово", content: { text: "", answers: [""] } };
+    case "fill_blanks": return { id, type, title: "Вставить слово", content: { text: "", answers: [] } };
     case "matching": return { id, type, title: "Соединить пары", content: { pairs: [{ left: "", right: "" }] } };
     case "ordering": return { id, type, title: "Порядок", content: { items: ["", ""], correct_order: [0, 1] } };
     case "cards": return { id, type, title: "Карточки", content: { cards: [{ front: "", back: "" }] } };
@@ -147,12 +247,18 @@ function emptySection(type: HomeworkType): HomeworkSection {
   }
 }
 
-// ── Lesson Card (tutor view) — shows homework inside ──
+function duplicateSection(sec: HomeworkSection): HomeworkSection {
+  return { ...sec, id: crypto.randomUUID(), title: sec.title + " (копия)" };
+}
 
-function LessonCard({ lesson, homeworkItems, onEditLesson, onDeleteLesson, onNewHw, onEditHw, onDeleteHw }: {
+// ══════════════════════════════════════════════════════
+// Lesson Card (tutor view)
+// ══════════════════════════════════════════════════════
+
+function LessonCard({ lesson, homeworkItems, onEditLesson, onDeleteLesson, onNewHw, onEditHw, onDeleteHw, onDuplicateHw }: {
   lesson: Lesson; homeworkItems: Homework[];
   onEditLesson: () => void; onDeleteLesson: () => void;
-  onNewHw: () => void; onEditHw: (h: Homework) => void; onDeleteHw: (id: string) => void;
+  onNewHw: () => void; onEditHw: (h: Homework) => void; onDeleteHw: (id: string) => void; onDuplicateHw: (h: Homework) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const completedHw = homeworkItems.filter((h) => h.completed).length;
@@ -169,10 +275,11 @@ function LessonCard({ lesson, homeworkItems, onEditLesson, onDeleteLesson, onNew
             <p className="text-[12px] text-zinc-400">
               {lesson.date}
               {homeworkItems.length > 0 && (
-                <span className={completedHw === homeworkItems.length ? "text-emerald-500" : ""}>
+                <span className={completedHw === homeworkItems.length && homeworkItems.length > 0 ? "text-emerald-500" : ""}>
                   {" "}· {completedHw}/{homeworkItems.length} заданий
                 </span>
               )}
+              {lesson.notes && " · 📝"}
             </p>
           </div>
           {expanded ? <ChevronUp className="h-4 w-4 text-zinc-400 shrink-0" /> : <ChevronDown className="h-4 w-4 text-zinc-400 shrink-0" />}
@@ -195,20 +302,31 @@ function LessonCard({ lesson, homeworkItems, onEditLesson, onDeleteLesson, onNew
             </div>
           )}
 
-          {/* Homework list */}
           {homeworkItems.length > 0 && (
             <div className="space-y-2">
               <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Домашние задания</p>
               {homeworkItems.map((h) => {
-                const sectionTypes = (h.sections || []).map((s) => typeLabels[s.type]).join(", ");
+                const sectionSummary = (h.sections || []).map((s) => `${typeIcons[s.type]} ${typeLabels[s.type]}`).join("  ");
+                const scores = h.scores || {};
+                const avgScore = Object.keys(scores).length > 0
+                  ? Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / Object.keys(scores).length) : null;
+
                 return (
-                  <div key={h.id} className="rounded-lg border border-zinc-100 px-3 py-2 flex items-center gap-3 group/hw hover:border-zinc-200 transition-colors">
-                    {h.completed ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" /> : <Circle className="h-3.5 w-3.5 text-zinc-300 shrink-0" />}
+                  <div key={h.id} className="rounded-lg border border-zinc-100 px-3 py-2.5 flex items-center gap-3 group/hw hover:border-zinc-200 transition-colors">
+                    {h.completed ? <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /> : <Circle className="h-4 w-4 text-zinc-300 shrink-0" />}
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-medium truncate">{h.title}</p>
-                      <p className="text-[11px] text-zinc-400">{sectionTypes}</p>
+                      <p className="text-[11px] text-zinc-400">{sectionSummary || "Нет секций"}</p>
                     </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover/hw:opacity-100 transition-opacity">
+                    {avgScore !== null && (
+                      <span className={`text-[12px] font-semibold ${avgScore >= 80 ? "text-emerald-500" : avgScore >= 50 ? "text-amber-500" : "text-red-500"}`}>
+                        {avgScore}%
+                      </span>
+                    )}
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover/hw:opacity-100 transition-opacity">
+                      <button onClick={() => onDuplicateHw(h)} className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-zinc-100 cursor-pointer" title="Дублировать">
+                        <CopyPlus className="h-3 w-3 text-zinc-400" />
+                      </button>
                       <button onClick={() => onEditHw(h)} className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-zinc-100 cursor-pointer">
                         <Pencil className="h-3 w-3 text-zinc-400" />
                       </button>
@@ -232,7 +350,9 @@ function LessonCard({ lesson, homeworkItems, onEditLesson, onDeleteLesson, onNew
   );
 }
 
-// ── Main ──
+// ══════════════════════════════════════════════════════
+// Main Page
+// ══════════════════════════════════════════════════════
 
 export function StudentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -273,7 +393,7 @@ export function StudentDetailPage() {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  // Lesson
+  // Lesson actions
   const openNewLesson = () => { setEditLessonId(null); setLessonTitle(""); setLessonDate(new Date().toISOString().slice(0, 10)); setLessonNotes(""); setLessonOpen(true); };
   const openEditLesson = (l: Lesson) => { setEditLessonId(l.id); setLessonTitle(l.title); setLessonDate(l.date); setLessonNotes(l.notes || ""); setLessonOpen(true); };
   const saveLesson = () => {
@@ -283,14 +403,29 @@ export function StudentDetailPage() {
     setLessonOpen(false);
   };
 
-  // Homework (always tied to lesson)
+  // Homework actions
   const openNewHw = (lessonId: string) => { setEditHwId(null); setHwTitle(""); setHwLessonId(lessonId); setHwSections([]); setHwOpen(true); };
   const openEditHw = (h: Homework) => { setEditHwId(h.id); setHwTitle(h.title); setHwLessonId(h.lesson_id); setHwSections(h.sections || []); setHwOpen(true); };
+  const duplicateHw = (h: Homework, lessonId: string) => {
+    addHomework({
+      lesson_id: lessonId, student_id: student.id, tutor_id: "local",
+      title: h.title + " (копия)",
+      sections: (h.sections || []).map((s) => ({ ...s, id: crypto.randomUUID() })),
+      completed: false, student_answers: null, scores: null,
+    });
+  };
   const saveHw = () => {
     if (!hwTitle.trim() || !hwLessonId || hwSections.length === 0) return;
     if (editHwId) updateHomework(editHwId, { title: hwTitle.trim(), lesson_id: hwLessonId, sections: hwSections });
     else addHomework({ lesson_id: hwLessonId, student_id: student.id, tutor_id: "local", title: hwTitle.trim(), sections: hwSections, completed: false, student_answers: null, scores: null });
     setHwOpen(false);
+  };
+
+  // Section actions
+  const moveSection = (i: number, dir: -1 | 1) => {
+    const next = [...hwSections];
+    [next[i], next[i + dir]] = [next[i + dir], next[i]];
+    setHwSections(next);
   };
 
   const completedHw = studentHomework.filter((h) => h.completed).length;
@@ -339,7 +474,7 @@ export function StudentDetailPage() {
         </div>
       </div>
 
-      {/* Lessons + Homework inside */}
+      {/* Lessons */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-[14px] font-semibold">Уроки</h2>
@@ -361,16 +496,17 @@ export function StudentDetailPage() {
               onDeleteLesson={() => deleteLesson(l.id)}
               onNewHw={() => openNewHw(l.id)}
               onEditHw={openEditHw}
-              onDeleteHw={deleteHomework} />
+              onDeleteHw={deleteHomework}
+              onDuplicateHw={(h) => duplicateHw(h, l.id)} />
           ))
         )}
       </div>
 
-      {/* Lesson Dialog */}
+      {/* ══ Lesson Dialog ══ */}
       <Dialog.Root open={lessonOpen} onOpenChange={setLessonOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl z-50 space-y-4">
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl z-50 space-y-4">
             <Dialog.Title className="text-lg font-bold">{editLessonId ? "Редактировать урок" : "Новый урок"}</Dialog.Title>
             <div className="space-y-3">
               <div>
@@ -384,9 +520,10 @@ export function StudentDetailPage() {
                   className="w-full h-10 rounded-xl border border-zinc-200 px-3 text-[14px] outline-none focus:border-zinc-400" />
               </div>
               <div>
-                <label className="text-[12px] font-medium text-zinc-500 mb-1 block">Заметки</label>
-                <textarea value={lessonNotes} onChange={(e) => setLessonNotes(e.target.value)} placeholder="Конспект, материалы..." rows={4}
-                  className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-[14px] outline-none focus:border-zinc-400 resize-none" />
+                <label className="text-[12px] font-medium text-zinc-500 mb-1 block">Конспект / Заметки</label>
+                <textarea value={lessonNotes} onChange={(e) => setLessonNotes(e.target.value)}
+                  placeholder="Что прошли на уроке, правила, ссылки на материалы..." rows={6}
+                  className="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px] outline-none focus:border-zinc-400 resize-y min-h-[120px]" />
               </div>
             </div>
             <div className="flex justify-end gap-2">
@@ -400,39 +537,77 @@ export function StudentDetailPage() {
         </Dialog.Portal>
       </Dialog.Root>
 
-      {/* Homework Dialog */}
+      {/* ══ Homework Dialog ══ */}
       <Dialog.Root open={hwOpen} onOpenChange={setHwOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl z-50 space-y-4">
-            <Dialog.Title className="text-lg font-bold">{editHwId ? "Редактировать задание" : "Новое задание"}</Dialog.Title>
-            <div>
-              <label className="text-[12px] font-medium text-zinc-500 mb-1 block">Название *</label>
-              <input value={hwTitle} onChange={(e) => setHwTitle(e.target.value)} placeholder="Домашнее задание"
-                className="w-full h-10 rounded-xl border border-zinc-200 px-3 text-[14px] outline-none focus:border-zinc-400" autoFocus />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-xl z-50">
+            {/* Sticky header */}
+            <div className="sticky top-0 bg-white border-b border-zinc-100 px-6 py-4 flex items-center justify-between z-10">
+              <Dialog.Title className="text-lg font-bold">{editHwId ? "Редактировать задание" : "Новое задание"}</Dialog.Title>
+              <Dialog.Close asChild>
+                <button className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-zinc-100 cursor-pointer">
+                  <X className="h-4 w-4 text-zinc-400" />
+                </button>
+              </Dialog.Close>
             </div>
-            <div className="space-y-3">
-              {hwSections.map((sec, i) => (
-                <SectionEditor key={sec.id} section={sec} index={i}
-                  onChange={(s) => setHwSections(hwSections.map((x, j) => j === i ? s : x))}
-                  onDelete={() => setHwSections(hwSections.filter((_, j) => j !== i))} />
-              ))}
-              <div className="rounded-xl border border-dashed border-zinc-200 p-3">
-                <p className="text-[11px] text-zinc-400 mb-2">Добавить секцию:</p>
-                <div className="flex gap-1.5 flex-wrap">
-                  {(Object.entries(typeLabels) as [HomeworkType, string][]).map(([key, label]) => (
-                    <button key={key} onClick={() => setHwSections([...hwSections, emptySection(key)])}
-                      className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-zinc-100 text-zinc-500 hover:bg-zinc-200 cursor-pointer">+ {label}</button>
-                  ))}
+
+            <div className="px-6 py-4 space-y-4">
+              {/* Title */}
+              <div>
+                <label className="text-[12px] font-medium text-zinc-500 mb-1 block">Название *</label>
+                <input value={hwTitle} onChange={(e) => setHwTitle(e.target.value)} placeholder="Домашнее задание — Present Simple"
+                  className="w-full h-10 rounded-xl border border-zinc-200 px-3 text-[14px] outline-none focus:border-zinc-400" autoFocus />
+              </div>
+
+              {/* Sections */}
+              <div className="space-y-3">
+                {hwSections.length > 0 && (
+                  <p className="text-[12px] font-medium text-zinc-400">{hwSections.length} {hwSections.length === 1 ? "секция" : "секций"}</p>
+                )}
+                {hwSections.map((sec, i) => (
+                  <SectionEditor key={sec.id} section={sec} index={i}
+                    onChange={(s) => setHwSections(hwSections.map((x, j) => j === i ? s : x))}
+                    onDelete={() => setHwSections(hwSections.filter((_, j) => j !== i))}
+                    onDuplicate={() => {
+                      const dup = duplicateSection(sec);
+                      const next = [...hwSections];
+                      next.splice(i + 1, 0, dup);
+                      setHwSections(next);
+                    }}
+                    onMoveUp={() => moveSection(i, -1)}
+                    onMoveDown={() => moveSection(i, 1)}
+                    isFirst={i === 0}
+                    isLast={i === hwSections.length - 1} />
+                ))}
+
+                {/* Add section buttons */}
+                <div className="rounded-xl border border-dashed border-zinc-200 p-4">
+                  <p className="text-[12px] text-zinc-400 mb-3">Добавить секцию:</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(Object.entries(typeLabels) as [HomeworkType, string][]).map(([key, label]) => (
+                      <button key={key} onClick={() => setHwSections([...hwSections, emptySection(key)])}
+                        className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-[12px] font-medium bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border border-zinc-100 hover:border-zinc-200 cursor-pointer transition-colors">
+                        <span>{typeIcons[key]}</span> {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Dialog.Close asChild><button className="px-4 py-2 rounded-xl text-[13px] font-medium text-zinc-500 hover:bg-zinc-100 cursor-pointer">Отмена</button></Dialog.Close>
-              <button onClick={saveHw} disabled={!hwTitle.trim() || hwSections.length === 0}
-                className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">
-                {editHwId ? "Сохранить" : "Создать"}
-              </button>
+
+            {/* Sticky footer */}
+            <div className="sticky bottom-0 bg-white border-t border-zinc-100 px-6 py-4 flex justify-between items-center">
+              <p className="text-[12px] text-zinc-400">
+                {hwSections.length === 0 ? "Добавьте хотя бы одну секцию" : `${hwSections.length} секций`}
+              </p>
+              <div className="flex gap-2">
+                <Dialog.Close asChild><button className="px-4 py-2 rounded-xl text-[13px] font-medium text-zinc-500 hover:bg-zinc-100 cursor-pointer">Отмена</button></Dialog.Close>
+                <button onClick={saveHw} disabled={!hwTitle.trim() || hwSections.length === 0}
+                  className="px-5 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">
+                  {editHwId ? "Сохранить" : "Создать"}
+                </button>
+              </div>
             </div>
           </Dialog.Content>
         </Dialog.Portal>
