@@ -23,7 +23,8 @@ export type HomeworkType = "quiz" | "fill_blanks" | "matching" | "ordering" | "t
 export interface QuizQuestion {
   question: string;
   options: string[];
-  correct: number;
+  correct: number | number[]; // single index OR array of correct indices (multi-select)
+  explanation?: string; // shown after answer check
 }
 
 export interface FillBlanksContent {

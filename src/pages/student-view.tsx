@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { BookOpen, Sparkles, CheckCircle2, Circle, ChevronDown, ChevronUp, ChevronRight, ArrowLeft, ClipboardCheck } from "lucide-react";
+import { BookOpen, Sparkles, CheckCircle2, Circle, ChevronDown, ChevronUp, ChevronRight, ArrowLeft, ClipboardCheck, Check } from "lucide-react";
 import { useStore } from "@/lib/store";
 import type { Homework, HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, Lesson } from "@/types/database";
 
@@ -11,48 +11,121 @@ const typeLabels: Record<string, string> = {
 
 // ── Section Players ──
 
+function getCorrectIndices(q: QuizQuestion): number[] {
+  return Array.isArray(q.correct) ? q.correct : [q.correct];
+}
+
 function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (score: number) => void }) {
   const questions = section.content as QuizQuestion[];
-  const [answers, setAnswers] = useState<number[]>(() => new Array(questions.length).fill(-1));
+  const isMulti = questions.some((q) => Array.isArray(q.correct) && q.correct.length > 1);
+
+  // For single-select: number per question. For multi-select: Set of indices per question.
+  const [singleAnswers, setSingleAnswers] = useState<number[]>(() => new Array(questions.length).fill(-1));
+  const [multiAnswers, setMultiAnswers] = useState<Set<number>[]>(() => questions.map(() => new Set()));
   const [submitted, setSubmitted] = useState(false);
 
+  const toggleMulti = (qi: number, oi: number) => {
+    setMultiAnswers((prev) => {
+      const next = prev.map((s, i) => i === qi ? new Set(s) : s);
+      if (next[qi].has(oi)) next[qi].delete(oi); else next[qi].add(oi);
+      return next;
+    });
+  };
+
   const handleSubmit = () => {
-    const correct = questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0);
+    let correct = 0;
+    questions.forEach((q, i) => {
+      const expected = getCorrectIndices(q);
+      if (isMulti) {
+        const selected = [...multiAnswers[i]];
+        const isRight = expected.length === selected.length && expected.every((e) => selected.includes(e));
+        if (isRight) correct++;
+      } else {
+        if (expected.includes(singleAnswers[i])) correct++;
+      }
+    });
     setSubmitted(true);
     onScore(Math.round((correct / questions.length) * 100));
   };
 
+  const allAnswered = isMulti
+    ? multiAnswers.every((s) => s.size > 0)
+    : !singleAnswers.includes(-1);
+
   return (
     <div className="space-y-4">
-      {questions.map((q, qi) => (
-        <div key={qi} className="space-y-2">
-          <p className="text-[15px] font-medium">{qi + 1}. {q.question}</p>
-          <div className="space-y-1.5 pl-1">
-            {q.options.map((opt, oi) => {
-              const selected = answers[qi] === oi;
-              const isCorrect = submitted && oi === q.correct;
-              const isWrong = submitted && selected && oi !== q.correct;
-              return (
-                <button key={oi} onClick={() => !submitted && setAnswers((prev) => prev.map((a, i) => i === qi ? oi : a))}
-                  disabled={submitted}
-                  className={`w-full text-left px-4 py-3 rounded-xl text-[14px] border transition-colors cursor-pointer ${
-                    isCorrect ? "border-emerald-300 bg-emerald-50 text-emerald-700" :
-                    isWrong ? "border-red-300 bg-red-50 text-red-700" :
-                    selected ? "border-zinc-400 bg-zinc-50" :
-                    "border-zinc-200 hover:border-zinc-300"
-                  }`}>{opt}</button>
-              );
-            })}
+      {isMulti && <p className="text-[12px] text-zinc-400">Выбери все правильные ответы</p>}
+      {questions.map((q, qi) => {
+        const expected = getCorrectIndices(q);
+        return (
+          <div key={qi} className="space-y-2">
+            <p className="text-[15px] font-medium">{qi + 1}. {q.question}</p>
+            <div className="space-y-1.5 pl-1">
+              {q.options.map((opt, oi) => {
+                const selectedSingle = singleAnswers[qi] === oi;
+                const selectedMulti = multiAnswers[qi]?.has(oi);
+                const selected = isMulti ? selectedMulti : selectedSingle;
+                const isCorrect = submitted && expected.includes(oi);
+                const isWrong = submitted && selected && !expected.includes(oi);
+
+                return (
+                  <button key={oi}
+                    onClick={() => {
+                      if (submitted) return;
+                      if (isMulti) toggleMulti(qi, oi);
+                      else setSingleAnswers((prev) => prev.map((a, i) => i === qi ? oi : a));
+                    }}
+                    disabled={submitted}
+                    className={`w-full text-left px-4 py-3 rounded-xl text-[14px] border transition-colors cursor-pointer flex items-center gap-3 ${
+                      isCorrect ? "border-emerald-300 bg-emerald-50 text-emerald-700" :
+                      isWrong ? "border-red-300 bg-red-50 text-red-700" :
+                      selected ? "border-zinc-400 bg-zinc-50" :
+                      "border-zinc-200 hover:border-zinc-300"
+                    }`}>
+                    {isMulti ? (
+                      <div className={`h-4.5 w-4.5 rounded-md border-2 flex items-center justify-center shrink-0 ${
+                        submitted ? (isCorrect ? "border-emerald-500 bg-emerald-500" : isWrong ? "border-red-400 bg-red-400" : "border-zinc-300") :
+                        selected ? "border-zinc-500 bg-zinc-500" : "border-zinc-300"
+                      }`}>
+                        {(selected || (submitted && isCorrect)) && <Check className="h-3 w-3 text-white" />}
+                      </div>
+                    ) : (
+                      <div className={`h-4.5 w-4.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        submitted ? (isCorrect ? "border-emerald-500 bg-emerald-500" : isWrong ? "border-red-400 bg-red-400" : "border-zinc-300") :
+                        selected ? "border-zinc-500 bg-zinc-500" : "border-zinc-300"
+                      }`}>
+                        {(selected || (submitted && isCorrect)) && <div className="h-2 w-2 rounded-full bg-white" />}
+                      </div>
+                    )}
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+            {submitted && q.explanation && (
+              <div className="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2 ml-1">
+                <p className="text-[13px] text-blue-700">💡 {q.explanation}</p>
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
       {!submitted && (
-        <button onClick={handleSubmit} disabled={answers.includes(-1)}
+        <button onClick={handleSubmit} disabled={!allAnswered}
           className="px-5 py-2.5 rounded-xl bg-zinc-900 text-white text-[14px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">Проверить</button>
       )}
       {submitted && (
         <div className="rounded-xl bg-zinc-50 px-4 py-3">
-          <p className="text-[14px] font-medium">Результат: {questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0)}/{questions.length}</p>
+          <p className="text-[14px] font-medium">
+            Результат: {questions.reduce((acc, q, i) => {
+              const expected = getCorrectIndices(q);
+              if (isMulti) {
+                const selected = [...multiAnswers[i]];
+                return acc + (expected.length === selected.length && expected.every((e) => selected.includes(e)) ? 1 : 0);
+              }
+              return acc + (expected.includes(singleAnswers[i]) ? 1 : 0);
+            }, 0)}/{questions.length}
+          </p>
         </div>
       )}
     </div>
