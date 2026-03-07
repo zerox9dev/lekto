@@ -3,14 +3,16 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Plus, BookOpen, ClipboardCheck, Pencil, Trash2, Copy, Check, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle, CopyPlus, Eye, X, AlertCircle, Upload } from "lucide-react";
 import { useStore } from "@/lib/store";
 import * as Dialog from "@radix-ui/react-dialog";
-import type { HomeworkType, HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, Homework, Lesson } from "@/types/database";
+import type { HomeworkType, HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, TrueFalseContent, TrueFalseQuestion, OpenAnswerContent, Homework, Lesson } from "@/types/database";
 
 const typeLabels: Record<HomeworkType, string> = {
   quiz: "Тест", fill_blanks: "Вставить слово", matching: "Соединить пары",
   ordering: "Порядок", cards: "Карточки", text: "Текст",
+  true_false: "Верно / Неверно", open_answer: "Открытый ответ",
 };
 const typeIcons: Record<HomeworkType, string> = {
   quiz: "📝", fill_blanks: "✏️", matching: "🔗", ordering: "📋", cards: "🃏", text: "📄",
+  true_false: "✅", open_answer: "💬",
 };
 
 // ── Helpers ──
@@ -66,6 +68,17 @@ function validateSections(sections: HomeworkSection[]): ValidationError[] {
       const c = sec.content as CardsContent;
       if (c.cards.length === 0) errors.push({ sectionIndex: i, message: "Нет карточек" });
       if (c.cards.some((card) => !card.front.trim() || !card.back.trim())) errors.push({ sectionIndex: i, message: "Пустая карточка" });
+    }
+    if (sec.type === "true_false") {
+      const c = sec.content as TrueFalseContent;
+      if (c.questions.length === 0) { errors.push({ sectionIndex: i, message: "Нет утверждений" }); return; }
+      c.questions.forEach((q, qi) => {
+        if (!q.statement.trim()) errors.push({ sectionIndex: i, message: `Утверждение ${qi + 1}: пустой текст` });
+      });
+    }
+    if (sec.type === "open_answer") {
+      const c = sec.content as OpenAnswerContent;
+      if (!c.prompt.trim()) errors.push({ sectionIndex: i, message: "Пустой вопрос" });
     }
     if (sec.type === "text") {
       const c = sec.content as { text: string };
@@ -301,6 +314,59 @@ function CardsEditor({ section, onChange }: { section: HomeworkSection; onChange
   );
 }
 
+function TrueFalseEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
+  const c = section.content as TrueFalseContent;
+  const setQ = (nq: TrueFalseQuestion[]) => onChange({ ...section, content: { questions: nq } });
+
+  return (
+    <div className="space-y-3">
+      <p className="text-[11px] text-zinc-400">Утверждения — выбери правильный ответ для каждого</p>
+      {c.questions.map((q, qi) => (
+        <div key={qi} className="rounded-lg border border-zinc-100 p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-medium text-zinc-400">Утверждение {qi + 1}</span>
+            {c.questions.length > 1 && (
+              <button onClick={() => setQ(c.questions.filter((_, i) => i !== qi))} className="text-[11px] text-red-400 hover:text-red-500 cursor-pointer">Удалить</button>
+            )}
+          </div>
+          <input value={q.statement} onChange={(e) => { const nq = [...c.questions]; nq[qi] = { ...nq[qi], statement: e.target.value }; setQ(nq); }}
+            placeholder="Утверждение" className="w-full h-9 rounded-lg border border-zinc-200 px-3 text-[13px] outline-none focus:border-zinc-400" />
+          <div className="flex gap-2">
+            <button onClick={() => { const nq = [...c.questions]; nq[qi] = { ...nq[qi], correct: true }; setQ(nq); }}
+              className={`flex-1 h-9 rounded-lg text-[13px] font-medium border cursor-pointer transition-colors ${q.correct ? "border-emerald-400 bg-emerald-50 text-emerald-700" : "border-zinc-200 text-zinc-500 hover:border-zinc-300"}`}>
+              ✓ Верно
+            </button>
+            <button onClick={() => { const nq = [...c.questions]; nq[qi] = { ...nq[qi], correct: false }; setQ(nq); }}
+              className={`flex-1 h-9 rounded-lg text-[13px] font-medium border cursor-pointer transition-colors ${!q.correct ? "border-red-300 bg-red-50 text-red-700" : "border-zinc-200 text-zinc-500 hover:border-zinc-300"}`}>
+              ✗ Неверно
+            </button>
+          </div>
+          <input value={q.explanation || ""} onChange={(e) => { const nq = [...c.questions]; nq[qi] = { ...nq[qi], explanation: e.target.value }; setQ(nq); }}
+            placeholder="Пояснение (необязательно)" className="w-full h-8 rounded-lg border border-dashed border-zinc-200 px-3 text-[12px] text-zinc-500 outline-none focus:border-zinc-400" />
+        </div>
+      ))}
+      <button onClick={() => setQ([...c.questions, { statement: "", correct: true }])}
+        className="text-[12px] text-zinc-500 font-medium hover:text-zinc-700 cursor-pointer">+ Утверждение</button>
+    </div>
+  );
+}
+
+function OpenAnswerEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
+  const c = section.content as OpenAnswerContent;
+  return (
+    <div className="space-y-3">
+      <div>
+        <textarea value={c.prompt} onChange={(e) => onChange({ ...section, content: { ...c, prompt: e.target.value } })}
+          placeholder="Вопрос или задание для ученика..." rows={3}
+          className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-[13px] outline-none focus:border-zinc-400 resize-none" />
+      </div>
+      <input value={c.placeholder || ""} onChange={(e) => onChange({ ...section, content: { ...c, placeholder: e.target.value } })}
+        placeholder="Подсказка в поле ответа (необязательно)" className="w-full h-8 rounded-lg border border-dashed border-zinc-200 px-3 text-[12px] text-zinc-500 outline-none focus:border-zinc-400" />
+      <p className="text-[11px] text-zinc-400">💬 Ученик напишет ответ текстом. Оценивается репетитором вручную.</p>
+    </div>
+  );
+}
+
 function TextEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
   const c = section.content as { text: string };
   return (
@@ -320,7 +386,7 @@ function SectionEditor({ section, onChange, onDelete, onDuplicate, onMoveUp, onM
   isFirst: boolean; isLast: boolean; index: number;
   errors: string[];
 }) {
-  const editors: Record<HomeworkType, any> = { quiz: QuizEditor, fill_blanks: FillBlanksEditor, matching: MatchingEditor, ordering: OrderingEditor, cards: CardsEditor, text: TextEditor };
+  const editors: Record<HomeworkType, any> = { quiz: QuizEditor, fill_blanks: FillBlanksEditor, matching: MatchingEditor, ordering: OrderingEditor, cards: CardsEditor, text: TextEditor, true_false: TrueFalseEditor, open_answer: OpenAnswerEditor };
   const Editor = editors[section.type];
   const hasErrors = errors.length > 0;
 
@@ -361,6 +427,8 @@ function emptySection(type: HomeworkType): HomeworkSection {
     case "ordering": return { id, type, title: "Порядок", content: { items: ["", ""], correct_order: [0, 1] } };
     case "cards": return { id, type, title: "Карточки", content: { cards: [{ front: "", back: "" }] } };
     case "text": return { id, type, title: "Задание", content: { text: "" } };
+    case "true_false": return { id, type, title: "Верно / Неверно", content: { questions: [{ statement: "", correct: true }] } };
+    case "open_answer": return { id, type, title: "Открытый ответ", content: { prompt: "" } };
   }
 }
 
@@ -421,6 +489,32 @@ function SectionPreview({ section }: { section: HomeworkSection }) {
   if (section.type === "cards") {
     const c = section.content as CardsContent;
     return <p className="text-[12px] text-zinc-400">{c.cards.length} карточек: {c.cards.slice(0, 3).map((c) => c.front).join(", ")}{c.cards.length > 3 ? "..." : ""}</p>;
+  }
+  if (section.type === "true_false") {
+    const c = section.content as TrueFalseContent;
+    return (
+      <div className="space-y-2">
+        {c.questions.map((q, i) => (
+          <div key={i} className="flex items-center gap-3 text-[13px]">
+            <span className={`text-[12px] font-semibold px-2 py-0.5 rounded ${q.correct ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-600"}`}>
+              {q.correct ? "Верно" : "Неверно"}
+            </span>
+            <span className="text-zinc-600">{q.statement || "..."}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (section.type === "open_answer") {
+    const c = section.content as OpenAnswerContent;
+    return (
+      <div className="space-y-2">
+        <p className="text-[13px] text-zinc-600">{c.prompt || "..."}</p>
+        <div className="rounded-lg border border-dashed border-zinc-200 px-3 py-4 text-[12px] text-zinc-400 italic">
+          {c.placeholder || "Ученик напишет ответ здесь..."}
+        </div>
+      </div>
+    );
   }
   if (section.type === "text") {
     const c = section.content as { text: string };

@@ -18,13 +18,29 @@ export interface Lesson {
   created_at: string;
 }
 
-export type HomeworkType = "quiz" | "fill_blanks" | "matching" | "ordering" | "text" | "cards";
+export type HomeworkType = "quiz" | "fill_blanks" | "matching" | "ordering" | "text" | "cards" | "true_false" | "open_answer";
 
 export interface QuizQuestion {
   question: string;
   options: string[];
   correct: number | number[]; // single index OR array of correct indices (multi-select)
   explanation?: string; // shown after answer check
+}
+
+export interface TrueFalseQuestion {
+  statement: string;
+  correct: boolean; // true = "Верно", false = "Неверно"
+  explanation?: string;
+}
+
+export interface TrueFalseContent {
+  questions: TrueFalseQuestion[];
+}
+
+export interface OpenAnswerContent {
+  prompt: string; // question / task for student
+  placeholder?: string; // hint text in textarea
+  min_length?: number; // optional minimum chars
 }
 
 export interface FillBlanksContent {
@@ -49,7 +65,7 @@ export interface HomeworkSection {
   id: string;
   type: HomeworkType;
   title: string;
-  content: QuizQuestion[] | FillBlanksContent | MatchingContent | OrderingContent | CardsContent | { text: string };
+  content: QuizQuestion[] | FillBlanksContent | MatchingContent | OrderingContent | CardsContent | TrueFalseContent | OpenAnswerContent | { text: string };
 }
 
 export interface Homework {

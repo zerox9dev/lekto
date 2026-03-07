@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { BookOpen, Sparkles, CheckCircle2, Circle, ChevronDown, ChevronUp, ChevronRight, ArrowLeft, ClipboardCheck, Check } from "lucide-react";
 import { useStore } from "@/lib/store";
-import type { Homework, HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, Lesson } from "@/types/database";
+import type { Homework, HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, TrueFalseContent, OpenAnswerContent, Lesson } from "@/types/database";
 
 const typeLabels: Record<string, string> = {
   quiz: "Тест", fill_blanks: "Вставить слово", matching: "Соединить пары",
@@ -312,8 +312,103 @@ function CardsPlayer({ section }: { section: HomeworkSection }) {
   );
 }
 
+function TrueFalsePlayer({ section, onScore }: { section: HomeworkSection; onScore: (score: number) => void }) {
+  const c = section.content as TrueFalseContent;
+  const [answers, setAnswers] = useState<(boolean | null)[]>(() => new Array(c.questions.length).fill(null));
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = () => {
+    const correct = c.questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0);
+    setSubmitted(true);
+    onScore(Math.round((correct / c.questions.length) * 100));
+  };
+
+  return (
+    <div className="space-y-3">
+      {c.questions.map((q, qi) => {
+        const answered = answers[qi];
+        const isRight = submitted && answered === q.correct;
+        const isWrong = submitted && answered !== null && answered !== q.correct;
+        return (
+          <div key={qi} className="space-y-2">
+            <p className="text-[15px] font-medium">{qi + 1}. {q.statement}</p>
+            <div className="flex gap-2 pl-1">
+              <button onClick={() => !submitted && setAnswers((prev) => prev.map((a, i) => i === qi ? true : a))}
+                disabled={submitted}
+                className={`flex-1 py-2.5 rounded-xl text-[14px] font-medium border cursor-pointer transition-colors ${
+                  submitted && q.correct === true ? "border-emerald-300 bg-emerald-50 text-emerald-700" :
+                  isWrong && answered === true ? "border-red-300 bg-red-50 text-red-600" :
+                  answered === true && !submitted ? "border-zinc-400 bg-zinc-50" :
+                  "border-zinc-200 hover:border-zinc-300"
+                }`}>✓ Верно</button>
+              <button onClick={() => !submitted && setAnswers((prev) => prev.map((a, i) => i === qi ? false : a))}
+                disabled={submitted}
+                className={`flex-1 py-2.5 rounded-xl text-[14px] font-medium border cursor-pointer transition-colors ${
+                  submitted && q.correct === false ? "border-emerald-300 bg-emerald-50 text-emerald-700" :
+                  isWrong && answered === false ? "border-red-300 bg-red-50 text-red-600" :
+                  answered === false && !submitted ? "border-zinc-400 bg-zinc-50" :
+                  "border-zinc-200 hover:border-zinc-300"
+                }`}>✗ Неверно</button>
+            </div>
+            {submitted && q.explanation && (
+              <div className="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2 ml-1">
+                <p className="text-[13px] text-blue-700">💡 {q.explanation}</p>
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {!submitted && (
+        <button onClick={handleSubmit} disabled={answers.includes(null)}
+          className="px-5 py-2.5 rounded-xl bg-zinc-900 text-white text-[14px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">Проверить</button>
+      )}
+      {submitted && (
+        <div className="rounded-xl bg-zinc-50 px-4 py-3">
+          <p className="text-[14px] font-medium">Результат: {c.questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0)}/{c.questions.length}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OpenAnswerPlayer({ section, onSubmitAnswer }: { section: HomeworkSection; onSubmitAnswer: (sectionId: string, answer: string) => void }) {
+  const c = section.content as OpenAnswerContent;
+  const [answer, setAnswer] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = () => {
+    setSubmitted(true);
+    onSubmitAnswer(section.id, answer);
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-[15px] text-zinc-700 whitespace-pre-wrap">{c.prompt}</p>
+      <textarea value={answer} onChange={(e) => !submitted && setAnswer(e.target.value)}
+        placeholder={c.placeholder || "Напиши свой ответ..."} rows={5} disabled={submitted}
+        className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-[14px] outline-none focus:border-zinc-400 resize-y min-h-[100px] disabled:bg-zinc-50" />
+      {c.min_length && !submitted && (
+        <p className="text-[12px] text-zinc-400">Минимум {c.min_length} символов ({answer.length}/{c.min_length})</p>
+      )}
+      {!submitted && (
+        <button onClick={handleSubmit} disabled={!answer.trim() || (c.min_length ? answer.length < c.min_length : false)}
+          className="px-5 py-2.5 rounded-xl bg-zinc-900 text-white text-[14px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">Отправить ответ</button>
+      )}
+      {submitted && (
+        <div className="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-3">
+          <p className="text-[14px] text-emerald-700 font-medium">✓ Ответ отправлен. Репетитор проверит его.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SectionPlayer({ section, onScore }: { section: HomeworkSection; onScore: (sectionId: string, score: number) => void }) {
   const handle = (score: number) => onScore(section.id, score);
+  const handleOpenAnswer = (sectionId: string, _answer: string) => {
+    // Open answers are not auto-scored — save as "submitted" with no score
+    // Tutor will review and score manually
+  };
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2.5">
@@ -325,6 +420,8 @@ function SectionPlayer({ section, onScore }: { section: HomeworkSection; onScore
       {section.type === "matching" && <MatchingPlayer section={section} onScore={handle} />}
       {section.type === "ordering" && <OrderingPlayer section={section} onScore={handle} />}
       {section.type === "cards" && <CardsPlayer section={section} />}
+      {section.type === "true_false" && <TrueFalsePlayer section={section} onScore={handle} />}
+      {section.type === "open_answer" && <OpenAnswerPlayer section={section} onSubmitAnswer={handleOpenAnswer} />}
       {section.type === "text" && <div className="text-[15px] text-zinc-600 whitespace-pre-wrap leading-relaxed">{(section.content as { text: string }).text}</div>}
     </div>
   );
