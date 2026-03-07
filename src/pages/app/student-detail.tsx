@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Plus, BookOpen, ClipboardCheck, Pencil, Trash2, Copy, Check, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Plus, BookOpen, ClipboardCheck, Pencil, Trash2, Copy, Check, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle } from "lucide-react";
 import { useStore } from "@/lib/store";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { HomeworkType, HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, Homework, Lesson } from "@/types/database";
