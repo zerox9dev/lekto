@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { BookOpen, Sparkles, CheckCircle2, Circle, ChevronDown, ChevronUp, ChevronRight, ArrowLeft, ClipboardCheck } from "lucide-react";
 import { useStore } from "@/lib/store";
@@ -13,7 +13,7 @@ const typeLabels: Record<string, string> = {
 
 function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (score: number) => void }) {
   const questions = section.content as QuizQuestion[];
-  const [answers, setAnswers] = useState<number[]>(new Array(questions.length).fill(-1));
+  const [answers, setAnswers] = useState<number[]>(() => new Array(questions.length).fill(-1));
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = () => {
@@ -33,7 +33,7 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
               const isCorrect = submitted && oi === q.correct;
               const isWrong = submitted && selected && oi !== q.correct;
               return (
-                <button key={oi} onClick={() => !submitted && setAnswers(answers.map((a, i) => i === qi ? oi : a))}
+                <button key={oi} onClick={() => !submitted && setAnswers((prev) => prev.map((a, i) => i === qi ? oi : a))}
                   disabled={submitted}
                   className={`w-full text-left px-4 py-3 rounded-xl text-[14px] border transition-colors cursor-pointer ${
                     isCorrect ? "border-emerald-300 bg-emerald-50 text-emerald-700" :
@@ -61,43 +61,71 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
 
 function FillBlanksPlayer({ section, onScore }: { section: HomeworkSection; onScore: (score: number) => void }) {
   const content = section.content as FillBlanksContent;
-  const [answers, setAnswers] = useState<string[]>(new Array(content.answers.length).fill(""));
+
+  // Pre-compute segments: array of {kind:"text", value} | {kind:"blank", index}
+  const segments = useMemo(() => {
+    const parts = content.text.split("___");
+    const segs: Array<{ kind: "text"; value: string } | { kind: "blank"; index: number }> = [];
+    parts.forEach((part, i) => {
+      if (part) segs.push({ kind: "text", value: part });
+      if (i < parts.length - 1) segs.push({ kind: "blank", index: i });
+    });
+    return segs;
+  }, [content.text]);
+
+  const blanksCount = segments.filter((s) => s.kind === "blank").length;
+  const expectedCount = content.answers.length;
+
+  const [answers, setAnswers] = useState<string[]>(() => new Array(Math.max(blanksCount, expectedCount)).fill(""));
   const [submitted, setSubmitted] = useState(false);
   const [results, setResults] = useState<boolean[]>([]);
 
+  const updateAnswer = (idx: number, value: string) => {
+    setAnswers((prev) => {
+      const next = [...prev];
+      next[idx] = value;
+      return next;
+    });
+  };
+
   const handleSubmit = () => {
-    const res = content.answers.map((a, i) => a.trim().toLowerCase() === answers[i].trim().toLowerCase());
+    const res = content.answers.map((a, i) =>
+      a.trim().toLowerCase() === (answers[i] || "").trim().toLowerCase()
+    );
     setResults(res);
     setSubmitted(true);
     onScore(Math.round((res.filter(Boolean).length / res.length) * 100));
   };
 
-  const parts = content.text.split("___");
-  let blankIdx = 0;
-
   return (
     <div className="space-y-4">
       <div className="text-[15px] leading-relaxed">
-        {parts.map((part, i) => (
-          <span key={i}>
-            {part}
-            {i < parts.length - 1 && (() => {
-              const idx = blankIdx++;
-              return (
-                <input value={answers[idx] || ""} onChange={(e) => { const na = [...answers]; na[idx] = e.target.value; setAnswers(na); }}
-                  disabled={submitted}
-                  className={`inline-block w-32 h-8 mx-1 px-3 rounded-lg border text-[14px] text-center outline-none ${
-                    submitted ? results[idx] ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50" : "border-zinc-300 focus:border-zinc-500"
-                  }`} />
-              );
-            })()}
-          </span>
-        ))}
+        {segments.map((seg, i) =>
+          seg.kind === "text" ? (
+            <span key={`t-${i}`}>{seg.value}</span>
+          ) : (
+            <input
+              key={`b-${seg.index}`}
+              value={answers[seg.index] || ""}
+              onChange={(e) => updateAnswer(seg.index, e.target.value)}
+              disabled={submitted}
+              className={`inline-block w-32 h-8 mx-1 px-3 rounded-lg border text-[14px] text-center outline-none ${
+                submitted
+                  ? (results[seg.index] ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50")
+                  : "border-zinc-300 focus:border-zinc-500"
+              }`}
+            />
+          )
+        )}
       </div>
-      {submitted && <p className="text-[13px] text-zinc-400">Правильные ответы: {content.answers.join(", ")}</p>}
+      {submitted && (
+        <p className="text-[13px] text-zinc-400">Правильные ответы: {content.answers.join(", ")}</p>
+      )}
       {!submitted && (
-        <button onClick={handleSubmit} disabled={answers.some((a) => !a.trim())}
-          className="px-5 py-2.5 rounded-xl bg-zinc-900 text-white text-[14px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">Проверить</button>
+        <button onClick={handleSubmit} disabled={answers.slice(0, expectedCount).some((a) => !a.trim())}
+          className="px-5 py-2.5 rounded-xl bg-zinc-900 text-white text-[14px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">
+          Проверить
+        </button>
       )}
     </div>
   );
@@ -105,7 +133,7 @@ function FillBlanksPlayer({ section, onScore }: { section: HomeworkSection; onSc
 
 function MatchingPlayer({ section, onScore }: { section: HomeworkSection; onScore: (score: number) => void }) {
   const content = section.content as MatchingContent;
-  const [answers, setAnswers] = useState<(number | null)[]>(new Array(content.pairs.length).fill(null));
+  const [answers, setAnswers] = useState<(number | null)[]>(() => new Array(content.pairs.length).fill(null));
   const [submitted, setSubmitted] = useState(false);
   const [shuffledRight] = useState(() => {
     const indices = content.pairs.map((_, i) => i);
@@ -124,7 +152,7 @@ function MatchingPlayer({ section, onScore }: { section: HomeworkSection; onScor
         <div key={i} className="flex items-center gap-4">
           <span className="text-[15px] min-w-[120px] font-medium">{pair.left}</span>
           <span className="text-zinc-300">→</span>
-          <select value={answers[i] ?? ""} onChange={(e) => { const na = [...answers]; na[i] = e.target.value === "" ? null : Number(e.target.value); setAnswers(na); }}
+          <select value={answers[i] ?? ""} onChange={(e) => setAnswers((prev) => { const na = [...prev]; na[i] = e.target.value === "" ? null : Number(e.target.value); return na; })}
             disabled={submitted}
             className={`h-10 rounded-xl border px-3 text-[14px] bg-white min-w-[140px] ${
               submitted ? shuffledRight[answers[i]!] === i ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50" : "border-zinc-200"
@@ -151,7 +179,9 @@ function OrderingPlayer({ section, onScore }: { section: HomeworkSection; onScor
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const move = (i: number, dir: -1 | 1) => { const next = [...items]; [next[i], next[i + dir]] = [next[i + dir], next[i]]; setItems(next); };
+  const move = (i: number, dir: -1 | 1) => {
+    setItems((prev) => { const next = [...prev]; [next[i], next[i + dir]] = [next[i + dir], next[i]]; return next; });
+  };
 
   const handleSubmit = () => {
     const correct = items.reduce((acc, item, i) => acc + (item === content.items[content.correct_order[i]] ? 1 : 0), 0);
@@ -371,7 +401,6 @@ export function StudentView() {
                 {studentLessons.map((l) => {
                   const lhw = studentHomework.filter((h) => h.lesson_id === l.id);
                   const lhwDone = lhw.filter((h) => h.completed).length;
-                  const hasWork = lhw.length > 0 || l.notes;
 
                   return (
                     <button key={l.id} onClick={() => setSelectedLessonId(l.id)}
