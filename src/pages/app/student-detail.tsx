@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Plus, BookOpen, ClipboardCheck, Pencil, Trash2, Copy, Check, ExternalLink } from "lucide-react";
+import { ArrowLeft, Plus, BookOpen, ClipboardCheck, Pencil, Trash2, Copy, Check, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { useStore } from "@/lib/store";
 import * as Dialog from "@radix-ui/react-dialog";
-import * as Tabs from "@radix-ui/react-tabs";
 import type { HomeworkType, HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, Homework, Lesson } from "@/types/database";
 
 const typeLabels: Record<HomeworkType, string> = {
@@ -11,7 +10,7 @@ const typeLabels: Record<HomeworkType, string> = {
   ordering: "Порядок", cards: "Карточки", text: "Текст",
 };
 
-// ── Section Editors (compact) ──
+// ── Section Editors (same as before, compact) ──
 
 function QuizEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
   const questions = section.content as QuizQuestion[];
@@ -37,7 +36,7 @@ function QuizEditor({ section, onChange }: { section: HomeworkSection; onChange:
             </div>
           ))}
           <button onClick={() => { const nq = [...questions]; nq[qi] = { ...nq[qi], options: [...nq[qi].options, ""] }; setQ(nq); }}
-            className="text-[11px] text-zinc-400 hover:text-zinc-600 cursor-pointer">+ вариант</button>
+            className="text-[11px] text-zinc-400 cursor-pointer">+ вариант</button>
         </div>
       ))}
       <button onClick={() => setQ([...questions, { question: "", options: ["", ""], correct: 0 }])}
@@ -56,8 +55,7 @@ function FillBlanksEditor({ section, onChange }: { section: HomeworkSection; onC
         <input key={i} value={a} onChange={(e) => { const na = [...c.answers]; na[i] = e.target.value; onChange({ ...section, content: { ...c, answers: na } }); }}
           placeholder={`Ответ ${i + 1}`} className="w-full h-8 rounded-lg border border-zinc-200 px-2.5 text-[13px] outline-none focus:border-zinc-400" />
       ))}
-      <button onClick={() => onChange({ ...section, content: { ...c, answers: [...c.answers, ""] } })}
-        className="text-[11px] text-zinc-400 cursor-pointer">+ ответ</button>
+      <button onClick={() => onChange({ ...section, content: { ...c, answers: [...c.answers, ""] } })} className="text-[11px] text-zinc-400 cursor-pointer">+ ответ</button>
     </div>
   );
 }
@@ -76,8 +74,7 @@ function MatchingEditor({ section, onChange }: { section: HomeworkSection; onCha
           {c.pairs.length > 1 && <button onClick={() => onChange({ ...section, content: { pairs: c.pairs.filter((_, j) => j !== i) } })} className="text-red-400 cursor-pointer"><Trash2 className="h-3 w-3" /></button>}
         </div>
       ))}
-      <button onClick={() => onChange({ ...section, content: { pairs: [...c.pairs, { left: "", right: "" }] } })}
-        className="text-[11px] text-zinc-400 cursor-pointer">+ пара</button>
+      <button onClick={() => onChange({ ...section, content: { pairs: [...c.pairs, { left: "", right: "" }] } })} className="text-[11px] text-zinc-400 cursor-pointer">+ пара</button>
     </div>
   );
 }
@@ -93,8 +90,7 @@ function OrderingEditor({ section, onChange }: { section: HomeworkSection; onCha
             placeholder={`Элемент ${i + 1}`} className="flex-1 h-8 rounded-lg border border-zinc-200 px-2.5 text-[13px] outline-none focus:border-zinc-400" />
         </div>
       ))}
-      <button onClick={() => onChange({ ...section, content: { items: [...c.items, ""], correct_order: [...c.items, ""].map((_, i) => i) } })}
-        className="text-[11px] text-zinc-400 cursor-pointer">+ элемент</button>
+      <button onClick={() => onChange({ ...section, content: { items: [...c.items, ""], correct_order: [...c.items, ""].map((_, i) => i) } })} className="text-[11px] text-zinc-400 cursor-pointer">+ элемент</button>
     </div>
   );
 }
@@ -112,8 +108,7 @@ function CardsEditor({ section, onChange }: { section: HomeworkSection; onChange
           {c.cards.length > 1 && <button onClick={() => onChange({ ...section, content: { cards: c.cards.filter((_, j) => j !== i) } })} className="text-red-400 cursor-pointer"><Trash2 className="h-3 w-3" /></button>}
         </div>
       ))}
-      <button onClick={() => onChange({ ...section, content: { cards: [...c.cards, { front: "", back: "" }] } })}
-        className="text-[11px] text-zinc-400 cursor-pointer">+ карточка</button>
+      <button onClick={() => onChange({ ...section, content: { cards: [...c.cards, { front: "", back: "" }] } })} className="text-[11px] text-zinc-400 cursor-pointer">+ карточка</button>
     </div>
   );
 }
@@ -152,7 +147,92 @@ function emptySection(type: HomeworkType): HomeworkSection {
   }
 }
 
-// ── Main Student Detail Page ──
+// ── Lesson Card (tutor view) — shows homework inside ──
+
+function LessonCard({ lesson, homeworkItems, onEditLesson, onDeleteLesson, onNewHw, onEditHw, onDeleteHw }: {
+  lesson: Lesson; homeworkItems: Homework[];
+  onEditLesson: () => void; onDeleteLesson: () => void;
+  onNewHw: () => void; onEditHw: (h: Homework) => void; onDeleteHw: (id: string) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const completedHw = homeworkItems.filter((h) => h.completed).length;
+
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+      <div className="flex items-center gap-3 px-4 py-3 group">
+        <button onClick={() => setExpanded(!expanded)} className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer">
+          <div className="h-9 w-9 rounded-xl bg-zinc-100 flex items-center justify-center shrink-0">
+            <BookOpen className="h-4 w-4 text-zinc-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[14px] font-medium truncate">{lesson.title}</p>
+            <p className="text-[12px] text-zinc-400">
+              {lesson.date}
+              {homeworkItems.length > 0 && (
+                <span className={completedHw === homeworkItems.length ? "text-emerald-500" : ""}>
+                  {" "}· {completedHw}/{homeworkItems.length} заданий
+                </span>
+              )}
+            </p>
+          </div>
+          {expanded ? <ChevronUp className="h-4 w-4 text-zinc-400 shrink-0" /> : <ChevronDown className="h-4 w-4 text-zinc-400 shrink-0" />}
+        </button>
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onClick={onEditLesson} className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-zinc-100 cursor-pointer">
+            <Pencil className="h-3.5 w-3.5 text-zinc-400" />
+          </button>
+          <button onClick={onDeleteLesson} className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-red-50 cursor-pointer">
+            <Trash2 className="h-3.5 w-3.5 text-zinc-400 hover:text-red-500" />
+          </button>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="px-4 pb-4 space-y-3">
+          {lesson.notes && (
+            <div className="rounded-lg bg-zinc-50 px-3 py-2.5">
+              <p className="text-[13px] text-zinc-600 whitespace-pre-wrap leading-relaxed">{lesson.notes}</p>
+            </div>
+          )}
+
+          {/* Homework list */}
+          {homeworkItems.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Домашние задания</p>
+              {homeworkItems.map((h) => {
+                const sectionTypes = (h.sections || []).map((s) => typeLabels[s.type]).join(", ");
+                return (
+                  <div key={h.id} className="rounded-lg border border-zinc-100 px-3 py-2 flex items-center gap-3 group/hw hover:border-zinc-200 transition-colors">
+                    {h.completed ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" /> : <Circle className="h-3.5 w-3.5 text-zinc-300 shrink-0" />}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-medium truncate">{h.title}</p>
+                      <p className="text-[11px] text-zinc-400">{sectionTypes}</p>
+                    </div>
+                    <div className="flex items-center gap-1 opacity-0 group-hover/hw:opacity-100 transition-opacity">
+                      <button onClick={() => onEditHw(h)} className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-zinc-100 cursor-pointer">
+                        <Pencil className="h-3 w-3 text-zinc-400" />
+                      </button>
+                      <button onClick={() => onDeleteHw(h.id)} className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-red-50 cursor-pointer">
+                        <Trash2 className="h-3 w-3 text-zinc-400 hover:text-red-500" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <button onClick={onNewHw}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-zinc-500 hover:bg-zinc-100 transition-colors cursor-pointer">
+            <Plus className="h-3.5 w-3.5" /> Добавить домашку
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main ──
 
 export function StudentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -162,14 +242,14 @@ export function StudentDetailPage() {
   const studentLessons = student ? lessons.filter((l) => l.student_id === student.id).sort((a, b) => b.date.localeCompare(a.date)) : [];
   const studentHomework = student ? homework.filter((h) => h.student_id === student.id) : [];
 
-  // ── Lesson dialog ──
+  // Lesson dialog
   const [lessonOpen, setLessonOpen] = useState(false);
   const [editLessonId, setEditLessonId] = useState<string | null>(null);
   const [lessonTitle, setLessonTitle] = useState("");
   const [lessonDate, setLessonDate] = useState(new Date().toISOString().slice(0, 10));
   const [lessonNotes, setLessonNotes] = useState("");
 
-  // ── Homework dialog ──
+  // Homework dialog
   const [hwOpen, setHwOpen] = useState(false);
   const [editHwId, setEditHwId] = useState<string | null>(null);
   const [hwTitle, setHwTitle] = useState("");
@@ -193,62 +273,23 @@ export function StudentDetailPage() {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  // Lesson handlers
-  const openNewLesson = () => {
-    setEditLessonId(null);
-    setLessonTitle("");
-    setLessonDate(new Date().toISOString().slice(0, 10));
-    setLessonNotes("");
-    setLessonOpen(true);
-  };
-  const openEditLesson = (l: Lesson) => {
-    setEditLessonId(l.id);
-    setLessonTitle(l.title);
-    setLessonDate(l.date);
-    setLessonNotes(l.notes || "");
-    setLessonOpen(true);
-  };
+  // Lesson
+  const openNewLesson = () => { setEditLessonId(null); setLessonTitle(""); setLessonDate(new Date().toISOString().slice(0, 10)); setLessonNotes(""); setLessonOpen(true); };
+  const openEditLesson = (l: Lesson) => { setEditLessonId(l.id); setLessonTitle(l.title); setLessonDate(l.date); setLessonNotes(l.notes || ""); setLessonOpen(true); };
   const saveLesson = () => {
-    if (!lessonTitle.trim() || !student) return;
-    if (editLessonId) {
-      updateLesson(editLessonId, { title: lessonTitle.trim(), date: lessonDate, notes: lessonNotes.trim() || null });
-    } else {
-      addLesson(student.id, lessonTitle.trim(), lessonDate, lessonNotes.trim() || undefined);
-    }
+    if (!lessonTitle.trim()) return;
+    if (editLessonId) updateLesson(editLessonId, { title: lessonTitle.trim(), date: lessonDate, notes: lessonNotes.trim() || null });
+    else addLesson(student.id, lessonTitle.trim(), lessonDate, lessonNotes.trim() || undefined);
     setLessonOpen(false);
   };
 
-  // Homework handlers
-  const openNewHw = () => {
-    setEditHwId(null);
-    setHwTitle("");
-    setHwLessonId("");
-    setHwSections([]);
-    setHwOpen(true);
-  };
-  const openEditHw = (h: Homework) => {
-    setEditHwId(h.id);
-    setHwTitle(h.title);
-    setHwLessonId(h.lesson_id || "");
-    setHwSections(h.sections || []);
-    setHwOpen(true);
-  };
+  // Homework (always tied to lesson)
+  const openNewHw = (lessonId: string) => { setEditHwId(null); setHwTitle(""); setHwLessonId(lessonId); setHwSections([]); setHwOpen(true); };
+  const openEditHw = (h: Homework) => { setEditHwId(h.id); setHwTitle(h.title); setHwLessonId(h.lesson_id); setHwSections(h.sections || []); setHwOpen(true); };
   const saveHw = () => {
-    if (!hwTitle.trim() || !student || hwSections.length === 0) return;
-    if (editHwId) {
-      updateHomework(editHwId, { title: hwTitle.trim(), lesson_id: hwLessonId || "", sections: hwSections });
-    } else {
-      addHomework({
-        lesson_id: hwLessonId || "",
-        student_id: student.id,
-        tutor_id: "local",
-        title: hwTitle.trim(),
-        sections: hwSections,
-        completed: false,
-        student_answers: null,
-        scores: null,
-      });
-    }
+    if (!hwTitle.trim() || !hwLessonId || hwSections.length === 0) return;
+    if (editHwId) updateHomework(editHwId, { title: hwTitle.trim(), lesson_id: hwLessonId, sections: hwSections });
+    else addHomework({ lesson_id: hwLessonId, student_id: student.id, tutor_id: "local", title: hwTitle.trim(), sections: hwSections, completed: false, student_answers: null, scores: null });
     setHwOpen(false);
   };
 
@@ -256,10 +297,7 @@ export function StudentDetailPage() {
   const avgScore = (() => {
     const scored = studentHomework.filter((h) => h.scores && Object.keys(h.scores).length > 0);
     if (scored.length === 0) return null;
-    const total = scored.reduce((sum, h) => {
-      const vals = Object.values(h.scores!);
-      return sum + vals.reduce((a, b) => a + b, 0) / vals.length;
-    }, 0);
+    const total = scored.reduce((sum, h) => { const vals = Object.values(h.scores!); return sum + vals.reduce((a, b) => a + b, 0) / vals.length; }, 0);
     return Math.round(total / scored.length);
   })();
 
@@ -270,14 +308,13 @@ export function StudentDetailPage() {
         <Link to="/app" className="mt-1.5 h-8 w-8 rounded-lg flex items-center justify-center hover:bg-zinc-100 transition-colors shrink-0">
           <ArrowLeft className="h-4 w-4 text-zinc-400" />
         </Link>
-        <img src={`https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(student.name)}`}
-          alt={student.name} className="h-12 w-12 rounded-full bg-zinc-100 shrink-0" />
+        <img src={`https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(student.name)}`} alt={student.name} className="h-12 w-12 rounded-full bg-zinc-100 shrink-0" />
         <div className="flex-1">
           <h1 className="text-xl font-bold tracking-tight">{student.name}</h1>
           <div className="flex items-center gap-3 mt-1">
             {student.telegram && <span className="text-[12px] text-zinc-400">@{student.telegram.replace(/^@/, "")}</span>}
             <button onClick={copyLink} className="inline-flex items-center gap-1 text-[12px] text-zinc-400 hover:text-zinc-600 cursor-pointer">
-              {copied ? <><Check className="h-3 w-3 text-emerald-500" /> Скопировано</> : <><Copy className="h-3 w-3" /> Ссылка ученику</>}
+              {copied ? <><Check className="h-3 w-3 text-emerald-500" /> Скопировано</> : <><Copy className="h-3 w-3" /> Ссылка</>}
             </button>
             <a href={`/s/${student.share_id}`} target="_blank" className="inline-flex items-center gap-1 text-[12px] text-zinc-400 hover:text-zinc-600">
               <ExternalLink className="h-3 w-3" /> Портал
@@ -302,106 +339,34 @@ export function StudentDetailPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs.Root defaultValue="lessons">
-        <Tabs.List className="flex gap-1 border-b border-zinc-200 mb-5">
-          <Tabs.Trigger value="lessons"
-            className="px-4 py-2 text-[13px] font-medium text-zinc-400 border-b-2 border-transparent data-[state=active]:text-zinc-900 data-[state=active]:border-zinc-900 transition-colors cursor-pointer flex items-center gap-1.5">
-            <BookOpen className="h-3.5 w-3.5" /> Уроки
-          </Tabs.Trigger>
-          <Tabs.Trigger value="homework"
-            className="px-4 py-2 text-[13px] font-medium text-zinc-400 border-b-2 border-transparent data-[state=active]:text-zinc-900 data-[state=active]:border-zinc-900 transition-colors cursor-pointer flex items-center gap-1.5">
-            <ClipboardCheck className="h-3.5 w-3.5" /> Домашки
-          </Tabs.Trigger>
-        </Tabs.List>
+      {/* Lessons + Homework inside */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[14px] font-semibold">Уроки</h2>
+          <button onClick={openNewLesson}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-[12px] font-medium hover:bg-zinc-800 cursor-pointer">
+            <Plus className="h-3.5 w-3.5" /> Добавить урок
+          </button>
+        </div>
 
-        {/* ── Lessons Tab ── */}
-        <Tabs.Content value="lessons" className="space-y-3">
-          <div className="flex justify-end">
-            <button onClick={openNewLesson}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-[12px] font-medium hover:bg-zinc-800 cursor-pointer">
-              <Plus className="h-3.5 w-3.5" /> Добавить урок
-            </button>
+        {studentLessons.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-zinc-200 bg-white py-16 text-center">
+            <p className="text-[14px] text-zinc-400">Уроков пока нет</p>
           </div>
-          {studentLessons.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-zinc-200 bg-white py-16 text-center">
-              <p className="text-[14px] text-zinc-400">Уроков пока нет</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {studentLessons.map((l) => {
-                const hwCount = studentHomework.filter((h) => h.lesson_id === l.id).length;
-                return (
-                  <div key={l.id} className="rounded-xl border border-zinc-200 bg-white px-4 py-3 flex items-center gap-4 group hover:border-zinc-300 transition-colors">
-                    <div className="h-9 w-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
-                      <BookOpen className="h-4 w-4 text-zinc-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-medium truncate">{l.title}</p>
-                      <p className="text-[12px] text-zinc-400">{l.date}{hwCount > 0 && ` · ${hwCount} заданий`}</p>
-                    </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => openEditLesson(l)} className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-zinc-100 cursor-pointer">
-                        <Pencil className="h-3.5 w-3.5 text-zinc-400" />
-                      </button>
-                      <button onClick={() => deleteLesson(l.id)} className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-red-50 cursor-pointer">
-                        <Trash2 className="h-3.5 w-3.5 text-zinc-400 hover:text-red-500" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Tabs.Content>
+        ) : (
+          studentLessons.map((l) => (
+            <LessonCard key={l.id} lesson={l}
+              homeworkItems={studentHomework.filter((h) => h.lesson_id === l.id)}
+              onEditLesson={() => openEditLesson(l)}
+              onDeleteLesson={() => deleteLesson(l.id)}
+              onNewHw={() => openNewHw(l.id)}
+              onEditHw={openEditHw}
+              onDeleteHw={deleteHomework} />
+          ))
+        )}
+      </div>
 
-        {/* ── Homework Tab ── */}
-        <Tabs.Content value="homework" className="space-y-3">
-          <div className="flex justify-end">
-            <button onClick={openNewHw}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-[12px] font-medium hover:bg-zinc-800 cursor-pointer">
-              <Plus className="h-3.5 w-3.5" /> Создать задание
-            </button>
-          </div>
-          {studentHomework.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-zinc-200 bg-white py-16 text-center">
-              <p className="text-[14px] text-zinc-400">Заданий пока нет</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {studentHomework.map((h) => {
-                const sectionTypes = (h.sections || []).map((s) => typeLabels[s.type]).join(", ");
-                const lessonName = h.lesson_id ? studentLessons.find((l) => l.id === h.lesson_id)?.title : null;
-                return (
-                  <div key={h.id} className="rounded-xl border border-zinc-200 bg-white px-4 py-3 flex items-center gap-4 group hover:border-zinc-300 transition-colors">
-                    <div className="h-9 w-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
-                      {h.completed ? <ClipboardCheck className="h-4 w-4 text-emerald-500" /> : <ClipboardCheck className="h-4 w-4 text-zinc-300" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-medium truncate">{h.title}</p>
-                      <p className="text-[12px] text-zinc-400 truncate">
-                        {sectionTypes || "—"}
-                        {lessonName && <span> · {lessonName}</span>}
-                        {h.completed && <span className="text-emerald-500"> · Выполнено</span>}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => openEditHw(h)} className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-zinc-100 cursor-pointer">
-                        <Pencil className="h-3.5 w-3.5 text-zinc-400" />
-                      </button>
-                      <button onClick={() => deleteHomework(h.id)} className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-red-50 cursor-pointer">
-                        <Trash2 className="h-3.5 w-3.5 text-zinc-400 hover:text-red-500" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Tabs.Content>
-      </Tabs.Root>
-
-      {/* ── Lesson Dialog ── */}
+      {/* Lesson Dialog */}
       <Dialog.Root open={lessonOpen} onOpenChange={setLessonOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
@@ -435,28 +400,16 @@ export function StudentDetailPage() {
         </Dialog.Portal>
       </Dialog.Root>
 
-      {/* ── Homework Dialog ── */}
+      {/* Homework Dialog */}
       <Dialog.Root open={hwOpen} onOpenChange={setHwOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl z-50 space-y-4">
             <Dialog.Title className="text-lg font-bold">{editHwId ? "Редактировать задание" : "Новое задание"}</Dialog.Title>
-            <div className="space-y-3">
-              <div>
-                <label className="text-[12px] font-medium text-zinc-500 mb-1 block">Название *</label>
-                <input value={hwTitle} onChange={(e) => setHwTitle(e.target.value)} placeholder="Домашнее задание №5"
-                  className="w-full h-10 rounded-xl border border-zinc-200 px-3 text-[14px] outline-none focus:border-zinc-400" autoFocus />
-              </div>
-              {studentLessons.length > 0 && (
-                <div>
-                  <label className="text-[12px] font-medium text-zinc-500 mb-1 block">Привязать к уроку</label>
-                  <select value={hwLessonId} onChange={(e) => setHwLessonId(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-zinc-200 px-3 text-[14px] outline-none focus:border-zinc-400 bg-white">
-                    <option value="">Без урока</option>
-                    {studentLessons.map((l) => <option key={l.id} value={l.id}>{l.title}</option>)}
-                  </select>
-                </div>
-              )}
+            <div>
+              <label className="text-[12px] font-medium text-zinc-500 mb-1 block">Название *</label>
+              <input value={hwTitle} onChange={(e) => setHwTitle(e.target.value)} placeholder="Домашнее задание"
+                className="w-full h-10 rounded-xl border border-zinc-200 px-3 text-[14px] outline-none focus:border-zinc-400" autoFocus />
             </div>
             <div className="space-y-3">
               {hwSections.map((sec, i) => (
@@ -465,13 +418,11 @@ export function StudentDetailPage() {
                   onDelete={() => setHwSections(hwSections.filter((_, j) => j !== i))} />
               ))}
               <div className="rounded-xl border border-dashed border-zinc-200 p-3">
-                <p className="text-[11px] text-zinc-400 mb-2">Добавить:</p>
+                <p className="text-[11px] text-zinc-400 mb-2">Добавить секцию:</p>
                 <div className="flex gap-1.5 flex-wrap">
                   {(Object.entries(typeLabels) as [HomeworkType, string][]).map(([key, label]) => (
                     <button key={key} onClick={() => setHwSections([...hwSections, emptySection(key)])}
-                      className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-zinc-100 text-zinc-500 hover:bg-zinc-200 cursor-pointer">
-                      + {label}
-                    </button>
+                      className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-zinc-100 text-zinc-500 hover:bg-zinc-200 cursor-pointer">+ {label}</button>
                   ))}
                 </div>
               </div>

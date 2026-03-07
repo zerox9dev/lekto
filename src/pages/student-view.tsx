@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { BookOpen, Sparkles, CheckCircle2, Circle, ChevronDown, ChevronUp, ClipboardCheck } from "lucide-react";
 import { useStore } from "@/lib/store";
-import * as Tabs from "@radix-ui/react-tabs";
 import type { Homework, HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent } from "@/types/database";
 
 const typeLabels: Record<string, string> = {
@@ -19,9 +18,8 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
 
   const handleSubmit = () => {
     const correct = questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0);
-    const score = Math.round((correct / questions.length) * 100);
     setSubmitted(true);
-    onScore(score);
+    onScore(Math.round((correct / questions.length) * 100));
   };
 
   return (
@@ -50,9 +48,7 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
       ))}
       {!submitted && (
         <button onClick={handleSubmit} disabled={answers.includes(-1)}
-          className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">
-          Проверить
-        </button>
+          className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">Проверить</button>
       )}
     </div>
   );
@@ -96,9 +92,7 @@ function FillBlanksPlayer({ section, onScore }: { section: HomeworkSection; onSc
       {submitted && <p className="text-[12px] text-zinc-400">Ответы: {content.answers.join(", ")}</p>}
       {!submitted && (
         <button onClick={handleSubmit} disabled={answers.some((a) => !a.trim())}
-          className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">
-          Проверить
-        </button>
+          className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">Проверить</button>
       )}
     </div>
   );
@@ -115,9 +109,8 @@ function MatchingPlayer({ section, onScore }: { section: HomeworkSection; onScor
   });
 
   const handleSubmit = () => {
-    const score = Math.round((answers.filter((a, i) => shuffledRight[a!] === i).length / content.pairs.length) * 100);
     setSubmitted(true);
-    onScore(score);
+    onScore(Math.round((answers.filter((a, i) => shuffledRight[a!] === i).length / content.pairs.length) * 100));
   };
 
   return (
@@ -138,9 +131,7 @@ function MatchingPlayer({ section, onScore }: { section: HomeworkSection; onScor
       ))}
       {!submitted && (
         <button onClick={handleSubmit} disabled={answers.includes(null)}
-          className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">
-          Проверить
-        </button>
+          className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-[13px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">Проверить</button>
       )}
     </div>
   );
@@ -216,7 +207,7 @@ function CardsPlayer({ section }: { section: HomeworkSection }) {
 function SectionPlayer({ section, onScore }: { section: HomeworkSection; onScore: (sectionId: string, score: number) => void }) {
   const handle = (score: number) => onScore(section.id, score);
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 space-y-3">
+    <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-4 space-y-3">
       <div className="flex items-center gap-2">
         <span className="text-[11px] font-medium text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-md">{typeLabels[section.type]}</span>
         <span className="text-[13px] font-medium">{section.title}</span>
@@ -231,13 +222,12 @@ function SectionPlayer({ section, onScore }: { section: HomeworkSection; onScore
   );
 }
 
-// ── Homework Card ──
+// ── Homework block inside lesson ──
 
-function HomeworkCard({ hw }: { hw: Homework }) {
+function HomeworkBlock({ hw }: { hw: Homework }) {
   const { updateHomework } = useStore();
   const sections = hw.sections || [];
   const scores = hw.scores || {};
-  const completedSections = Object.keys(scores).length;
   const gradable = sections.filter((s) => s.type !== "text" && s.type !== "cards").length;
 
   const handleScore = (sectionId: string, score: number) => {
@@ -245,15 +235,15 @@ function HomeworkCard({ hw }: { hw: Homework }) {
     updateHomework(hw.id, { scores: newScores, completed: Object.keys(newScores).length >= gradable });
   };
 
-  const avgScore = completedSections > 0
-    ? Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / completedSections)
+  const avgScore = Object.keys(scores).length > 0
+    ? Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / Object.keys(scores).length)
     : null;
 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         {hw.completed ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-zinc-300" />}
-        <span className="text-[14px] font-medium">{hw.title}</span>
+        <span className="text-[14px] font-semibold">{hw.title}</span>
         {avgScore !== null && <span className="text-[12px] text-zinc-400 ml-auto">{avgScore}%</span>}
       </div>
       {sections.map((sec) => (
@@ -263,7 +253,66 @@ function HomeworkCard({ hw }: { hw: Homework }) {
   );
 }
 
-// ── Main Student View ──
+// ── Lesson Card with homework inside ──
+
+function LessonCard({ lesson, homeworkItems }: { lesson: any; homeworkItems: Homework[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const completedHw = homeworkItems.filter((h) => h.completed).length;
+  const totalHw = homeworkItems.length;
+
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+      <button onClick={() => setExpanded(!expanded)}
+        className="w-full px-4 py-3.5 flex items-center gap-3 text-left hover:bg-zinc-50 transition-colors cursor-pointer">
+        <div className="h-10 w-10 rounded-xl bg-zinc-100 flex items-center justify-center shrink-0">
+          <BookOpen className="h-4.5 w-4.5 text-zinc-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[14px] font-medium truncate">{lesson.title}</p>
+          <p className="text-[12px] text-zinc-400">
+            {lesson.date}
+            {totalHw > 0 && (
+              <span className={completedHw === totalHw ? "text-emerald-500" : ""}>
+                {" "}· {completedHw}/{totalHw} заданий
+              </span>
+            )}
+          </p>
+        </div>
+        {expanded ? <ChevronUp className="h-4 w-4 text-zinc-400" /> : <ChevronDown className="h-4 w-4 text-zinc-400" />}
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4 space-y-5">
+          {/* Notes */}
+          {lesson.notes && (
+            <div className="rounded-xl bg-zinc-50 px-4 py-3">
+              <p className="text-[12px] font-medium text-zinc-400 mb-1">Конспект</p>
+              <p className="text-[13px] text-zinc-600 whitespace-pre-wrap leading-relaxed">{lesson.notes}</p>
+            </div>
+          )}
+
+          {/* Homework */}
+          {homeworkItems.length > 0 && (
+            <div className="space-y-4">
+              <p className="text-[12px] font-medium text-zinc-400 flex items-center gap-1.5">
+                <ClipboardCheck className="h-3.5 w-3.5" /> Домашнее задание
+              </p>
+              {homeworkItems.map((h) => (
+                <HomeworkBlock key={h.id} hw={h} />
+              ))}
+            </div>
+          )}
+
+          {!lesson.notes && homeworkItems.length === 0 && (
+            <p className="text-[13px] text-zinc-400 text-center py-4">Нет материалов</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main ──
 
 export function StudentView() {
   const { shareId } = useParams<{ shareId: string }>();
@@ -284,6 +333,7 @@ export function StudentView() {
     );
   }
 
+  const totalHw = studentHomework.length;
   const completedHw = studentHomework.filter((h) => h.completed).length;
 
   return (
@@ -298,61 +348,29 @@ export function StudentView() {
       </header>
 
       <main className="max-w-2xl mx-auto px-6 py-8 space-y-6">
-        {/* Header */}
         <div className="flex items-center gap-4">
           <img src={`https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(student.name)}`}
             alt={student.name} className="h-12 w-12 rounded-full bg-zinc-100 shrink-0" />
           <div>
             <h1 className="text-xl font-bold tracking-tight">{student.name}</h1>
             <p className="text-[13px] text-zinc-400 mt-0.5">
-              {studentLessons.length} уроков · {completedHw}/{studentHomework.length} заданий
+              {studentLessons.length} уроков · {completedHw}/{totalHw} заданий выполнено
             </p>
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs.Root defaultValue="lessons">
-          <Tabs.List className="flex gap-1 border-b border-zinc-200 mb-5">
-            <Tabs.Trigger value="lessons"
-              className="px-4 py-2 text-[13px] font-medium text-zinc-400 border-b-2 border-transparent data-[state=active]:text-zinc-900 data-[state=active]:border-zinc-900 transition-colors cursor-pointer flex items-center gap-1.5">
-              <BookOpen className="h-3.5 w-3.5" /> Уроки
-            </Tabs.Trigger>
-            <Tabs.Trigger value="homework"
-              className="px-4 py-2 text-[13px] font-medium text-zinc-400 border-b-2 border-transparent data-[state=active]:text-zinc-900 data-[state=active]:border-zinc-900 transition-colors cursor-pointer flex items-center gap-1.5">
-              <ClipboardCheck className="h-3.5 w-3.5" /> Домашки
-            </Tabs.Trigger>
-          </Tabs.List>
-
-          {/* Lessons */}
-          <Tabs.Content value="lessons" className="space-y-3">
-            {studentLessons.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center">
-                <p className="text-[14px] text-zinc-400">Уроков пока нет</p>
-              </div>
-            ) : (
-              studentLessons.map((l) => (
-                <div key={l.id} className="rounded-xl border border-zinc-200 bg-white p-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[14px] font-medium">{l.title}</p>
-                    <span className="text-[12px] text-zinc-400">{l.date}</span>
-                  </div>
-                  {l.notes && <p className="text-[13px] text-zinc-500 whitespace-pre-wrap leading-relaxed">{l.notes}</p>}
-                </div>
-              ))
-            )}
-          </Tabs.Content>
-
-          {/* Homework */}
-          <Tabs.Content value="homework" className="space-y-6">
-            {studentHomework.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center">
-                <p className="text-[14px] text-zinc-400">Заданий пока нет</p>
-              </div>
-            ) : (
-              studentHomework.map((h) => <HomeworkCard key={h.id} hw={h} />)
-            )}
-          </Tabs.Content>
-        </Tabs.Root>
+        {studentLessons.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center">
+            <p className="text-[14px] text-zinc-400">Уроков пока нет. Ваш репетитор добавит их сюда.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {studentLessons.map((l) => (
+              <LessonCard key={l.id} lesson={l}
+                homeworkItems={studentHomework.filter((h) => h.lesson_id === l.id)} />
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
