@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Plus, BookOpen, ClipboardCheck, Pencil, Trash2, Copy, Check, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle, CopyPlus, Eye, X, AlertCircle, Upload } from "lucide-react";
+import { ArrowLeft, Plus, BookOpen, ClipboardCheck, Pencil, Trash2, Copy, Check, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle, CopyPlus, Eye, X, AlertCircle, Upload, Bookmark, FileDown } from "lucide-react";
 import { useStore } from "@/lib/store";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { HomeworkType, HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, TrueFalseContent, TrueFalseQuestion, OpenAnswerContent, Homework, Lesson } from "@/types/database";
@@ -544,10 +544,11 @@ function HomeworkPreview({ title, sections }: { title: string; sections: Homewor
 // Lesson Card
 // ══════════════════════════════════════════════════════
 
-function LessonCard({ lesson, homeworkItems, onEditLesson, onDeleteLesson, onNewHw, onEditHw, onDeleteHw, onDuplicateHw }: {
+function LessonCard({ lesson, homeworkItems, onEditLesson, onDeleteLesson, onNewHw, onEditHw, onDeleteHw, onDuplicateHw, onSaveAsTemplate }: {
   lesson: Lesson; homeworkItems: Homework[];
   onEditLesson: () => void; onDeleteLesson: () => void;
   onNewHw: () => void; onEditHw: (h: Homework) => void; onDeleteHw: (id: string) => void; onDuplicateHw: (h: Homework) => void;
+  onSaveAsTemplate: (h: Homework) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const completedHw = homeworkItems.filter((h) => h.completed).length;
@@ -604,6 +605,7 @@ function LessonCard({ lesson, homeworkItems, onEditLesson, onDeleteLesson, onNew
                       <span className={`text-[12px] font-semibold ${avgScore >= 80 ? "text-emerald-500" : avgScore >= 50 ? "text-amber-500" : "text-red-500"}`}>{avgScore}%</span>
                     )}
                     <div className="flex items-center gap-0.5 opacity-0 group-hover/hw:opacity-100 transition-opacity">
+                      <button onClick={() => onSaveAsTemplate(h)} className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-amber-50 cursor-pointer" title="Сохранить как шаблон"><Bookmark className="h-3 w-3 text-zinc-400 hover:text-amber-500" /></button>
                       <button onClick={() => onDuplicateHw(h)} className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-zinc-100 cursor-pointer" title="Дублировать"><CopyPlus className="h-3 w-3 text-zinc-400" /></button>
                       <button onClick={() => onEditHw(h)} className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-zinc-100 cursor-pointer"><Pencil className="h-3 w-3 text-zinc-400" /></button>
                       <button onClick={() => onDeleteHw(h.id)} className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-red-50 cursor-pointer"><Trash2 className="h-3 w-3 text-zinc-400 hover:text-red-500" /></button>
@@ -628,7 +630,7 @@ function LessonCard({ lesson, homeworkItems, onEditLesson, onDeleteLesson, onNew
 
 export function StudentDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { students, lessons, homework, addLesson, updateLesson, deleteLesson, addHomework, updateHomework, deleteHomework } = useStore();
+  const { students, lessons, homework, addLesson, updateLesson, deleteLesson, addHomework, updateHomework, deleteHomework, templates, addTemplate, deleteTemplate } = useStore();
 
   const student = students.find((s) => s.id === id);
   const studentLessons = student ? lessons.filter((l) => l.student_id === student.id).sort((a, b) => b.date.localeCompare(a.date)) : [];
@@ -647,6 +649,7 @@ export function StudentDetailPage() {
   const [hwSections, setHwSections] = useState<HomeworkSection[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   const [copied, setCopied] = useState(false);
 
@@ -684,8 +687,8 @@ export function StudentDetailPage() {
     setLessonOpen(false);
   };
 
-  const openNewHw = (lessonId: string) => { setEditHwId(null); setHwTitle(""); setHwLessonId(lessonId); setHwSections([]); setShowPreview(false); setShowErrors(false); setHwOpen(true); };
-  const openEditHw = (h: Homework) => { setEditHwId(h.id); setHwTitle(h.title); setHwLessonId(h.lesson_id); setHwSections(h.sections || []); setShowPreview(false); setShowErrors(false); setHwOpen(true); };
+  const openNewHw = (lessonId: string) => { setEditHwId(null); setHwTitle(""); setHwLessonId(lessonId); setHwSections([]); setShowPreview(false); setShowErrors(false); setShowTemplates(false); setHwOpen(true); };
+  const openEditHw = (h: Homework) => { setEditHwId(h.id); setHwTitle(h.title); setHwLessonId(h.lesson_id); setHwSections(h.sections || []); setShowPreview(false); setShowErrors(false); setShowTemplates(false); setHwOpen(true); };
   const duplicateHw = (h: Homework, lessonId: string) => {
     addHomework({ lesson_id: lessonId, student_id: student.id, tutor_id: "local", title: h.title + " (копия)",
       sections: (h.sections || []).map((s) => ({ ...s, id: crypto.randomUUID() })), completed: false, student_answers: null, scores: null });
@@ -745,7 +748,8 @@ export function StudentDetailPage() {
           studentLessons.map((l) => (
             <LessonCard key={l.id} lesson={l} homeworkItems={studentHomework.filter((h) => h.lesson_id === l.id)}
               onEditLesson={() => openEditLesson(l)} onDeleteLesson={() => deleteLesson(l.id)}
-              onNewHw={() => openNewHw(l.id)} onEditHw={openEditHw} onDeleteHw={deleteHomework} onDuplicateHw={(h) => duplicateHw(h, l.id)} />
+              onNewHw={() => openNewHw(l.id)} onEditHw={openEditHw} onDeleteHw={deleteHomework} onDuplicateHw={(h) => duplicateHw(h, l.id)}
+              onSaveAsTemplate={(h) => addTemplate(h.title, h.sections || [])} />
           ))
         )}
       </div>
@@ -798,6 +802,37 @@ export function StudentDetailPage() {
                   <div><label className="text-[12px] font-medium text-zinc-500 mb-1 block">Название *</label>
                     <input value={hwTitle} onChange={(e) => setHwTitle(e.target.value)} placeholder="Домашнее задание — Present Simple"
                       className="w-full h-10 rounded-xl border border-zinc-200 px-3 text-[14px] outline-none focus:border-zinc-400" autoFocus /></div>
+
+                  {/* Template picker */}
+                  {!editHwId && templates.length > 0 && (
+                    <div>
+                      <button onClick={() => setShowTemplates(!showTemplates)}
+                        className="inline-flex items-center gap-1.5 text-[12px] font-medium text-amber-600 hover:text-amber-700 cursor-pointer">
+                        <FileDown className="h-3.5 w-3.5" /> {showTemplates ? "Скрыть шаблоны" : `Из шаблона (${templates.length})`}
+                      </button>
+                      {showTemplates && (
+                        <div className="mt-2 space-y-1.5">
+                          {templates.map((t) => (
+                            <div key={t.id} className="flex items-center gap-2 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 group/tpl">
+                              <button onClick={() => {
+                                setHwTitle(t.title);
+                                setHwSections(t.sections.map((s) => ({ ...s, id: crypto.randomUUID() })));
+                                setShowTemplates(false);
+                              }} className="flex-1 text-left cursor-pointer">
+                                <p className="text-[13px] font-medium text-zinc-700">{t.title}</p>
+                                <p className="text-[11px] text-zinc-400">{t.sections.length} секций · {t.sections.map((s) => typeLabels[s.type]).join(", ")}</p>
+                              </button>
+                              <button onClick={() => deleteTemplate(t.id)}
+                                className="h-6 w-6 rounded flex items-center justify-center opacity-0 group-hover/tpl:opacity-100 hover:bg-red-100 cursor-pointer shrink-0">
+                                <Trash2 className="h-3 w-3 text-red-400" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="space-y-3">
                     {hwSections.length > 0 && <p className="text-[12px] font-medium text-zinc-400">{hwSections.length} {hwSections.length === 1 ? "секция" : "секций"}</p>}
                     {hwSections.map((sec, i) => (
@@ -829,6 +864,12 @@ export function StudentDetailPage() {
             <div className="sticky bottom-0 bg-white border-t border-zinc-100 px-6 py-4 flex justify-between items-center">
               <div className="flex items-center gap-2">
                 {hwSections.length === 0 && <p className="text-[12px] text-zinc-400">Добавьте хотя бы одну секцию</p>}
+                {hwSections.length > 0 && (
+                  <button onClick={() => { addTemplate(hwTitle || "Шаблон", hwSections); }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium text-amber-600 hover:bg-amber-50 cursor-pointer">
+                    <Bookmark className="h-3 w-3" /> Сохранить как шаблон
+                  </button>
+                )}
                 {showErrors && validationErrors.length > 0 && (
                   <p className="text-[12px] text-red-500 flex items-center gap-1"><AlertCircle className="h-3.5 w-3.5" /> {validationErrors.length} ошибок</p>
                 )}

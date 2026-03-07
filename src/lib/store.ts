@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import type { Student, Lesson, Homework } from "@/types/database";
+import type { Student, Lesson, Homework, HomeworkTemplate } from "@/types/database";
 
 function uid() {
   return crypto.randomUUID();
@@ -16,6 +16,7 @@ interface StoreData {
   students: Student[];
   lessons: Lesson[];
   homework: Homework[];
+  templates: HomeworkTemplate[];
 }
 
 function load(): StoreData {
@@ -23,7 +24,7 @@ function load(): StoreData {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch {}
-  return { students: [], lessons: [], homework: [] };
+  return { students: [], lessons: [], homework: [], templates: [] };
 }
 
 function save(data: StoreData) {
@@ -147,9 +148,30 @@ export function useStore() {
     notify();
   }, []);
 
+  // ── Templates ──
+  const templates = _data.templates || [];
+
+  const addTemplate = useCallback((title: string, sections: Homework["sections"]) => {
+    const t: HomeworkTemplate = {
+      id: uid(),
+      title,
+      sections: sections.map((s) => ({ ...s, id: uid() })),
+      created_at: new Date().toISOString(),
+    };
+    _data = { ..._data, templates: [t, ...(_data.templates || [])] };
+    notify();
+    return t;
+  }, []);
+
+  const deleteTemplate = useCallback((id: string) => {
+    _data = { ..._data, templates: (_data.templates || []).filter((t) => t.id !== id) };
+    notify();
+  }, []);
+
   return {
     students, addStudent, updateStudent, deleteStudent,
     lessons, addLesson, updateLesson, deleteLesson,
     homework, addHomework, updateHomework, deleteHomework,
+    templates, addTemplate, deleteTemplate,
   };
 }

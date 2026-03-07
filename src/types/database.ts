@@ -68,6 +68,13 @@ export interface HomeworkSection {
   content: QuizQuestion[] | FillBlanksContent | MatchingContent | OrderingContent | CardsContent | TrueFalseContent | OpenAnswerContent | { text: string };
 }
 
+export interface HomeworkTemplate {
+  id: string;
+  title: string;
+  sections: HomeworkSection[];
+  created_at: string;
+}
+
 export interface Homework {
   id: string;
   lesson_id: string;
