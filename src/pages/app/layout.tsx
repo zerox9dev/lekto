@@ -1,4 +1,4 @@
-import { Routes, Route, NavLink, Link } from "react-router-dom";
+import { Routes, Route, NavLink, Link, useLocation } from "react-router-dom";
 import { Users, Settings, LogOut, Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { StudentsPage } from "./students";
@@ -20,6 +20,31 @@ function SideLink({ href, icon: Icon, label, end }: { href: string; icon: any; l
       <Icon className="h-[16px] w-[16px]" />
       {label}
     </NavLink>
+  );
+}
+
+function MobileNav() {
+  const location = useLocation();
+  const isApp = location.pathname === "/app" || location.pathname === "/app/";
+  const isSettings = location.pathname === "/app/settings";
+
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-zinc-200 flex md:hidden">
+      <NavLink to="/app" end
+        className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
+          isApp ? "text-zinc-900" : "text-zinc-400"
+        }`}>
+        <Users className="h-5 w-5" />
+        <span>Ученики</span>
+      </NavLink>
+      <NavLink to="/app/settings"
+        className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
+          isSettings ? "text-zinc-900" : "text-zinc-400"
+        }`}>
+        <Settings className="h-5 w-5" />
+        <span>Настройки</span>
+      </NavLink>
+    </nav>
   );
 }
 
@@ -47,8 +72,8 @@ export function AppLayout() {
           </button>
         </div>
       </aside>
-      <main className="flex-1 min-h-screen">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8 py-8">
+      <main className="flex-1 min-h-screen pb-16 md:pb-0">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-8">
           <Routes>
             <Route path="/" element={<StudentsPage />} />
             <Route path="/students/:id" element={<StudentDetailPage />} />
@@ -56,6 +81,7 @@ export function AppLayout() {
           </Routes>
         </div>
       </main>
+      <MobileNav />
     </div>
   );
 }
