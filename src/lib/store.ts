@@ -87,6 +87,7 @@ export function useStore() {
       students: _data.students.filter((s) => s.id !== id),
       lessons: _data.lessons.filter((l) => l.student_id !== id),
       homework: _data.homework.filter((h) => h.student_id !== id),
+      templates: _data.templates,
     };
     notify();
   }, []);
