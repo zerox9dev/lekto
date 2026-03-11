@@ -33,7 +33,7 @@ const PRICING = [
   "Мобильная версия",
 ];
 
-export default function Landing() {
+export function LandingPage() {
   return (
     <div className={s.landing}>
       {/* ── Floating Pill Navbar ── */}
