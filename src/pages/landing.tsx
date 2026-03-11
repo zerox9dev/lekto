@@ -1,222 +1,158 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import s from "./landing.module.css";
 
-const audienceCards = [
-  { emoji: "👩‍🏫", title: "Репетиторы", desc: "Ведут уроки один на один и хотят всё в одном месте", bg: "bg-[#e8f0e4]" },
-  { emoji: "🏫", title: "Преподаватели", desc: "Работают с группами и нужен порядок в материалах", bg: "bg-[#fce8d5]" },
-  { emoji: "🌍", title: "Онлайн-учителя", desc: "Преподают удалённо и хотят удобную платформу", bg: "bg-[#dde8f0]" },
-  { emoji: "📚", title: "Языковые школы", desc: "Нужна структура для нескольких преподавателей", bg: "bg-[#f0e4ee]" },
+const AUDIENCE = [
+  { emoji: "👩‍🏫", title: "Репетиторы", desc: "Ведут уроки один на один и хотят всё в одном месте", bg: s.audienceEmoji1 },
+  { emoji: "🏫", title: "Преподаватели", desc: "Работают с группами и нужен порядок в материалах", bg: s.audienceEmoji2 },
+  { emoji: "🌍", title: "Онлайн-учителя", desc: "Преподают удалённо и хотят удобную платформу", bg: s.audienceEmoji3 },
+  { emoji: "📚", title: "Языковые школы", desc: "Нужна структура для нескольких преподавателей", bg: s.audienceEmoji4 },
 ];
 
-const featureCards = [
-  {
-    title: "Уроки и конспекты",
-    desc: "Создавайте конспекты, прикрепляйте материалы к каждому занятию",
-    icon: "📖",
-  },
-  {
-    title: "10 типов домашек",
-    desc: "Тесты, вставить слово, пары, сортировка, карточки — с автопроверкой",
-    icon: "✏️",
-  },
-  {
-    title: "Ссылка ученику",
-    desc: "Ученик открывает ссылку и видит свои уроки и домашки. Без регистрации",
-    icon: "🔗",
-  },
-  {
-    title: "Статистика",
-    desc: "Следите за прогрессом каждого ученика",
-    icon: "📊",
-  },
+const FEATURES = [
+  { icon: "📖", title: "Уроки и конспекты", desc: "Создавайте конспекты, прикрепляйте материалы к каждому занятию" },
+  { icon: "✏️", title: "10 типов домашек", desc: "Тесты, вставить слово, пары, сортировка, карточки — с автопроверкой" },
+  { icon: "🔗", title: "Ссылка ученику", desc: "Ученик открывает ссылку и видит свои уроки и домашки. Без регистрации" },
+  { icon: "📊", title: "Статистика", desc: "Следите за прогрессом каждого ученика" },
 ];
 
-const benefitCards = [
+const BENEFITS = [
   { emoji: "📝", title: "Интерактивные домашки", desc: "10 типов заданий с автопроверкой" },
   { emoji: "📊", title: "Прогресс учеников", desc: "Статистика по каждому ученику" },
   { emoji: "🔗", title: "Персональная ссылка", desc: "Ученик видит всё без регистрации" },
   { emoji: "📱", title: "Мобильная версия", desc: "Работает на любом устройстве" },
+  { emoji: "🎨", title: "Шаблоны заданий", desc: "Создавайте и используйте повторно" },
 ];
 
-const pricingFeatures = [
-  "Неограниченное количество учеников",
-  "Все 10 типов заданий",
+const PRICING = [
+  "Безлимитные ученики",
   "Уроки и конспекты",
+  "10 типов домашних заданий",
   "Персональные ссылки",
-  "Статистика и прогресс",
+  "Статистика прогресса",
   "Мобильная версия",
-  "Без рекламы",
 ];
 
-export function LandingPage() {
+export default function Landing() {
   return (
-    <div className="min-h-screen bg-[#f8f7f4] font-sans text-[#1a1a1a]">
-      {/* Navbar */}
-      <header className="sticky top-0 z-50 bg-[#f8f7f4]/90 backdrop-blur-md border-b border-black/5">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="font-serif text-2xl font-bold tracking-tight text-[#1a1a1a] no-underline">
-            Lekto
-          </Link>
-          <nav className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-sm text-[#666] hover:text-[#1a1a1a] transition-colors no-underline">
-              Возможности
-            </a>
-            <a href="#audience" className="text-sm text-[#666] hover:text-[#1a1a1a] transition-colors no-underline">
-              Для кого
-            </a>
-            <a href="#pricing" className="text-sm text-[#666] hover:text-[#1a1a1a] transition-colors no-underline">
-              Цена
-            </a>
-          </nav>
-          <Link
-            to="/login"
-            className="bg-[#1a1a1a] text-white text-sm font-medium px-5 py-2.5 rounded-full no-underline hover:bg-[#333] transition-colors"
-          >
-            Попробовать
-          </Link>
-        </div>
-      </header>
+    <div className={s.landing}>
+      {/* ── Floating Pill Navbar ── */}
+      <div className={s.navWrap}>
+        <nav className={s.nav}>
+          <Link to="/" className={s.logo}>Lekto</Link>
+          <div className={s.navLinks}>
+            <a href="#features" className={s.navLink}>Возможности</a>
+            <a href="#audience" className={s.navLink}>Для кого</a>
+            <a href="#pricing" className={s.navLink}>Цены</a>
+          </div>
+          <Link to="/login" className={s.navCta}>Попробовать</Link>
+        </nav>
+      </div>
 
-      {/* Hero */}
-      <section className="px-6 pt-24 pb-20 md:pt-32 md:pb-28 text-center">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight text-[#1a1a1a] mb-6">
-            Платформа для
-            <br />
-            репетиторов, которые
-            <br />
-            ценят порядок
-          </h1>
-          <p className="text-lg md:text-xl text-[#666] max-w-xl mx-auto mb-10 leading-relaxed">
-            Уроки, интерактивные домашки и персональная ссылка для каждого ученика. Бесплатно.
-          </p>
-          <Link
-            to="/login"
-            className="inline-block bg-[#1a1a1a] text-white text-base font-medium px-8 py-4 rounded-full no-underline hover:bg-[#333] transition-colors"
-          >
-            Начать бесплатно
-          </Link>
-          <p className="text-sm text-[#999] mt-4">Без регистрации для учеников</p>
-        </div>
-
-        {/* Decorative element */}
-        <div className="flex justify-center mt-16">
-          <div className="w-80 h-44 rounded-[2rem] bg-[#e8f0e4] border border-[#d4e0ce]" />
+      {/* ── Hero ── */}
+      <section className={s.hero}>
+        <h1 className={s.heroTitle}>
+          Платформа для<br />
+          репетиторов, которые<br />
+          ценят порядок
+        </h1>
+        <p className={s.heroDesc}>
+          Уроки, интерактивные домашки и персональная ссылка для каждого ученика. Бесплатно.
+        </p>
+        <Link to="/login" className={s.heroCta}>Начать бесплатно</Link>
+        <p className={s.heroNote}>Без регистрации для учеников</p>
+        <div className={s.heroDecor}>
+          <div className={s.heroGlass} />
         </div>
       </section>
 
-      {/* Для кого */}
-      <section id="audience" className="px-6 py-20 md:py-28">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="font-serif text-3xl md:text-5xl font-bold text-center mb-4">Для кого это</h2>
-          <p className="text-center text-[#666] text-lg max-w-lg mx-auto mb-14">
-            Помогаем репетиторам организовать работу и сделать обучение удобнее
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {audienceCards.map(({ emoji, title, desc, bg }) => (
-              <div key={title} className="flex items-start gap-4 p-6 rounded-2xl bg-white border border-black/5">
-                <div className={`w-12 h-12 ${bg} rounded-full flex items-center justify-center text-xl shrink-0`}>
-                  {emoji}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-base mb-1">{title}</h3>
-                  <p className="text-sm text-[#666] leading-relaxed">{desc}</p>
-                </div>
+      {/* ── Who this is for ── */}
+      <section id="audience" className={s.section}>
+        <h2 className={s.sectionTitle}>Для кого это</h2>
+        <p className={s.sectionDesc}>Помогаем репетиторам организовать работу и сделать обучение удобнее</p>
+        <div className={s.audienceGrid}>
+          {AUDIENCE.map((a) => (
+            <div key={a.title} className={s.audienceCard}>
+              <div className={`${s.audienceEmoji} ${a.bg}`}>{a.emoji}</div>
+              <h3 className={s.audienceName}>{a.title}</h3>
+              <p className={s.audienceDesc}>{a.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Features ── */}
+      <section id="features" className={s.section}>
+        <h2 className={s.sectionTitle}>Всё что нужно для занятий</h2>
+        <p className={s.sectionDesc}>Каждая функция решает реальную проблему репетитора</p>
+        <div className={s.featuresGrid}>
+          {FEATURES.map((f) => (
+            <div key={f.title} className={s.featureCard}>
+              <div className={s.featureIcon}>{f.icon}</div>
+              <h3 className={s.featureName}>{f.title}</h3>
+              <p className={s.featureDesc}>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── What you get – horizontal scroll ── */}
+      <section className={s.section}>
+        <h2 className={s.sectionTitle}>Что вы получаете</h2>
+        <p className={s.sectionDesc}>Всё для продуктивных занятий</p>
+        <div className={s.benefitsWrap}>
+          <div className={s.benefitsRow}>
+            {BENEFITS.map((b) => (
+              <div key={b.title} className={s.benefitCard}>
+                <div className={s.benefitEmoji}>{b.emoji}</div>
+                <h3 className={s.benefitName}>{b.title}</h3>
+                <p className={s.benefitDesc}>{b.desc}</p>
               </div>
             ))}
           </div>
         </div>
+
+        <div className={s.statsRow}>
+          <div className={s.stat}>
+            <div className={s.statValue}>10</div>
+            <div className={s.statLabel}>типов заданий</div>
+          </div>
+          <div className={s.stat}>
+            <div className={s.statValue}>0₽</div>
+            <div className={s.statLabel}>навсегда</div>
+          </div>
+          <div className={s.stat}>
+            <div className={s.statValue}>∞</div>
+            <div className={s.statLabel}>учеников</div>
+          </div>
+        </div>
       </section>
 
-      {/* Возможности */}
-      <section id="features" className="px-6 py-20 md:py-28 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="font-serif text-3xl md:text-5xl font-bold text-center mb-4">
-            Всё что нужно для занятий
-          </h2>
-          <p className="text-center text-[#666] text-lg max-w-lg mx-auto mb-14">
-            Каждая функция решает реальную проблему репетитора
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {featureCards.map(({ title, desc, icon }) => (
-              <div
-                key={title}
-                className="p-8 rounded-2xl bg-[#f8f7f4] border border-black/5 hover:-translate-y-1 transition-transform"
-              >
-                <div className="text-3xl mb-4">{icon}</div>
-                <h3 className="font-serif text-xl font-bold mb-2">{title}</h3>
-                <p className="text-[#666] text-sm leading-relaxed">{desc}</p>
-              </div>
+      {/* ── Pricing ── */}
+      <section id="pricing" className={s.section}>
+        <h2 className={s.sectionTitle}>Простая цена</h2>
+        <p className={s.sectionDesc}>Бесплатно. Без подвоха.</p>
+        <div className={s.pricingCard}>
+          <div className={s.pricingLabel}>Бесплатно</div>
+          <div className={s.pricingAmount}>$0</div>
+          <div className={s.pricingPeriod}>навсегда</div>
+          <ul className={s.pricingFeatures}>
+            {PRICING.map((f) => (
+              <li key={f} className={s.pricingFeature}>{f}</li>
             ))}
-          </div>
+          </ul>
+          <Link to="/login" className={s.pricingCta}>Начать бесплатно</Link>
         </div>
       </section>
 
-      {/* Что вы получаете */}
-      <section className="px-6 py-20 md:py-28">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="font-serif text-3xl md:text-5xl font-bold text-center mb-14">Что вы получаете</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {benefitCards.map(({ emoji, title, desc }) => (
-              <div key={title} className="text-center p-6 rounded-2xl bg-white border border-black/5">
-                <div className="text-3xl mb-3">{emoji}</div>
-                <h3 className="font-semibold text-sm mb-1">{title}</h3>
-                <p className="text-xs text-[#666] leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section id="pricing" className="px-6 py-20 md:py-28 bg-white">
-        <div className="max-w-md mx-auto text-center">
-          <h2 className="font-serif text-3xl md:text-5xl font-bold mb-4">Простая цена</h2>
-          <div className="mt-10 p-10 rounded-3xl bg-[#f8f7f4] border border-black/5">
-            <p className="text-sm text-[#666] uppercase tracking-wider mb-2">Навсегда</p>
-            <p className="font-serif text-6xl font-bold text-[#1a1a1a] mb-1">$0</p>
-            <p className="text-[#999] text-sm mb-8">Бесплатно</p>
-            <ul className="text-left space-y-3 mb-10">
-              {pricingFeatures.map((f) => (
-                <li key={f} className="flex items-center gap-3 text-sm text-[#444]">
-                  <span className="w-5 h-5 rounded-full bg-[#2d5a3d] flex items-center justify-center shrink-0">
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <Link
-              to="/login"
-              className="block w-full bg-[#1a1a1a] text-white text-base font-medium py-4 rounded-full no-underline hover:bg-[#333] transition-colors text-center"
-            >
-              Начать бесплатно
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-[#1a1a1a] text-white/60 px-6 py-10">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
-          <span className="font-serif text-white text-lg font-bold">Lekto</span>
-          <span>© {new Date().getFullYear()} Lekto</span>
-          <div className="flex items-center gap-6">
-            <a
-              href="https://github.com/zerox9dev/lekto"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white transition-colors no-underline text-white/60"
-            >
-              GitHub
-            </a>
-            <a href="#" className="hover:text-white transition-colors no-underline text-white/60">
-              Конфиденциальность
-            </a>
-            <a href="mailto:zerox9dev.work@icloud.com" className="hover:text-white transition-colors no-underline text-white/60">
-              Контакты
-            </a>
+      {/* ── Footer ── */}
+      <footer className={s.footer}>
+        <div className={s.footerInner}>
+          <span className={s.footerCopy}>Lekto © 2025</span>
+          <div className={s.footerLinks}>
+            <a href="https://github.com/zerox9dev/lekto" target="_blank" rel="noopener noreferrer" className={s.footerLink}>GitHub</a>
+            <a href="/privacy" className={s.footerLink}>Конфиденциальность</a>
+            <a href="mailto:zerox9dev.work@icloud.com" className={s.footerLink}>Контакты</a>
           </div>
         </div>
       </footer>
