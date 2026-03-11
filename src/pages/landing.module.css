@@ -292,13 +292,19 @@
 }
 
 /* ─── Pricing ─── */
-.pricingCard {
-  max-width: 400px;
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  max-width: 640px;
   margin: 0 auto;
+}
+
+.pricingCard {
   background: white;
   border: 1px solid #e8e5de;
   border-radius: 20px;
-  padding: 36px;
+  padding: 32px;
   text-align: center;
 }
 
@@ -366,6 +372,27 @@
 
 .pricingCta:hover { background: #333; }
 
+.pricingCtaOutline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  background: transparent;
+  border: 1.5px solid #1a1a1a;
+  padding: 13px 28px;
+  border-radius: 100px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.pricingCtaOutline:hover {
+  background: #1a1a1a;
+  color: white;
+}
+
 /* ─── Footer ─── */
 .footer {
   background: #1a1a1a;
@@ -410,5 +437,6 @@
   .audienceGrid { grid-template-columns: 1fr; max-width: 320px; }
   .featuresGrid { grid-template-columns: 1fr; }
   .statsRow { gap: 24px; }
+  .pricingGrid { grid-template-columns: 1fr; }
   .footerInner { flex-direction: column; gap: 16px; text-align: center; }
 }

@@ -24,13 +24,19 @@ const BENEFITS = [
   { emoji: "🎨", title: "Шаблоны заданий", desc: "Создавайте и используйте повторно" },
 ];
 
-const PRICING = [
-  "Безлимитные ученики",
+const PRICING_FREE = [
+  "До 5 учеников",
   "Уроки и конспекты",
-  "10 типов домашних заданий",
+  "5 типов домашних заданий",
   "Персональные ссылки",
+];
+
+const PRICING_PRO = [
+  "Безлимитные ученики",
+  "10 типов домашних заданий",
   "Статистика прогресса",
-  "Мобильная версия",
+  "Шаблоны заданий",
+  "Приоритетная поддержка",
 ];
 
 export function LandingPage() {
@@ -115,30 +121,43 @@ export function LandingPage() {
             <div className={s.statLabel}>типов заданий</div>
           </div>
           <div className={s.stat}>
-            <div className={s.statValue}>0₽</div>
-            <div className={s.statLabel}>навсегда</div>
-          </div>
-          <div className={s.stat}>
             <div className={s.statValue}>∞</div>
             <div className={s.statLabel}>учеников</div>
+          </div>
+          <div className={s.stat}>
+            <div className={s.statValue}>0</div>
+            <div className={s.statLabel}>регистраций для учеников</div>
           </div>
         </div>
       </section>
 
       {/* ── Pricing ── */}
       <section id="pricing" className={s.section}>
-        <h2 className={s.sectionTitle}>Простая цена</h2>
-        <p className={s.sectionDesc}>Бесплатно. Без подвоха.</p>
-        <div className={s.pricingCard}>
-          <div className={s.pricingLabel}>Бесплатно</div>
-          <div className={s.pricingAmount}>$0</div>
-          <div className={s.pricingPeriod}>навсегда</div>
-          <ul className={s.pricingFeatures}>
-            {PRICING.map((f) => (
-              <li key={f} className={s.pricingFeature}>{f}</li>
-            ))}
-          </ul>
-          <Link to="/login" className={s.pricingCta}>Начать бесплатно</Link>
+        <h2 className={s.sectionTitle}>Простые цены</h2>
+        <p className={s.sectionDesc}>Начните бесплатно, обновитесь когда нужно</p>
+        <div className={s.pricingGrid}>
+          <div className={s.pricingCard}>
+            <div className={s.pricingLabel}>Free</div>
+            <div className={s.pricingAmount}>$0</div>
+            <div className={s.pricingPeriod}>навсегда</div>
+            <ul className={s.pricingFeatures}>
+              {PRICING_FREE.map((f) => (
+                <li key={f} className={s.pricingFeature}>{f}</li>
+              ))}
+            </ul>
+            <Link to="/login" className={s.pricingCtaOutline}>Начать бесплатно</Link>
+          </div>
+          <div className={s.pricingCard}>
+            <div className={s.pricingLabel}>Pro</div>
+            <div className={s.pricingAmount}>$5</div>
+            <div className={s.pricingPeriod}>в месяц</div>
+            <ul className={s.pricingFeatures}>
+              {PRICING_PRO.map((f) => (
+                <li key={f} className={s.pricingFeature}>{f}</li>
+              ))}
+            </ul>
+            <Link to="/login" className={s.pricingCta}>Попробовать Pro</Link>
+          </div>
         </div>
       </section>
 
