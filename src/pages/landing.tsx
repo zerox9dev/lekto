@@ -24,19 +24,20 @@ const BENEFITS = [
   { emoji: "🎨", title: "Шаблоны заданий", desc: "Создавайте и используйте повторно" },
 ];
 
-const PRICING_FREE = [
-  "До 5 учеников",
-  "Уроки и конспекты",
-  "5 типов домашних заданий",
-  "Персональные ссылки",
-];
-
-const PRICING_PRO = [
+const PRICING_CLOUD = [
   "Безлимитные ученики",
   "10 типов домашних заданий",
   "Статистика прогресса",
   "Шаблоны заданий",
+  "Автоматические обновления",
   "Приоритетная поддержка",
+];
+
+const PRICING_SELF = [
+  "Все функции Cloud",
+  "Свой сервер, свои данные",
+  "Открытый исходный код",
+  "Безлимитно и бесплатно",
 ];
 
 export function LandingPage() {
@@ -137,26 +138,26 @@ export function LandingPage() {
         <p className={s.sectionDesc}>Начните бесплатно, обновитесь когда нужно</p>
         <div className={s.pricingGrid}>
           <div className={s.pricingCard}>
-            <div className={s.pricingLabel}>Free</div>
-            <div className={s.pricingAmount}>$0</div>
-            <div className={s.pricingPeriod}>навсегда</div>
-            <ul className={s.pricingFeatures}>
-              {PRICING_FREE.map((f) => (
-                <li key={f} className={s.pricingFeature}>{f}</li>
-              ))}
-            </ul>
-            <Link to="/login" className={s.pricingCtaOutline}>Начать бесплатно</Link>
-          </div>
-          <div className={s.pricingCard}>
-            <div className={s.pricingLabel}>Pro</div>
+            <div className={s.pricingLabel}>Cloud</div>
             <div className={s.pricingAmount}>$5</div>
             <div className={s.pricingPeriod}>в месяц</div>
             <ul className={s.pricingFeatures}>
-              {PRICING_PRO.map((f) => (
+              {PRICING_CLOUD.map((f) => (
                 <li key={f} className={s.pricingFeature}>{f}</li>
               ))}
             </ul>
-            <Link to="/login" className={s.pricingCta}>Попробовать Pro</Link>
+            <Link to="/login" className={s.pricingCta}>Начать</Link>
+          </div>
+          <div className={s.pricingCard}>
+            <div className={s.pricingLabel}>Self-hosted</div>
+            <div className={s.pricingAmount}>$0</div>
+            <div className={s.pricingPeriod}>навсегда</div>
+            <ul className={s.pricingFeatures}>
+              {PRICING_SELF.map((f) => (
+                <li key={f} className={s.pricingFeature}>{f}</li>
+              ))}
+            </ul>
+            <a href="https://github.com/zerox9dev/lekto" target="_blank" rel="noopener noreferrer" className={s.pricingCtaOutline}>GitHub</a>
           </div>
         </div>
       </section>
