@@ -756,7 +756,7 @@ export function StudentDetailPage() {
       <Dialog.Root open={lessonOpen} onOpenChange={setLessonOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-lg rounded-t-2xl md:rounded-2xl bg-white p-4 md:p-6 shadow-xl z-50 space-y-4 max-h-[85vh] overflow-y-auto">
+          <Dialog.Content className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-lg rounded-t-2xl md:rounded-2xl bg-white p-4 md:p-6 shadow-xl z-50 space-y-4 max-h-[85vh] overflow-y-auto overflow-x-hidden">
             <Dialog.Title className="text-lg font-bold">{editLessonId ? "Редактировать урок" : "Новый урок"}</Dialog.Title>
             <div className="space-y-3">
               <div><label className="text-[12px] font-medium text-[#888] mb-1 block">Название *</label>
@@ -779,7 +779,7 @@ export function StudentDetailPage() {
       <Dialog.Root open={hwOpen} onOpenChange={setHwOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-2xl h-full md:h-auto md:max-h-[90vh] overflow-y-auto md:rounded-2xl bg-white shadow-xl z-50">
+          <Dialog.Content className="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-2xl h-full md:h-auto md:max-h-[90vh] overflow-y-auto overflow-x-hidden md:rounded-2xl bg-white shadow-xl z-50">
             {/* Sticky header */}
             <div className="sticky top-0 bg-white border-b border-[#e8e5de] px-4 md:px-6 py-3 md:py-4 flex items-center justify-between z-10">
               <Dialog.Title className="text-base md:text-lg font-bold truncate">{editHwId ? "Редактировать задание" : "Новое задание"}</Dialog.Title>
