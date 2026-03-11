@@ -13,8 +13,8 @@ function SideLink({ href, icon: Icon, label, end }: { href: string; icon: any; l
   return (
     <NavLink to={href} end={end}
       className={({ isActive }) =>
-        `flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium transition-all ${
-          isActive ? "bg-zinc-900 text-white" : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100"
+        `flex items-center gap-2.5 rounded-full px-3 py-2 text-[13px] font-medium transition-all ${
+          isActive ? "bg-[#1a1a1a] text-white" : "text-[#888] hover:text-[#1a1a1a] hover:bg-[#f0ede6]"
         }`
       }>
       <Icon className="h-[16px] w-[16px]" />
@@ -29,17 +29,17 @@ function MobileNav() {
   const isSettings = location.pathname === "/app/settings";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-zinc-200 flex md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#e8e5de] flex md:hidden">
       <NavLink to="/app" end
         className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
-          isApp ? "text-zinc-900" : "text-zinc-400"
+          isApp ? "text-[#1a1a1a]" : "text-[#888]"
         }`}>
         <Users className="h-5 w-5" />
         <span>Ученики</span>
       </NavLink>
       <NavLink to="/app/settings"
         className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
-          isSettings ? "text-zinc-900" : "text-zinc-400"
+          isSettings ? "text-[#1a1a1a]" : "text-[#888]"
         }`}>
         <Settings className="h-5 w-5" />
         <span>Настройки</span>
@@ -51,23 +51,23 @@ function MobileNav() {
 export function AppLayout() {
   const { signOut } = useAuth();
   return (
-    <div className="min-h-screen flex bg-zinc-50">
-      <aside className="hidden md:flex h-screen w-52 flex-col border-r border-zinc-200 bg-white py-4 px-3 sticky top-0">
+    <div className="min-h-screen flex bg-[#f5f3ee]">
+      <aside className="hidden md:flex h-screen w-52 flex-col border-r border-[#e8e5de] bg-white py-4 px-3 sticky top-0">
         <Link to="/" className="flex items-center gap-2.5 px-3 mb-6">
-          <div className="h-7 w-7 rounded-lg bg-zinc-900 flex items-center justify-center">
+          <div className="h-7 w-7 rounded-lg bg-[#1a1a1a] flex items-center justify-center">
             <Sparkles className="h-3.5 w-3.5 text-white" />
           </div>
-          <span className="font-semibold text-[14px] tracking-tight">Lekto</span>
+          <span className="font-semibold font-serif text-[14px] tracking-tight">Lekto</span>
         </Link>
         <nav className="flex-1 flex flex-col gap-0.5">
           {nav.map((item) => (
             <SideLink key={item.href} {...item} end={item.href === "/app"} />
           ))}
         </nav>
-        <div className="space-y-0.5 pt-2 border-t border-zinc-100">
+        <div className="space-y-0.5 pt-2 border-t border-[#e8e5de]">
           <SideLink href="/app/settings" icon={Settings} label="Настройки" />
           <button onClick={signOut}
-            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium w-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-all cursor-pointer">
+            className="flex items-center gap-2.5 rounded-full px-3 py-2 text-[13px] font-medium w-full text-[#888] hover:text-[#666] hover:bg-[#f0ede6] transition-all cursor-pointer">
             <LogOut className="h-[16px] w-[16px]" /> Выйти
           </button>
         </div>

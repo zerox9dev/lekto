@@ -53,7 +53,7 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
 
   return (
     <div className="space-y-4">
-      {isMulti && <p className="text-[12px] text-zinc-400">Выбери все правильные ответы</p>}
+      {isMulti && <p className="text-[12px] text-[#888]">Выбери все правильные ответы</p>}
       {questions.map((q, qi) => {
         const expected = getCorrectIndices(q);
         return (
@@ -78,20 +78,20 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
                     className={`w-full text-left px-3 md:px-4 py-2.5 md:py-3 rounded-xl text-[13px] md:text-[14px] border transition-colors cursor-pointer flex items-center gap-2.5 md:gap-3 min-h-[44px] ${
                       isCorrect ? "border-emerald-300 bg-emerald-50 text-emerald-700" :
                       isWrong ? "border-red-300 bg-red-50 text-red-700" :
-                      selected ? "border-zinc-400 bg-zinc-50" :
-                      "border-zinc-200 hover:border-zinc-300"
+                      selected ? "border-[#ccc] bg-[#f5f3ee]" :
+                      "border-[#e8e5de] hover:border-[#d0ccc4]"
                     }`}>
                     {isMulti ? (
                       <div className={`h-5 w-5 rounded-md border-2 flex items-center justify-center shrink-0 ${
-                        submitted ? (isCorrect ? "border-emerald-500 bg-emerald-500" : isWrong ? "border-red-400 bg-red-400" : "border-zinc-300") :
-                        selected ? "border-zinc-500 bg-zinc-500" : "border-zinc-300"
+                        submitted ? (isCorrect ? "border-emerald-500 bg-emerald-500" : isWrong ? "border-red-400 bg-red-400" : "border-[#d0ccc4]") :
+                        selected ? "border-[#888] bg-[#f5f3ee]0" : "border-[#d0ccc4]"
                       }`}>
                         {(selected || (submitted && isCorrect)) && <Check className="h-3 w-3 text-white" />}
                       </div>
                     ) : (
                       <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                        submitted ? (isCorrect ? "border-emerald-500 bg-emerald-500" : isWrong ? "border-red-400 bg-red-400" : "border-zinc-300") :
-                        selected ? "border-zinc-500 bg-zinc-500" : "border-zinc-300"
+                        submitted ? (isCorrect ? "border-emerald-500 bg-emerald-500" : isWrong ? "border-red-400 bg-red-400" : "border-[#d0ccc4]") :
+                        selected ? "border-[#888] bg-[#f5f3ee]0" : "border-[#d0ccc4]"
                       }`}>
                         {(selected || (submitted && isCorrect)) && <div className="h-2 w-2 rounded-full bg-white" />}
                       </div>
@@ -111,10 +111,10 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
       })}
       {!submitted && (
         <button onClick={handleSubmit} disabled={!allAnswered}
-          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-xl bg-zinc-900 text-white text-[14px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">Проверить</button>
+          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">Проверить</button>
       )}
       {submitted && (
-        <div className="rounded-xl bg-zinc-50 px-4 py-3">
+        <div className="rounded-xl bg-[#f5f3ee] px-4 py-3">
           <p className="text-[14px] font-medium">
             Результат: {questions.reduce((acc, q, i) => {
               const expected = getCorrectIndices(q);
@@ -183,18 +183,18 @@ function FillBlanksPlayer({ section, onScore }: { section: HomeworkSection; onSc
               className={`inline-block w-24 md:w-32 h-8 mx-0.5 md:mx-1 px-2 md:px-3 rounded-lg border text-[13px] md:text-[14px] text-center outline-none ${
                 submitted
                   ? (results[seg.index] ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50")
-                  : "border-zinc-300 focus:border-zinc-500"
+                  : "border-[#d0ccc4] focus:border-[#888]"
               }`}
             />
           )
         )}
       </div>
       {submitted && (
-        <p className="text-[13px] text-zinc-400 break-words">Правильные ответы: {content.answers.join(", ")}</p>
+        <p className="text-[13px] text-[#888] break-words">Правильные ответы: {content.answers.join(", ")}</p>
       )}
       {!submitted && (
         <button onClick={handleSubmit} disabled={answers.slice(0, expectedCount).some((a) => !a.trim())}
-          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-xl bg-zinc-900 text-white text-[14px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">
+          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">
           Проверить
         </button>
       )}
@@ -222,11 +222,11 @@ function MatchingPlayer({ section, onScore }: { section: HomeworkSection; onScor
       {content.pairs.map((pair, i) => (
         <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
           <span className="text-[14px] md:text-[15px] font-medium sm:min-w-[120px] break-words">{pair.left}</span>
-          <span className="text-zinc-300 hidden sm:block">→</span>
+          <span className="text-[#ccc] hidden sm:block">→</span>
           <select value={answers[i] ?? ""} onChange={(e) => setAnswers((prev) => { const na = [...prev]; na[i] = e.target.value === "" ? null : Number(e.target.value); return na; })}
             disabled={submitted}
             className={`w-full sm:w-auto h-11 md:h-10 rounded-xl border px-3 text-[14px] bg-white sm:min-w-[140px] ${
-              submitted ? shuffledRight[answers[i]!] === i ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50" : "border-zinc-200"
+              submitted ? shuffledRight[answers[i]!] === i ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50" : "border-[#e8e5de]"
             }`}>
             <option value="">Выбрать...</option>
             {shuffledRight.map((ri, si) => <option key={si} value={si}>{content.pairs[ri].right}</option>)}
@@ -235,7 +235,7 @@ function MatchingPlayer({ section, onScore }: { section: HomeworkSection; onScor
       ))}
       {!submitted && (
         <button onClick={handleSubmit} disabled={answers.includes(null)}
-          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-xl bg-zinc-900 text-white text-[14px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">Проверить</button>
+          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">Проверить</button>
       )}
     </div>
   );
@@ -266,20 +266,20 @@ function OrderingPlayer({ section, onScore }: { section: HomeworkSection; onScor
         const isCorrect = submitted && item === content.items[content.correct_order[i]];
         return (
           <div key={i} className={`flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-xl border text-[13px] md:text-[14px] min-h-[44px] ${
-            submitted ? isCorrect ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50" : "border-zinc-200"
+            submitted ? isCorrect ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50" : "border-[#e8e5de]"
           }`}>
-            <span className="text-zinc-400 w-5 md:w-6 text-center font-medium shrink-0">{i + 1}</span>
+            <span className="text-[#888] w-5 md:w-6 text-center font-medium shrink-0">{i + 1}</span>
             <span className="flex-1 break-words min-w-0">{item}</span>
             {!submitted && (
               <div className="flex flex-col gap-0.5 shrink-0">
-                <button onClick={() => i > 0 && move(i, -1)} disabled={i === 0} className="text-zinc-400 hover:text-zinc-600 disabled:opacity-30 cursor-pointer p-1"><ChevronUp className="h-4 w-4" /></button>
-                <button onClick={() => i < items.length - 1 && move(i, 1)} disabled={i === items.length - 1} className="text-zinc-400 hover:text-zinc-600 disabled:opacity-30 cursor-pointer p-1"><ChevronDown className="h-4 w-4" /></button>
+                <button onClick={() => i > 0 && move(i, -1)} disabled={i === 0} className="text-[#888] hover:text-[#666] disabled:opacity-30 cursor-pointer p-1"><ChevronUp className="h-4 w-4" /></button>
+                <button onClick={() => i < items.length - 1 && move(i, 1)} disabled={i === items.length - 1} className="text-[#888] hover:text-[#666] disabled:opacity-30 cursor-pointer p-1"><ChevronDown className="h-4 w-4" /></button>
               </div>
             )}
           </div>
         );
       })}
-      {!submitted && <button onClick={handleSubmit} className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-xl bg-zinc-900 text-white text-[14px] font-medium hover:bg-zinc-800 cursor-pointer">Проверить</button>}
+      {!submitted && <button onClick={handleSubmit} className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] cursor-pointer">Проверить</button>}
     </div>
   );
 }
@@ -293,18 +293,18 @@ function CardsPlayer({ section }: { section: HomeworkSection }) {
   return (
     <div className="space-y-4">
       <div onClick={() => setFlipped(!flipped)}
-        className="min-h-[140px] md:min-h-[160px] rounded-2xl border border-zinc-200 bg-white flex items-center justify-center p-6 md:p-8 cursor-pointer hover:border-zinc-300 select-none transition-colors active:bg-zinc-50">
+        className="min-h-[140px] md:min-h-[160px] rounded-2xl border border-[#e8e5de] bg-white flex items-center justify-center p-6 md:p-8 cursor-pointer hover:border-[#d0ccc4] select-none transition-colors active:bg-[#f5f3ee]">
         <div className="text-center">
-          <p className="text-[11px] md:text-[12px] text-zinc-400 mb-2 md:mb-3">{flipped ? "Оборот" : "Лицо"} · Нажми чтобы перевернуть</p>
+          <p className="text-[11px] md:text-[12px] text-[#888] mb-2 md:mb-3">{flipped ? "Оборот" : "Лицо"} · Нажми чтобы перевернуть</p>
           <p className="text-[18px] md:text-[22px] font-semibold break-words">{flipped ? card.back : card.front}</p>
         </div>
       </div>
       <div className="flex items-center justify-between">
         <button onClick={() => { setIndex(Math.max(0, index - 1)); setFlipped(false); }} disabled={index === 0}
-          className="px-3 md:px-4 py-2 rounded-xl text-[14px] text-zinc-500 hover:bg-zinc-100 disabled:opacity-30 cursor-pointer min-h-[44px]">← Назад</button>
-        <span className="text-[13px] text-zinc-400">{index + 1} / {content.cards.length}</span>
+          className="px-3 md:px-4 py-2 rounded-xl text-[14px] text-[#888] hover:bg-[#f0ede6] disabled:opacity-30 cursor-pointer min-h-[44px]">← Назад</button>
+        <span className="text-[13px] text-[#888]">{index + 1} / {content.cards.length}</span>
         <button onClick={() => { setIndex(Math.min(content.cards.length - 1, index + 1)); setFlipped(false); }} disabled={index === content.cards.length - 1}
-          className="px-3 md:px-4 py-2 rounded-xl text-[14px] text-zinc-500 hover:bg-zinc-100 disabled:opacity-30 cursor-pointer min-h-[44px]">Далее →</button>
+          className="px-3 md:px-4 py-2 rounded-xl text-[14px] text-[#888] hover:bg-[#f0ede6] disabled:opacity-30 cursor-pointer min-h-[44px]">Далее →</button>
       </div>
     </div>
   );
@@ -335,16 +335,16 @@ function TrueFalsePlayer({ section, onScore }: { section: HomeworkSection; onSco
                 className={`flex-1 py-2.5 md:py-2.5 rounded-xl text-[13px] md:text-[14px] font-medium border cursor-pointer transition-colors min-h-[44px] ${
                   submitted && q.correct === true ? "border-emerald-300 bg-emerald-50 text-emerald-700" :
                   isWrong && answered === true ? "border-red-300 bg-red-50 text-red-600" :
-                  answered === true && !submitted ? "border-zinc-400 bg-zinc-50" :
-                  "border-zinc-200 hover:border-zinc-300"
+                  answered === true && !submitted ? "border-[#ccc] bg-[#f5f3ee]" :
+                  "border-[#e8e5de] hover:border-[#d0ccc4]"
                 }`}>✓ Верно</button>
               <button onClick={() => !submitted && setAnswers((prev) => prev.map((a, i) => i === qi ? false : a))}
                 disabled={submitted}
                 className={`flex-1 py-2.5 md:py-2.5 rounded-xl text-[13px] md:text-[14px] font-medium border cursor-pointer transition-colors min-h-[44px] ${
                   submitted && q.correct === false ? "border-emerald-300 bg-emerald-50 text-emerald-700" :
                   isWrong && answered === false ? "border-red-300 bg-red-50 text-red-600" :
-                  answered === false && !submitted ? "border-zinc-400 bg-zinc-50" :
-                  "border-zinc-200 hover:border-zinc-300"
+                  answered === false && !submitted ? "border-[#ccc] bg-[#f5f3ee]" :
+                  "border-[#e8e5de] hover:border-[#d0ccc4]"
                 }`}>✗ Неверно</button>
             </div>
             {submitted && q.explanation && (
@@ -357,10 +357,10 @@ function TrueFalsePlayer({ section, onScore }: { section: HomeworkSection; onSco
       })}
       {!submitted && (
         <button onClick={handleSubmit} disabled={answers.includes(null)}
-          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-xl bg-zinc-900 text-white text-[14px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">Проверить</button>
+          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">Проверить</button>
       )}
       {submitted && (
-        <div className="rounded-xl bg-zinc-50 px-4 py-3">
+        <div className="rounded-xl bg-[#f5f3ee] px-4 py-3">
           <p className="text-[14px] font-medium">Результат: {c.questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0)}/{c.questions.length}</p>
         </div>
       )}
@@ -380,16 +380,16 @@ function OpenAnswerPlayer({ section, onSubmitAnswer }: { section: HomeworkSectio
 
   return (
     <div className="space-y-3">
-      <p className="text-[14px] md:text-[15px] text-zinc-700 whitespace-pre-wrap break-words">{c.prompt}</p>
+      <p className="text-[14px] md:text-[15px] text-[#666] whitespace-pre-wrap break-words">{c.prompt}</p>
       <textarea value={answer} onChange={(e) => !submitted && setAnswer(e.target.value)}
         placeholder={c.placeholder || "Напиши свой ответ..."} rows={4} disabled={submitted}
-        className="w-full rounded-xl border border-zinc-200 px-3 md:px-4 py-2.5 md:py-3 text-[14px] outline-none focus:border-zinc-400 resize-y min-h-[100px] disabled:bg-zinc-50" />
+        className="w-full rounded-xl border border-[#e8e5de] px-3 md:px-4 py-2.5 md:py-3 text-[14px] outline-none focus:border-[#ccc] resize-y min-h-[100px] disabled:bg-[#f5f3ee]" />
       {c.min_length && !submitted && (
-        <p className="text-[12px] text-zinc-400">Минимум {c.min_length} символов ({answer.length}/{c.min_length})</p>
+        <p className="text-[12px] text-[#888]">Минимум {c.min_length} символов ({answer.length}/{c.min_length})</p>
       )}
       {!submitted && (
         <button onClick={handleSubmit} disabled={!answer.trim() || (c.min_length ? answer.length < c.min_length : false)}
-          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-xl bg-zinc-900 text-white text-[14px] font-medium hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">Отправить ответ</button>
+          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">Отправить ответ</button>
       )}
       {submitted && (
         <div className="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-3">
@@ -408,7 +408,7 @@ function SectionPlayer({ section, onScore }: { section: HomeworkSection; onScore
   return (
     <div className="space-y-3 md:space-y-4">
       <div className="flex items-center gap-2 md:gap-2.5 flex-wrap">
-        <span className="text-[11px] md:text-[12px] font-medium text-zinc-400 bg-zinc-100 px-2 md:px-2.5 py-0.5 md:py-1 rounded-lg">{typeLabels[section.type]}</span>
+        <span className="text-[11px] md:text-[12px] font-medium text-[#888] bg-[#f0ede6] px-2 md:px-2.5 py-0.5 md:py-1 rounded-lg">{typeLabels[section.type]}</span>
         <h3 className="text-[15px] md:text-[16px] font-semibold">{section.title}</h3>
       </div>
       {section.type === "quiz" && <QuizPlayer section={section} onScore={handle} />}
@@ -418,7 +418,7 @@ function SectionPlayer({ section, onScore }: { section: HomeworkSection; onScore
       {section.type === "cards" && <CardsPlayer section={section} />}
       {section.type === "true_false" && <TrueFalsePlayer section={section} onScore={handle} />}
       {section.type === "open_answer" && <OpenAnswerPlayer section={section} onSubmitAnswer={handleOpenAnswer} />}
-      {section.type === "text" && <div className="text-[14px] md:text-[15px] text-zinc-600 whitespace-pre-wrap leading-relaxed break-words">{(section.content as { text: string }).text}</div>}
+      {section.type === "text" && <div className="text-[14px] md:text-[15px] text-[#666] whitespace-pre-wrap leading-relaxed break-words">{(section.content as { text: string }).text}</div>}
     </div>
   );
 }
@@ -439,11 +439,11 @@ function LessonView({ lesson, homeworkItems, onBack }: { lesson: Lesson; homewor
     <div className="space-y-6 md:space-y-8">
       {/* Back + title */}
       <div>
-        <button onClick={onBack} className="inline-flex items-center gap-1.5 text-[13px] text-zinc-400 hover:text-zinc-600 mb-3 md:mb-4 cursor-pointer min-h-[44px]">
+        <button onClick={onBack} className="inline-flex items-center gap-1.5 text-[13px] text-[#888] hover:text-[#666] mb-3 md:mb-4 cursor-pointer min-h-[44px]">
           <ArrowLeft className="h-4 w-4" /> Все уроки
         </button>
         <h2 className="text-[20px] md:text-[22px] font-bold tracking-tight">{lesson.title}</h2>
-        <p className="text-[13px] text-zinc-400 mt-1">
+        <p className="text-[13px] text-[#888] mt-1">
           {lesson.date}
           {homeworkItems.length > 0 && ` · ${completedHw}/${homeworkItems.length} заданий выполнено`}
         </p>
@@ -451,9 +451,9 @@ function LessonView({ lesson, homeworkItems, onBack }: { lesson: Lesson; homewor
 
       {/* Notes */}
       {lesson.notes && (
-        <div className="rounded-2xl bg-white border border-zinc-200 p-4 md:p-6">
-          <p className="text-[12px] font-semibold text-zinc-400 uppercase tracking-wider mb-2 md:mb-3">Конспект</p>
-          <p className="text-[14px] md:text-[15px] text-zinc-700 whitespace-pre-wrap leading-relaxed break-words">{lesson.notes}</p>
+        <div className="rounded-2xl bg-white border border-[#e8e5de] p-4 md:p-6">
+          <p className="text-[12px] font-semibold text-[#888] uppercase tracking-wider mb-2 md:mb-3">Конспект</p>
+          <p className="text-[14px] md:text-[15px] text-[#666] whitespace-pre-wrap leading-relaxed break-words">{lesson.notes}</p>
         </div>
       )}
 
@@ -467,9 +467,9 @@ function LessonView({ lesson, homeworkItems, onBack }: { lesson: Lesson; homewor
               ? Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / Object.keys(scores).length) : null;
 
             return (
-              <div key={hw.id} className="rounded-2xl bg-white border border-zinc-200 p-4 md:p-6 space-y-4 md:space-y-6">
+              <div key={hw.id} className="rounded-2xl bg-white border border-[#e8e5de] p-4 md:p-6 space-y-4 md:space-y-6">
                 <div className="flex items-center gap-2 md:gap-3 flex-wrap">
-                  {hw.completed ? <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> : <Circle className="h-5 w-5 text-zinc-300 shrink-0" />}
+                  {hw.completed ? <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> : <Circle className="h-5 w-5 text-[#ccc] shrink-0" />}
                   <h3 className="text-[16px] md:text-[17px] font-bold min-w-0 break-words">{hw.title}</h3>
                   {avgScore !== null && (
                     <span className={`ml-auto text-[14px] font-semibold shrink-0 ${avgScore >= 80 ? "text-emerald-500" : avgScore >= 50 ? "text-amber-500" : "text-red-500"}`}>
@@ -480,7 +480,7 @@ function LessonView({ lesson, homeworkItems, onBack }: { lesson: Lesson; homewor
 
                 {sections.map((sec, i) => (
                   <div key={sec.id}>
-                    {i > 0 && <div className="border-t border-zinc-100 mb-4 md:mb-6" />}
+                    {i > 0 && <div className="border-t border-[#e8e5de] mb-4 md:mb-6" />}
                     <SectionPlayer section={sec} onScore={(sid, score) => handleScore(hw, sid, score)} />
                   </div>
                 ))}
@@ -491,8 +491,8 @@ function LessonView({ lesson, homeworkItems, onBack }: { lesson: Lesson; homewor
       )}
 
       {homeworkItems.length === 0 && !lesson.notes && (
-        <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 md:p-12 text-center">
-          <p className="text-[15px] text-zinc-400">Материалов пока нет</p>
+        <div className="rounded-2xl border border-dashed border-[#e8e5de] bg-white p-8 md:p-12 text-center">
+          <p className="text-[15px] text-[#888]">Материалов пока нет</p>
         </div>
       )}
     </div>
@@ -512,10 +512,10 @@ export function StudentView() {
 
   if (!student) {
     return (
-      <div className="min-h-screen bg-zinc-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#f5f3ee] flex items-center justify-center px-4">
         <div className="text-center">
-          <p className="text-[15px] font-medium text-zinc-900 mb-1">Ученик не найден</p>
-          <p className="text-[13px] text-zinc-400">Проверьте ссылку</p>
+          <p className="text-[15px] font-medium text-[#1a1a1a] mb-1">Ученик не найден</p>
+          <p className="text-[13px] text-[#888]">Проверьте ссылку</p>
         </div>
       </div>
     );
@@ -526,10 +526,10 @@ export function StudentView() {
   const completedHw = studentHomework.filter((h) => h.completed).length;
 
   return (
-    <div className="min-h-screen bg-zinc-50">
-      <header className="bg-white border-b border-zinc-200 sticky top-0 z-10">
+    <div className="min-h-screen bg-[#f5f3ee]">
+      <header className="bg-white border-b border-[#e8e5de] sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 md:px-6 h-14 flex items-center gap-2.5">
-          <div className="h-7 w-7 rounded-lg bg-zinc-900 flex items-center justify-center">
+          <div className="h-7 w-7 rounded-lg bg-[#1a1a1a] flex items-center justify-center">
             <Sparkles className="h-3.5 w-3.5 text-white" />
           </div>
           <span className="font-semibold text-[14px] tracking-tight">Lekto</span>
@@ -548,10 +548,10 @@ export function StudentView() {
             {/* Student header */}
             <div className="flex items-center gap-3 md:gap-4">
               <img src={`https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(student.name)}`}
-                alt={student.name} className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-zinc-100 shrink-0" />
+                alt={student.name} className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-[#f0ede6] shrink-0" />
               <div className="min-w-0">
                 <h1 className="text-lg md:text-xl font-bold tracking-tight truncate">{student.name}</h1>
-                <p className="text-[13px] text-zinc-400 mt-0.5">
+                <p className="text-[13px] text-[#888] mt-0.5">
                   {studentLessons.length} уроков · {completedHw}/{totalHw} заданий выполнено
                 </p>
               </div>
@@ -559,8 +559,8 @@ export function StudentView() {
 
             {/* Lessons list */}
             {studentLessons.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 md:p-12 text-center">
-                <p className="text-[14px] md:text-[15px] text-zinc-400">Уроков пока нет. Ваш репетитор добавит их сюда.</p>
+              <div className="rounded-2xl border border-dashed border-[#e8e5de] bg-white p-8 md:p-12 text-center">
+                <p className="text-[14px] md:text-[15px] text-[#888]">Уроков пока нет. Ваш репетитор добавит их сюда.</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -570,13 +570,13 @@ export function StudentView() {
 
                   return (
                     <button key={l.id} onClick={() => setSelectedLessonId(l.id)}
-                      className="w-full rounded-xl border border-zinc-200 bg-white px-3 md:px-5 py-3 md:py-4 flex items-center gap-3 md:gap-4 text-left hover:border-zinc-300 transition-colors cursor-pointer group min-h-[56px]">
-                      <div className="h-10 w-10 rounded-xl bg-zinc-100 flex items-center justify-center shrink-0">
-                        <BookOpen className="h-4.5 w-4.5 text-zinc-400" />
+                      className="w-full rounded-xl border border-[#e8e5de] bg-white px-3 md:px-5 py-3 md:py-4 flex items-center gap-3 md:gap-4 text-left hover:border-[#d0ccc4] transition-colors cursor-pointer group min-h-[56px]">
+                      <div className="h-10 w-10 rounded-xl bg-[#f0ede6] flex items-center justify-center shrink-0">
+                        <BookOpen className="h-4.5 w-4.5 text-[#888]" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[14px] md:text-[15px] font-medium truncate">{l.title}</p>
-                        <p className="text-[12px] md:text-[13px] text-zinc-400 mt-0.5">
+                        <p className="text-[12px] md:text-[13px] text-[#888] mt-0.5">
                           {l.date}
                           {lhw.length > 0 && (
                             <span className={lhwDone === lhw.length && lhw.length > 0 ? "text-emerald-500" : ""}>
@@ -585,7 +585,7 @@ export function StudentView() {
                           )}
                         </p>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-zinc-300 group-hover:text-zinc-400 shrink-0" />
+                      <ChevronRight className="h-4 w-4 text-[#ccc] group-hover:text-[#888] shrink-0" />
                     </button>
                   );
                 })}

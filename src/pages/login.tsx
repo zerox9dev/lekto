@@ -17,22 +17,22 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-zinc-50">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-[#f5f3ee]">
       <div className="w-full max-w-[360px] space-y-6">
         <div className="text-center">
           <Link to="/" className="inline-flex items-center gap-2.5 mb-6">
-            <div className="h-10 w-10 rounded-xl bg-zinc-900 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-[#1a1a1a] flex items-center justify-center">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
           </Link>
-          <h1 className="text-xl font-bold tracking-tight">Войти в Lekto</h1>
-          <p className="text-[13px] text-zinc-400 mt-1">Платформа для репетиторов</p>
+          <h1 className="text-xl font-bold tracking-tight font-serif">Войти в Lekto</h1>
+          <p className="text-[13px] text-[#888] mt-1">Платформа для репетиторов</p>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 space-y-4">
+        <div className="rounded-2xl border border-[#e8e5de] bg-white p-5 space-y-4">
           <button
             onClick={handleGoogle}
             disabled={loading}
-            className="w-full h-11 flex items-center justify-center gap-3 rounded-xl border border-zinc-200 text-[14px] font-medium hover:bg-zinc-50 active:bg-zinc-100 transition-colors disabled:opacity-50 cursor-pointer"
+            className="w-full h-11 flex items-center justify-center gap-3 rounded-full border border-[#e8e5de] text-[14px] font-medium hover:bg-[#f0ede6] transition-colors disabled:opacity-50 cursor-pointer"
           >
             <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -44,7 +44,7 @@ export function LoginPage() {
           </button>
           {error && <p className="text-[13px] text-red-500 text-center">{error}</p>}
         </div>
-        <p className="text-center text-[12px] text-zinc-400">Бесплатно · Без карты</p>
+        <p className="text-center text-[12px] text-[#888]">Бесплатно · Без карты</p>
       </div>
     </div>
   );
