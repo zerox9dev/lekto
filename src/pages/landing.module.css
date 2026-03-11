@@ -117,40 +117,7 @@
   margin-top: 12px;
 }
 
-/* ─── Hero Grass Decoration ─── */
-.heroDecor {
-  margin-top: 48px;
-  height: 180px;
-  background: linear-gradient(to top, #7cb342 0%, #8bc34a 30%, #a5d6a7 60%, transparent 100%);
-  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  position: relative;
-  overflow: hidden;
-}
 
-.heroDecor::before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 10%;
-  width: 80%;
-  height: 60%;
-  background: linear-gradient(to top, #66bb6a 0%, #81c784 50%, transparent 100%);
-  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-}
-
-/* ─── Glassmorphism circle in hero ─── */
-.heroGlass {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-}
 
 /* ─── Section shared ─── */
 .section {

@@ -61,9 +61,6 @@ export function LandingPage() {
         </p>
         <Link to="/login" className={s.heroCta}>Начать бесплатно</Link>
         <p className={s.heroNote}>Без регистрации для учеников</p>
-        <div className={s.heroDecor}>
-          <div className={s.heroGlass} />
-        </div>
       </section>
 
       {/* ── Who this is for ── */}
