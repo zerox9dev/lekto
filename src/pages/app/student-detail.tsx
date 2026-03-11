@@ -779,7 +779,7 @@ export function StudentDetailPage() {
       <Dialog.Root open={hwOpen} onOpenChange={setHwOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-2xl md:max-h-[90vh] overflow-y-auto md:rounded-2xl bg-white shadow-xl z-50">
+          <Dialog.Content className="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-2xl h-full md:h-auto md:max-h-[90vh] overflow-y-auto md:rounded-2xl bg-white shadow-xl z-50">
             {/* Sticky header */}
             <div className="sticky top-0 bg-white border-b border-[#e8e5de] px-4 md:px-6 py-3 md:py-4 flex items-center justify-between z-10">
               <Dialog.Title className="text-base md:text-lg font-bold truncate">{editHwId ? "Редактировать задание" : "Новое задание"}</Dialog.Title>
