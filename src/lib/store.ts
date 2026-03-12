@@ -116,10 +116,24 @@ export function useStore() {
         _data = { ...remote, templates: _data.templates || [] };
         notify();
       } else if (localHasData) {
-        // Supabase is empty but localStorage has data — push to Supabase
-        for (const s of _data.students) sbInsert("students", s);
-        for (const l of _data.lessons) sbInsert("lessons", l);
-        for (const h of _data.homework) sbInsert("homework", h);
+        // Supabase is empty but localStorage has data — push to Supabase sequentially
+        // Students first, then lessons (FK depends on students), then homework (FK depends on lessons)
+        const d = db();
+        if (d) {
+          try {
+            if (_data.students.length > 0) {
+              await d.from("students").upsert(_data.students, { onConflict: "id" });
+            }
+            if (_data.lessons.length > 0) {
+              await d.from("lessons").upsert(_data.lessons, { onConflict: "id" });
+            }
+            if (_data.homework.length > 0) {
+              await d.from("homework").upsert(_data.homework, { onConflict: "id" });
+            }
+          } catch (e) {
+            console.error("Lekto: failed to push local data to Supabase", e);
+          }
+        }
       }
     });
   }, []);
