@@ -222,6 +222,7 @@ export function useStore(userId?: string) {
     const h: Homework = {
       ...data,
       id: uid(),
+      tutor_id: _currentUserId,
       created_at: new Date().toISOString(),
     };
     _data = { ..._data, homework: [h, ..._data.homework] };
