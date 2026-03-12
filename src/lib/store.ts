@@ -122,13 +122,15 @@ export function useStore(userId?: string) {
       id: uid(), student_id: studentId || "", tutor_id: _currentUserId,
       title, date, notes: notes || null, materials_url: null,
       sections: sections && sections.length > 0 ? sections : undefined,
-      course_id: courseId || undefined,
+      course_id: courseId || null,
       order_index: orderIndex ?? 0,
       created_at: new Date().toISOString(),
     };
     _data = { ..._data, lessons: [l, ..._data.lessons] };
     notify();
-    db().from("lessons").upsert(l, { onConflict: "id" }).then(() => {});
+    const p = db().from("lessons").upsert(l, { onConflict: "id" });
+    p.then(({ error }: any) => { if (error) console.error("Lesson save error:", error); });
+    (l as any)._saved = p;
     return l;
   }, []);
 
@@ -186,9 +188,7 @@ export function useStore(userId?: string) {
     };
     _data = { ..._data, courses: [c, ...(_data.courses || [])] };
     notify();
-    const _promise = db().from("courses").upsert(c, { onConflict: "id" });
-    _promise.then(() => {});
-    (c as any)._dbPromise = _promise;
+    (c as any)._saved = db().from("courses").upsert(c, { onConflict: "id" });
     return c;
   }, []);
 

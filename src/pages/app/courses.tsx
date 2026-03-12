@@ -117,8 +117,8 @@ export function CoursesPage() {
                   <span className="text-[12px] text-[#aaa]">{sc.lessons.length} уроков</span>
                   <button onClick={async () => {
                     const course = addCourse(sc.title, sc.description);
-                    // Wait for course to be saved to Supabase before creating lessons (FK constraint)
-                    if ((course as any)._dbPromise) await (course as any)._dbPromise;
+                    // Wait for course row to exist in Supabase (FK constraint for lessons.course_id)
+                    try { await (course as any)._saved; } catch {}
                     for (const sl of sc.lessons) {
                       const today = new Date().toISOString().slice(0, 10);
                       addLesson(null, sl.title, sl.date || today, sl.notes || undefined, sl.sections, course.id, sl.order_index);
