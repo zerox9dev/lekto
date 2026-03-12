@@ -7,6 +7,14 @@ export interface Student {
   created_at: string;
 }
 
+export interface Course {
+  id: string;
+  title: string;
+  description: string | null;
+  tutor_id: string;
+  created_at: string;
+}
+
 export interface Lesson {
   id: string;
   student_id: string;
@@ -16,6 +24,8 @@ export interface Lesson {
   notes: string | null;
   materials_url: string | null;
   sections?: HomeworkSection[];
+  course_id?: string | null;
+  order_index?: number;
   created_at: string;
 }
 

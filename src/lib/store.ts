@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "./supabase";
-import type { Student, Lesson, Homework, HomeworkTemplate } from "@/types/database";
+import type { Student, Lesson, Homework, HomeworkTemplate, Course } from "@/types/database";
 
 function uid() {
   return crypto.randomUUID();
@@ -18,6 +18,7 @@ interface StoreData {
   lessons: Lesson[];
   homework: Homework[];
   templates: HomeworkTemplate[];
+  courses: Course[];
 }
 
 function loadLocal(): StoreData {
@@ -25,7 +26,7 @@ function loadLocal(): StoreData {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch {}
-  return { students: [], lessons: [], homework: [], templates: [] };
+  return { students: [], lessons: [], homework: [], templates: [], courses: [] };
 }
 
 function saveLocal(data: StoreData) {
@@ -67,10 +68,11 @@ async function loadFromSupabase(userId: string): Promise<StoreData | null> {
   const d = db();
   if (!d) return null;
   try {
-    const [sRes, lRes, hRes] = await Promise.all([
+    const [sRes, lRes, hRes, cRes] = await Promise.all([
       d.from("students").select().eq("tutor_id", userId).order("created_at", { ascending: false }),
       d.from("lessons").select().eq("tutor_id", userId).order("date", { ascending: false }),
       d.from("homework").select().eq("tutor_id", userId).order("created_at", { ascending: false }),
+      d.from("courses").select().eq("tutor_id", userId).order("created_at", { ascending: false }),
     ]);
     if (sRes.error || lRes.error || hRes.error) return null;
     return {
@@ -78,6 +80,7 @@ async function loadFromSupabase(userId: string): Promise<StoreData | null> {
       lessons: lRes.data || [],
       homework: hRes.data || [],
       templates: loadLocal().templates || [],
+      courses: cRes.error ? [] : (cRes.data || []),
     };
   } catch { return null; }
 }
@@ -127,11 +130,13 @@ export function useStore(userId?: string) {
             const students = _data.students.map((s) => ({ ...s, tutor_id: tutorId }));
             const lessons = _data.lessons.map((l) => ({ ...l, tutor_id: tutorId }));
             const homework = _data.homework.map((h) => ({ ...h, tutor_id: tutorId }));
-            _data = { ..._data, students, lessons, homework };
+            const courses = (_data.courses || []).map((c) => ({ ...c, tutor_id: tutorId }));
+            _data = { ..._data, students, lessons, homework, courses };
             notify();
             if (students.length > 0) await d.from("students").upsert(students, { onConflict: "id" });
             if (lessons.length > 0) await d.from("lessons").upsert(lessons, { onConflict: "id" });
             if (homework.length > 0) await d.from("homework").upsert(homework, { onConflict: "id" });
+            if (courses.length > 0) await d.from("courses").upsert(courses, { onConflict: "id" });
           } catch (e) {
             console.error("Lekto: failed to push local data to Supabase", e);
           }
@@ -262,10 +267,48 @@ export function useStore(userId?: string) {
     notify();
   }, []);
 
+  // ── Courses ──
+  const courses = _data.courses || [];
+
+  const addCourse = useCallback((title: string, description?: string) => {
+    const c: Course = {
+      id: uid(),
+      title,
+      description: description || null,
+      tutor_id: _currentUserId,
+      created_at: new Date().toISOString(),
+    };
+    _data = { ..._data, courses: [c, ...(_data.courses || [])] };
+    notify();
+    sbInsert("courses", c);
+    return c;
+  }, []);
+
+  const updateCourse = useCallback((id: string, data: Partial<Course>) => {
+    _data = { ..._data, courses: (_data.courses || []).map((c) => (c.id === id ? { ...c, ...data } : c)) };
+    notify();
+    sbUpdate("courses", id, data);
+  }, []);
+
+  const deleteCourse = useCallback((id: string) => {
+    // Unlink lessons from this course (don't delete them)
+    const updatedLessons = _data.lessons.map((l) =>
+      l.course_id === id ? { ...l, course_id: null, order_index: 0 } : l
+    );
+    _data = { ..._data, courses: (_data.courses || []).filter((c) => c.id !== id), lessons: updatedLessons };
+    notify();
+    sbDelete("courses", id);
+    // Supabase ON DELETE SET NULL handles course_id, but update order_index
+    updatedLessons.filter((l) => l.course_id === null).forEach((l) => {
+      sbUpdate("lessons", l.id, { order_index: 0 });
+    });
+  }, []);
+
   return {
     students, addStudent, updateStudent, deleteStudent,
     lessons, addLesson, updateLesson, deleteLesson,
     homework, addHomework, updateHomework, deleteHomework,
     templates, addTemplate, deleteTemplate,
+    courses, addCourse, updateCourse, deleteCourse,
   };
 }
