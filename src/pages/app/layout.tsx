@@ -1,12 +1,18 @@
 import { Routes, Route, NavLink, Link, useLocation } from "react-router-dom";
-import { Users, Settings, LogOut, GraduationCap } from "lucide-react";
+import { Users, Settings, LogOut, GraduationCap, BookOpen, ClipboardList, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { StudentsPage } from "./students";
 import { StudentDetailPage } from "./student-detail";
 import { SettingsPage } from "./settings";
+import { DashboardPage } from "./dashboard";
+import { LessonsPage } from "./lessons";
+import { HomeworkPage } from "./homework-list";
 
 const nav = [
-  { label: "Ученики", icon: Users, href: "/app" },
+  { label: "Главная", icon: LayoutDashboard, href: "/app" },
+  { label: "Ученики", icon: Users, href: "/app/students" },
+  { label: "Уроки", icon: BookOpen, href: "/app/lessons" },
+  { label: "Домашки", icon: ClipboardList, href: "/app/homework" },
 ];
 
 function SideLink({ href, icon: Icon, label, end }: { href: string; icon: any; label: string; end?: boolean }) {
@@ -23,27 +29,28 @@ function SideLink({ href, icon: Icon, label, end }: { href: string; icon: any; l
   );
 }
 
-function MobileNav() {
-  const location = useLocation();
-  const isApp = location.pathname === "/app" || location.pathname === "/app/";
-  const isSettings = location.pathname === "/app/settings";
+function MobileNavItem({ to, icon: Icon, label, end }: { to: string; icon: any; label: string; end?: boolean }) {
+  return (
+    <NavLink to={to} end={end}
+      className={({ isActive }) =>
+        `flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
+          isActive ? "text-[#1a1a1a]" : "text-[#888]"
+        }`
+      }>
+      <Icon className="h-5 w-5" />
+      <span>{label}</span>
+    </NavLink>
+  );
+}
 
+function MobileNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#e8e5de] flex md:hidden">
-      <NavLink to="/app" end
-        className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
-          isApp ? "text-[#1a1a1a]" : "text-[#888]"
-        }`}>
-        <Users className="h-5 w-5" />
-        <span>Ученики</span>
-      </NavLink>
-      <NavLink to="/app/settings"
-        className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
-          isSettings ? "text-[#1a1a1a]" : "text-[#888]"
-        }`}>
-        <Settings className="h-5 w-5" />
-        <span>Настройки</span>
-      </NavLink>
+      <MobileNavItem to="/app" icon={LayoutDashboard} label="Главная" end />
+      <MobileNavItem to="/app/students" icon={Users} label="Ученики" />
+      <MobileNavItem to="/app/lessons" icon={BookOpen} label="Уроки" />
+      <MobileNavItem to="/app/homework" icon={ClipboardList} label="Домашки" />
+      <MobileNavItem to="/app/settings" icon={Settings} label="⚙️" />
     </nav>
   );
 }
@@ -75,8 +82,11 @@ export function AppLayout() {
       <main className="flex-1 min-h-screen pb-16 md:pb-0 overflow-x-hidden min-w-0">
         <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-8">
           <Routes>
-            <Route path="/" element={<StudentsPage />} />
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/students" element={<StudentsPage />} />
             <Route path="/students/:id" element={<StudentDetailPage />} />
+            <Route path="/lessons" element={<LessonsPage />} />
+            <Route path="/homework" element={<HomeworkPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </div>
