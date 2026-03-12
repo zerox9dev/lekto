@@ -119,11 +119,10 @@ export function CoursesPage() {
                     const course = addCourse(sc.title, sc.description);
                     for (const sl of sc.lessons) {
                       const today = new Date().toISOString().slice(0, 10);
-                      const lesson = addLesson(null, sl.title, sl.date || today, sl.notes || undefined, sl.sections);
-                      updateLesson(lesson.id, { course_id: course.id, order_index: sl.order_index });
+                      const lesson = addLesson(null, sl.title, sl.date || today, sl.notes || undefined, sl.sections, course.id, sl.order_index);
                       if (sl.homework) {
                         for (const hw of sl.homework) {
-                          addHomework({ lesson_id: lesson.id, student_id: "__template__", tutor_id: "local", title: hw.title, sections: hw.sections, completed: false, student_answers: null, scores: null });
+                          addHomework({ lesson_id: lesson.id, student_id: "", tutor_id: "local", title: hw.title, sections: hw.sections, completed: false, student_answers: null, scores: null });
                         }
                       }
                     }
