@@ -430,7 +430,7 @@
 /* ─── Preview ─── */
 .previewSection {
   max-width: 960px;
-  margin: -40px auto 0;
+  margin: 40px auto 0;
   padding: 0 24px 80px;
   position: relative;
   z-index: 2;
@@ -668,9 +668,10 @@
   .statsRow { gap: 24px; }
   .pricingGrid { grid-template-columns: 1fr; }
   .footerInner { flex-direction: column; gap: 16px; text-align: center; }
-  .previewWindow { height: 360px; }
-  .prevSidebar { width: 120px; }
+  .previewWindow { height: auto; }
+  .prevSidebar { display: none; }
   .prevCards { display: none; }
   .prevStats { gap: 4px; }
   .prevStatVal { font-size: 16px; }
+  .prevTopbarBtn { display: none; }
 }
