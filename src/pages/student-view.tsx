@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { BookOpen, CheckCircle2, Circle, ChevronRight, ArrowLeft, Loader2, ClipboardList } from "lucide-react";
 import { useStore } from "@/features/store";
+import { useTranslation } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
 import { SectionPlayer } from "@/components/section-player";
 import type { Homework, Lesson, Student, Course } from "@/types/database";
@@ -10,6 +11,7 @@ import type { Homework, Lesson, Student, Course } from "@/types/database";
 
 function LessonView({ lesson, homeworkItems, onBack }: { lesson: Lesson; homeworkItems: Homework[]; onBack: () => void }) {
   const { updateHomework } = useStore();
+  const { t } = useTranslation();
   const [tab, setTab] = useState<"lesson" | "homework">("lesson");
   const completedHw = homeworkItems.filter((h) => h.completed).length;
   const hasLesson = !!(lesson.notes || (lesson.sections && lesson.sections.length > 0));
@@ -26,7 +28,7 @@ function LessonView({ lesson, homeworkItems, onBack }: { lesson: Lesson; homewor
       {/* Back + title */}
       <div>
         <button onClick={onBack} className="inline-flex items-center gap-1.5 text-[13px] text-[#888] hover:text-[#666] mb-3 md:mb-4 cursor-pointer min-h-[44px]">
-          <ArrowLeft className="h-4 w-4" /> Все уроки
+          <ArrowLeft className="h-4 w-4" /> {t("allLessons")}
         </button>
         <h2 className="text-[20px] md:text-[22px] font-bold tracking-tight">{lesson.title}</h2>
         <p className="text-[13px] text-[#888] mt-1">{lesson.date}</p>
@@ -39,7 +41,7 @@ function LessonView({ lesson, homeworkItems, onBack }: { lesson: Lesson; homewor
             className={`flex-1 py-2.5 rounded-lg text-[13px] md:text-[14px] font-medium transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5 ${
               tab === "lesson" ? "bg-white text-[#1a1a1a]" : "text-[#888] hover:text-[#666]"
             }`}>
-            <BookOpen className="h-3.5 w-3.5" /> Урок
+            <BookOpen className="h-3.5 w-3.5" /> {t("lessonTab")}
           </button>
           <button onClick={() => setTab("homework")}
             className={`flex-1 py-2.5 rounded-lg text-[13px] md:text-[14px] font-medium transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5 ${

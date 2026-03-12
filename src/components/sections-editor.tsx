@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Trash2, CopyPlus, ChevronDown, ChevronUp, Check, X, AlertCircle, Upload } from "lucide-react";
 import type { HomeworkType, HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, TrueFalseContent, TrueFalseQuestion, OpenAnswerContent, MediaContent, MediaFile } from "@/types/database";
+import { useTranslation } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
 
 export const typeLabels: Record<HomeworkType, string> = {
@@ -91,6 +92,7 @@ export function validateSections(sections: HomeworkSection[]): ValidationError[]
 // ── Section Editors ──
 
 function QuizEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
+  const { t } = useTranslation();
   const questions = section.content as QuizQuestion[];
   const setQ = (nq: QuizQuestion[]) => onChange({ ...section, content: nq });
 
@@ -110,17 +112,17 @@ function QuizEditor({ section, onChange }: { section: HomeworkSection; onChange:
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] text-[#888]">Нажми на кружок — один правильный ответ. Нажми на несколько — множественный выбор.</p>
+      <p className="text-[11px] text-[#888]">{t("multiChoiceHint")}</p>
       {questions.map((q, qi) => (
         <div key={qi} className="rounded-lg border border-[#e8e5de] p-2.5 md:p-3 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-[#888]">Вопрос {qi + 1}</span>
+            <span className="text-[11px] font-medium text-[#888]">{t("questionN")} {qi + 1}</span>
             {questions.length > 1 && (
-              <button onClick={() => setQ(questions.filter((_, i) => i !== qi))} className="text-[11px] text-red-400 hover:text-red-500 cursor-pointer">Удалить</button>
+              <button onClick={() => setQ(questions.filter((_, i) => i !== qi))} className="text-[11px] text-red-400 hover:text-red-500 cursor-pointer">{t("delete")}</button>
             )}
           </div>
           <input value={q.question} onChange={(e) => { const nq = [...questions]; nq[qi] = { ...nq[qi], question: e.target.value }; setQ(nq); }}
-            placeholder="Вопрос" className="w-full h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc]" />
+            placeholder={t("questionPlaceholder")} className="w-full h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc]" />
           {q.options.map((opt, oi) => (
             <div key={oi} className="flex items-center gap-2">
               <button onClick={() => toggleCorrect(qi, oi)}
@@ -130,7 +132,7 @@ function QuizEditor({ section, onChange }: { section: HomeworkSection; onChange:
                 {isCorrectIndex(q, oi) && <Check className="h-3 w-3 text-white" />}
               </button>
               <input value={opt} onChange={(e) => { const nq = [...questions]; nq[qi] = { ...nq[qi], options: nq[qi].options.map((o, i) => i === oi ? e.target.value : o) }; setQ(nq); }}
-                placeholder={`Вариант ${oi + 1}`} className="flex-1 h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc] min-w-0" />
+                placeholder={`${t("optionN")} ${oi + 1}`} className="flex-1 h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc] min-w-0" />
               {q.options.length > 2 && (
                 <button onClick={() => {
                   const nq = [...questions];
@@ -147,21 +149,22 @@ function QuizEditor({ section, onChange }: { section: HomeworkSection; onChange:
           ))}
           <div className="flex gap-2">
             <button onClick={() => { const nq = [...questions]; nq[qi] = { ...nq[qi], options: [...nq[qi].options, ""] }; setQ(nq); }}
-              className="text-[11px] text-[#888] hover:text-[#666] cursor-pointer">+ вариант</button>
+              className="text-[11px] text-[#888] hover:text-[#666] cursor-pointer">{t("addOption")}</button>
           </div>
           <div>
             <input value={q.explanation || ""} onChange={(e) => { const nq = [...questions]; nq[qi] = { ...nq[qi], explanation: e.target.value }; setQ(nq); }}
-              placeholder="Пояснение (показывается после ответа)" className="w-full h-8 rounded-lg border border-dashed border-[#e8e5de] px-3 text-[12px] text-[#888] outline-none focus:border-[#ccc]" />
+              placeholder={t("explanationPlaceholder")} className="w-full h-8 rounded-lg border border-dashed border-[#e8e5de] px-3 text-[12px] text-[#888] outline-none focus:border-[#ccc]" />
           </div>
         </div>
       ))}
       <button onClick={() => setQ([...questions, { question: "", options: ["", ""], correct: 0 }])}
-        className="text-[12px] text-[#888] font-medium hover:text-[#666] cursor-pointer">+ Вопрос</button>
+        className="text-[12px] text-[#888] font-medium hover:text-[#666] cursor-pointer">{t("addQuestion")}</button>
     </div>
   );
 }
 
 function FillBlanksEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
+  const { t } = useTranslation();
   const c = section.content as FillBlanksContent;
   const blanksCount = (c.text.match(/___/g) || []).length;
 
@@ -177,18 +180,18 @@ function FillBlanksEditor({ section, onChange }: { section: HomeworkSection; onC
     <div className="space-y-3">
       <div>
         <textarea value={c.text} onChange={(e) => syncAnswers(e.target.value)}
-          placeholder='Текст с ___ для пропусков. Пример: "I ___ a student"' rows={3}
+          placeholder={t("blanksTextPlaceholder")} rows={3}
           className="w-full rounded-lg border border-[#e8e5de] px-3 py-2 text-[13px] outline-none focus:border-[#ccc] resize-none" />
         <p className="text-[11px] text-[#888] mt-1">Используй ___ (три подчёркивания) для пропусков. Найдено: {blanksCount}</p>
       </div>
       {c.answers.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[11px] font-medium text-[#888]">Правильные ответы:</p>
+          <p className="text-[11px] font-medium text-[#888]">{t("correctAnswers")}</p>
           {c.answers.map((a, i) => (
             <div key={i} className="flex items-center gap-2">
               <span className="text-[11px] text-[#888] w-5 text-center shrink-0">{i + 1}.</span>
               <input value={a} onChange={(e) => { const na = [...c.answers]; na[i] = e.target.value; onChange({ ...section, content: { ...c, answers: na } }); }}
-                placeholder={`Ответ для пропуска ${i + 1}`} className="flex-1 h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc] min-w-0" />
+                placeholder={`${t("answerForBlank")} ${i + 1}`} className="flex-1 h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc] min-w-0" />
             </div>
           ))}
         </div>
@@ -198,16 +201,17 @@ function FillBlanksEditor({ section, onChange }: { section: HomeworkSection; onC
 }
 
 function MatchingEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
+  const { t } = useTranslation();
   const c = section.content as MatchingContent;
   return (
     <div className="space-y-2">
       {c.pairs.map((p, i) => (
         <div key={i} className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
           <input value={p.left} onChange={(e) => { const np = [...c.pairs]; np[i] = { ...np[i], left: e.target.value }; onChange({ ...section, content: { pairs: np } }); }}
-            placeholder="Слева" className="flex-1 h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc] min-w-0" />
+            placeholder={t("leftPlaceholder")} className="flex-1 h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc] min-w-0" />
           <span className="text-[#ccc] text-[12px] hidden sm:block">→</span>
           <input value={p.right} onChange={(e) => { const np = [...c.pairs]; np[i] = { ...np[i], right: e.target.value }; onChange({ ...section, content: { pairs: np } }); }}
-            placeholder="Справа" className="flex-1 h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc] min-w-0" />
+            placeholder={t("rightPlaceholder")} className="flex-1 h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc] min-w-0" />
           {c.pairs.length > 1 && (
             <button onClick={() => onChange({ ...section, content: { pairs: c.pairs.filter((_, j) => j !== i) } })}
               className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-[#fef2f2] shrink-0 cursor-pointer self-end sm:self-auto">
@@ -217,23 +221,24 @@ function MatchingEditor({ section, onChange }: { section: HomeworkSection; onCha
         </div>
       ))}
       <button onClick={() => onChange({ ...section, content: { pairs: [...c.pairs, { left: "", right: "" }] } })}
-        className="text-[11px] text-[#888] hover:text-[#666] cursor-pointer">+ пара</button>
+        className="text-[11px] text-[#888] hover:text-[#666] cursor-pointer">{t("addPair")}</button>
     </div>
   );
 }
 
 function OrderingEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
+  const { t } = useTranslation();
   const c = section.content as OrderingContent;
   return (
     <div className="space-y-2">
-      <p className="text-[11px] text-[#888]">Элементы в правильном порядке (ученик увидит перемешанные):</p>
+      <p className="text-[11px] text-[#888]">{t("orderingHint")}</p>
       {c.items.map((item, i) => (
         <div key={i} className="flex gap-2 items-center">
           <span className="text-[11px] text-[#888] w-5 text-center shrink-0">{i + 1}</span>
           <input value={item} onChange={(e) => {
             const ni = [...c.items]; ni[i] = e.target.value;
             onChange({ ...section, content: { items: ni, correct_order: ni.map((_, j) => j) } });
-          }} placeholder={`Элемент ${i + 1}`} className="flex-1 h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc] min-w-0" />
+          }} placeholder={`${t("elementN")} ${i + 1}`} className="flex-1 h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc] min-w-0" />
           {c.items.length > 2 && (
             <button onClick={() => {
               const ni = c.items.filter((_, j) => j !== i);
@@ -245,12 +250,13 @@ function OrderingEditor({ section, onChange }: { section: HomeworkSection; onCha
         </div>
       ))}
       <button onClick={() => onChange({ ...section, content: { items: [...c.items, ""], correct_order: [...c.items, ""].map((_, i) => i) } })}
-        className="text-[11px] text-[#888] hover:text-[#666] cursor-pointer">+ элемент</button>
+        className="text-[11px] text-[#888] hover:text-[#666] cursor-pointer">{t("addElement")}</button>
     </div>
   );
 }
 
 function CardsEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
+  const { t } = useTranslation();
   const c = section.content as CardsContent;
   const [bulkMode, setBulkMode] = useState(false);
   const [bulkText, setBulkText] = useState("");
@@ -274,9 +280,9 @@ function CardsEditor({ section, onChange }: { section: HomeworkSection; onChange
       {c.cards.map((card, i) => (
         <div key={i} className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
           <input value={card.front} onChange={(e) => { const nc = [...c.cards]; nc[i] = { ...nc[i], front: e.target.value }; onChange({ ...section, content: { cards: nc } }); }}
-            placeholder="Лицо" className="flex-1 h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc] min-w-0" />
+            placeholder={t("cardFront")} className="flex-1 h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc] min-w-0" />
           <input value={card.back} onChange={(e) => { const nc = [...c.cards]; nc[i] = { ...nc[i], back: e.target.value }; onChange({ ...section, content: { cards: nc } }); }}
-            placeholder="Оборот" className="flex-1 h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc] min-w-0" />
+            placeholder={t("cardBack")} className="flex-1 h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc] min-w-0" />
           {c.cards.length > 1 && (
             <button onClick={() => onChange({ ...section, content: { cards: c.cards.filter((_, j) => j !== i) } })}
               className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-[#fef2f2] shrink-0 cursor-pointer self-end sm:self-auto">
@@ -287,15 +293,15 @@ function CardsEditor({ section, onChange }: { section: HomeworkSection; onChange
       ))}
       <div className="flex flex-wrap gap-2">
         <button onClick={() => onChange({ ...section, content: { cards: [...c.cards, { front: "", back: "" }] } })}
-          className="text-[11px] text-[#888] hover:text-[#666] cursor-pointer">+ карточка</button>
+          className="text-[11px] text-[#888] hover:text-[#666] cursor-pointer">{t("addCard")}</button>
         <button onClick={() => setBulkMode(!bulkMode)}
           className="text-[11px] text-[#888] hover:text-[#666] cursor-pointer flex items-center gap-1">
-          <Upload className="h-3 w-3" /> {bulkMode ? "Скрыть" : "Импорт списком"}
+          <Upload className="h-3 w-3" /> {bulkMode ? t("hideBulk") : t("importBulk")}
         </button>
       </div>
       {bulkMode && (
         <div className="rounded-lg border border-dashed border-[#e8e5de] p-3 space-y-2">
-          <p className="text-[11px] text-[#888]">Одна карточка на строку. Разделитель: Tab, " - ", ";" или " — "</p>
+          <p className="text-[11px] text-[#888]">{t("bulkHint")}</p>
           <textarea value={bulkText} onChange={(e) => setBulkText(e.target.value)}
             placeholder={"cat - кошка\ndog - собака\nbird - птица"} rows={5}
             className="w-full rounded-lg border border-[#e8e5de] px-3 py-2 text-[12px] outline-none focus:border-[#ccc] resize-none font-mono" />
@@ -319,57 +325,59 @@ function TrueFalseEditor({ section, onChange }: { section: HomeworkSection; onCh
       {c.questions.map((q, qi) => (
         <div key={qi} className="rounded-lg border border-[#e8e5de] p-2.5 md:p-3 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-[#888]">Утверждение {qi + 1}</span>
+            <span className="text-[11px] font-medium text-[#888]">{t("statementN")} {qi + 1}</span>
             {c.questions.length > 1 && (
-              <button onClick={() => setQ(c.questions.filter((_, i) => i !== qi))} className="text-[11px] text-red-400 hover:text-red-500 cursor-pointer">Удалить</button>
+              <button onClick={() => setQ(c.questions.filter((_, i) => i !== qi))} className="text-[11px] text-red-400 hover:text-red-500 cursor-pointer">{t("delete")}</button>
             )}
           </div>
           <input value={q.statement} onChange={(e) => { const nq = [...c.questions]; nq[qi] = { ...nq[qi], statement: e.target.value }; setQ(nq); }}
-            placeholder="Утверждение" className="w-full h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc]" />
+            placeholder={t("statementPlaceholder")} className="w-full h-9 rounded-lg border border-[#e8e5de] px-3 text-[13px] outline-none focus:border-[#ccc]" />
           <div className="flex gap-2">
             <button onClick={() => { const nq = [...c.questions]; nq[qi] = { ...nq[qi], correct: true }; setQ(nq); }}
               className={`flex-1 h-9 rounded-lg text-[13px] font-medium border cursor-pointer transition-colors ${q.correct ? "border-emerald-400 bg-emerald-50 text-emerald-700" : "border-[#e8e5de] text-[#888] hover:border-[#d0ccc4]"}`}>
-              ✓ Верно
+              {t("trueLabel")}
             </button>
             <button onClick={() => { const nq = [...c.questions]; nq[qi] = { ...nq[qi], correct: false }; setQ(nq); }}
               className={`flex-1 h-9 rounded-lg text-[13px] font-medium border cursor-pointer transition-colors ${!q.correct ? "border-red-300 bg-red-50 text-red-700" : "border-[#e8e5de] text-[#888] hover:border-[#d0ccc4]"}`}>
-              ✗ Неверно
+              {t("falseLabel")}
             </button>
           </div>
           <input value={q.explanation || ""} onChange={(e) => { const nq = [...c.questions]; nq[qi] = { ...nq[qi], explanation: e.target.value }; setQ(nq); }}
-            placeholder="Пояснение (необязательно)" className="w-full h-8 rounded-lg border border-dashed border-[#e8e5de] px-3 text-[12px] text-[#888] outline-none focus:border-[#ccc]" />
+            placeholder={t("explanationOptional")} className="w-full h-8 rounded-lg border border-dashed border-[#e8e5de] px-3 text-[12px] text-[#888] outline-none focus:border-[#ccc]" />
         </div>
       ))}
       <button onClick={() => setQ([...c.questions, { statement: "", correct: true }])}
-        className="text-[12px] text-[#888] font-medium hover:text-[#666] cursor-pointer">+ Утверждение</button>
+        className="text-[12px] text-[#888] font-medium hover:text-[#666] cursor-pointer">{t("addStatement")}</button>
     </div>
   );
 }
 
 function OpenAnswerEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
+  const { t } = useTranslation();
   const c = section.content as OpenAnswerContent;
   return (
     <div className="space-y-3">
       <div>
         <textarea value={c.prompt} onChange={(e) => onChange({ ...section, content: { ...c, prompt: e.target.value } })}
-          placeholder="Вопрос или задание для ученика..." rows={3}
+          placeholder={t("openAnswerPlaceholder")} rows={3}
           className="w-full rounded-lg border border-[#e8e5de] px-3 py-2 text-[13px] outline-none focus:border-[#ccc] resize-none" />
       </div>
       <input value={c.placeholder || ""} onChange={(e) => onChange({ ...section, content: { ...c, placeholder: e.target.value } })}
-        placeholder="Подсказка в поле ответа (необязательно)" className="w-full h-8 rounded-lg border border-dashed border-[#e8e5de] px-3 text-[12px] text-[#888] outline-none focus:border-[#ccc]" />
-      <p className="text-[11px] text-[#888]">Ученик напишет ответ текстом. Оценивается репетитором вручную.</p>
+        placeholder={t("openAnswerHintPlaceholder")} className="w-full h-8 rounded-lg border border-dashed border-[#e8e5de] px-3 text-[12px] text-[#888] outline-none focus:border-[#ccc]" />
+      <p className="text-[11px] text-[#888]">{t("openAnswerNote")}</p>
     </div>
   );
 }
 
 function TextEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
+  const { t } = useTranslation();
   const c = section.content as { text: string };
   return (
     <div>
       <textarea value={c.text} onChange={(e) => onChange({ ...section, content: { text: e.target.value } })}
-        placeholder="Текст задания, правило, ссылка на материал..." rows={4}
+        placeholder={t("textPlaceholder")} rows={4}
         className="w-full rounded-lg border border-[#e8e5de] px-3 py-2 text-[13px] outline-none focus:border-[#ccc] resize-y min-h-[80px]" />
-      <p className="text-[11px] text-[#888] mt-1">Ученик увидит этот текст как задание (не оценивается)</p>
+      <p className="text-[11px] text-[#888] mt-1">{t("textNote")}</p>
     </div>
   );
 }
@@ -391,6 +399,7 @@ function formatFileSize(bytes: number): string {
 }
 
 function MediaEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
+  const { t } = useTranslation();
   const c = section.content as MediaContent;
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -452,7 +461,7 @@ function MediaEditor({ section, onChange }: { section: HomeworkSection; onChange
       >
         <Upload className="h-5 w-5 text-[#888]" />
         <p className="text-[12px] text-[#888] text-center">
-          {uploading ? "Загрузка..." : "Перетащите файлы или нажмите для загрузки"}
+          {uploading ? t("uploading") : t("uploadHint")}
         </p>
         <p className="text-[10px] text-[#aaa]">Изображения, PDF, аудио · до 10 МБ · макс. {MAX_FILES} файлов</p>
       </div>
@@ -477,7 +486,7 @@ function MediaEditor({ section, onChange }: { section: HomeworkSection; onChange
         </div>
       )}
       <input value={c.caption || ""} onChange={(e) => onChange({ ...section, content: { ...c, caption: e.target.value } })}
-        placeholder="Подпись (необязательно)" className="w-full h-8 rounded-lg border border-dashed border-[#e8e5de] px-3 text-[12px] text-[#888] outline-none focus:border-[#ccc]" />
+        placeholder={t("captionPlaceholder")} className="w-full h-8 rounded-lg border border-dashed border-[#e8e5de] px-3 text-[12px] text-[#888] outline-none focus:border-[#ccc]" />
     </div>
   );
 }
@@ -489,6 +498,7 @@ export function SectionEditor({ section, onChange, onDelete, onDuplicate, onMove
   isFirst: boolean; isLast: boolean; index: number;
   errors: string[];
 }) {
+  const { t } = useTranslation();
   const editors: Record<HomeworkType, any> = { quiz: QuizEditor, fill_blanks: FillBlanksEditor, matching: MatchingEditor, ordering: OrderingEditor, cards: CardsEditor, text: TextEditor, true_false: TrueFalseEditor, open_answer: OpenAnswerEditor, media: MediaEditor };
   const Editor = editors[section.type];
   const hasErrors = errors.length > 0;
@@ -509,7 +519,7 @@ export function SectionEditor({ section, onChange, onDelete, onDuplicate, onMove
       </div>
       <div className="p-3 md:p-4 space-y-3">
         <input value={section.title} onChange={(e) => onChange({ ...section, title: e.target.value })}
-          placeholder="Название секции" className="w-full h-9 rounded-lg border border-[#e8e5de] px-3 text-[14px] font-medium outline-none focus:border-[#ccc]" />
+          placeholder={t("sectionTitle")} className="w-full h-9 rounded-lg border border-[#e8e5de] px-3 text-[14px] font-medium outline-none focus:border-[#ccc]" />
         <Editor section={section} onChange={onChange} />
         {hasErrors && (
           <div className="rounded-lg bg-red-50 px-3 py-2 space-y-1">
@@ -543,9 +553,10 @@ export function duplicateSection(sec: HomeworkSection): HomeworkSection {
 // ── Add Section Picker ──
 
 export function AddSectionPicker({ onAdd }: { onAdd: (section: HomeworkSection) => void }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-xl border border-dashed border-[#e8e5de] p-3 md:p-4">
-      <p className="text-[12px] text-[#888] mb-3">Добавить секцию:</p>
+      <p className="text-[12px] text-[#888] mb-3">{t("addSectionLabel")}</p>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5 md:gap-2">
         {(Object.entries(typeLabels) as [HomeworkType, string][]).map(([key, label]) => (
           <button key={key} onClick={() => onAdd(emptySection(key))}
@@ -565,6 +576,7 @@ export function SectionsListEditor({ sections, onChange, showErrors }: {
   onChange: (sections: HomeworkSection[]) => void;
   showErrors: boolean;
 }) {
+  const { t } = useTranslation();
   const validationErrors = useMemo(() => validateSections(sections), [sections]);
   const errorsPerSection = useMemo(() => {
     const map: Record<number, string[]> = {};
@@ -583,7 +595,7 @@ export function SectionsListEditor({ sections, onChange, showErrors }: {
 
   return (
     <div className="space-y-3">
-      {sections.length > 0 && <p className="text-[12px] font-medium text-[#888]">{sections.length} {sections.length === 1 ? "секция" : "секций"}</p>}
+      {sections.length > 0 && <p className="text-[12px] font-medium text-[#888]">{sections.length} {sections.length === 1 ? t("sectionSingleCount") : t("sectionsCount")}</p>}
       {sections.map((sec, i) => (
         <SectionEditor key={sec.id} section={sec} index={i}
           onChange={(s) => onChange(sections.map((x, j) => j === i ? s : x))}

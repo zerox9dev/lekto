@@ -242,23 +242,23 @@ export function LandingPage() {
         <p className={s.sectionDesc}>{t("landingPricingDesc")}</p>
         <div className={s.pricingGrid}>
           <div className={s.pricingCard}>
-            <div className={s.pricingLabel}>Beta</div>
-            <div className={s.pricingAmount}>$0</div>
-            <div className={s.pricingPeriod}>бесплатный триал на месяц</div>
+            <div className={s.pricingLabel}>{t("landingPricingCloud")}</div>
+            <div className={s.pricingAmount}>{t("landingPricingAmount")}</div>
+            <div className={s.pricingPeriod}>{t("landingPricingPeriod")}</div>
             <ul className={s.pricingFeatures}>
-              {PRICING_CLOUD.map((f) => (
-                <li key={f} className={s.pricingFeature}>{f}</li>
+              {PRICING_CLOUD_KEYS.map((k) => (
+                <li key={k} className={s.pricingFeature}>{t(k)}</li>
               ))}
             </ul>
-            <a href="https://t.me/mirvald" target="_blank" rel="noopener noreferrer" className={s.pricingCta}>Написать в Telegram</a>
+            <a href="https://t.me/mirvald" target="_blank" rel="noopener noreferrer" className={s.pricingCta}>{t("landingPricingStart")}</a>
           </div>
           <div className={s.pricingCard}>
-            <div className={s.pricingLabel}>Self-hosted</div>
-            <div className={s.pricingAmount}>$0</div>
-            <div className={s.pricingPeriod}>навсегда</div>
+            <div className={s.pricingLabel}>{t("landingPricingSelf")}</div>
+            <div className={s.pricingAmount}>{t("landingPricingSelfAmount")}</div>
+            <div className={s.pricingPeriod}>{t("landingPricingSelfPeriod")}</div>
             <ul className={s.pricingFeatures}>
-              {PRICING_SELF.map((f) => (
-                <li key={f} className={s.pricingFeature}>{f}</li>
+              {PRICING_SELF_KEYS.map((k) => (
+                <li key={k} className={s.pricingFeature}>{t(k)}</li>
               ))}
             </ul>
             <a href="https://github.com/zerox9dev/lekto" target="_blank" rel="noopener noreferrer" className={s.pricingCtaOutline}>GitHub</a>
@@ -269,11 +269,11 @@ export function LandingPage() {
       {/* ── Footer ── */}
       <footer className={s.footer}>
         <div className={s.footerInner}>
-          <span className={s.footerCopy}>Lekto © 2025</span>
+          <span className={s.footerCopy}>{t("landingFooterCopy")}</span>
           <div className={s.footerLinks}>
-            <a href="https://github.com/zerox9dev/lekto" target="_blank" rel="noopener noreferrer" className={s.footerLink}>GitHub</a>
-            <a href="https://t.me/mirvald" target="_blank" rel="noopener noreferrer" className={s.footerLink}>Поддержка</a>
-            <a href="/privacy" className={s.footerLink}>Конфиденциальность</a>
+            <a href="https://github.com/zerox9dev/lekto" target="_blank" rel="noopener noreferrer" className={s.footerLink}>{t("landingFooterGithub")}</a>
+            <a href="https://t.me/mirvald" target="_blank" rel="noopener noreferrer" className={s.footerLink}>{t("landingFooterSupport")}</a>
+            <a href="/privacy" className={s.footerLink}>{t("landingFooterPrivacy")}</a>
           </div>
         </div>
       </footer>

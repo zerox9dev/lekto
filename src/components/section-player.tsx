@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 import type { HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, TrueFalseContent, OpenAnswerContent, MediaContent } from "@/types/database";
 
 const typeLabels: Record<string, string> = {
@@ -15,6 +16,7 @@ function getCorrectIndices(q: QuizQuestion): number[] {
 }
 
 function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (score: number) => void }) {
+  const { t } = useTranslation();
   const questions = section.content as QuizQuestion[];
   const isMulti = questions.some((q) => Array.isArray(q.correct) && q.correct.length > 1);
 
@@ -77,7 +79,7 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
 
   return (
     <div className="space-y-4">
-      {isMulti && <p className="text-[12px] text-[#888]">Выбери все правильные ответы и нажми «Готово»</p>}
+      {isMulti && <p className="text-[12px] text-[#888]">{t("selectAllCorrect")}</p>}
       {questions.map((q, qi) => {
         const expected = getCorrectIndices(q);
         return (
@@ -123,7 +125,7 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
             </div>
             {submitted && q.explanation && (
               <div className="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2 ml-0.5 md:ml-1">
-                <p className="text-[13px] text-blue-700">Пояснение: {q.explanation}</p>
+                <p className="text-[13px] text-blue-700">{t("explanationLabel")} {q.explanation}</p>
               </div>
             )}
           </div>
@@ -131,12 +133,12 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
       })}
       {isMulti && !submitted && (
         <button onClick={confirmMulti} disabled={multiAnswers.some((s) => s.size === 0)}
-          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">Готово</button>
+          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">{t("done")}</button>
       )}
       {submitted && (
         <div className="rounded-xl bg-[#f5f3ee] px-4 py-3">
           <p className="text-[14px] font-medium">
-            Результат: {questions.reduce((acc, q, i) => {
+            {t("result")} {questions.reduce((acc, q, i) => {
               const expected = getCorrectIndices(q);
               if (isMulti) {
                 const selected = [...multiAnswers[i]];
@@ -152,6 +154,7 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
 }
 
 function FillBlanksPlayer({ section, onScore }: { section: HomeworkSection; onScore: (score: number) => void }) {
+  const { t } = useTranslation();
   const content = section.content as FillBlanksContent;
 
   const segments = useMemo(() => {
@@ -213,13 +216,14 @@ function FillBlanksPlayer({ section, onScore }: { section: HomeworkSection; onSc
         )}
       </div>
       {submitted && (
-        <p className="text-[13px] text-[#888] break-words">Правильные ответы: {content.answers.join(", ")}</p>
+        <p className="text-[13px] text-[#888] break-words">{t("correctAnswersLabel")} {content.answers.join(", ")}</p>
       )}
     </div>
   );
 }
 
 function MatchingPlayer({ section, onScore }: { section: HomeworkSection; onScore: (score: number) => void }) {
+  const { t } = useTranslation();
   const content = section.content as MatchingContent;
   const [answers, setAnswers] = useState<(number | null)[]>(() => new Array(content.pairs.length).fill(null));
   const [submitted, setSubmitted] = useState(false);
@@ -253,7 +257,7 @@ function MatchingPlayer({ section, onScore }: { section: HomeworkSection; onScor
             className={`w-full sm:w-auto h-11 md:h-10 rounded-xl border px-3 text-[14px] bg-white sm:min-w-[140px] ${
               submitted ? shuffledRight[answers[i]!] === i ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50" : "border-[#e8e5de]"
             }`}>
-            <option value="">Выбрать...</option>
+            <option value="">{t("choose")}</option>
             {shuffledRight.map((ri, si) => <option key={si} value={si}>{content.pairs[ri].right}</option>)}
           </select>
         </div>
@@ -263,6 +267,7 @@ function MatchingPlayer({ section, onScore }: { section: HomeworkSection; onScor
 }
 
 function OrderingPlayer({ section, onScore }: { section: HomeworkSection; onScore: (score: number) => void }) {
+  const { t } = useTranslation();
   const content = section.content as OrderingContent;
   const [items, setItems] = useState(() => {
     const s = [...content.items];
@@ -300,7 +305,7 @@ function OrderingPlayer({ section, onScore }: { section: HomeworkSection; onScor
           </div>
         );
       })}
-      {!submitted && <button onClick={handleSubmit} className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] cursor-pointer">Проверить</button>}
+      {!submitted && <button onClick={handleSubmit} className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] cursor-pointer">{t("check")}</button>}
     </div>
   );
 }
@@ -316,22 +321,23 @@ function CardsPlayer({ section }: { section: HomeworkSection }) {
       <div onClick={() => setFlipped(!flipped)}
         className="min-h-[140px] md:min-h-[160px] rounded-2xl border border-[#e8e5de] bg-white flex items-center justify-center p-6 md:p-8 cursor-pointer hover:border-[#d0ccc4] select-none transition-colors active:bg-[#f5f3ee]">
         <div className="text-center">
-          <p className="text-[11px] md:text-[12px] text-[#888] mb-2 md:mb-3">{flipped ? "Оборот" : "Лицо"} · Нажми чтобы перевернуть</p>
+          <p className="text-[11px] md:text-[12px] text-[#888] mb-2 md:mb-3">{flipped ? t("cardBackLabel") : t("cardFrontLabel")} · {t("tapToFlip")}</p>
           <p className="text-[18px] md:text-[22px] font-semibold break-words">{flipped ? card.back : card.front}</p>
         </div>
       </div>
       <div className="flex items-center justify-between">
         <button onClick={() => { setIndex(Math.max(0, index - 1)); setFlipped(false); }} disabled={index === 0}
-          className="px-3 md:px-4 py-2 rounded-xl text-[14px] text-[#888] hover:bg-[#f0ede6] disabled:opacity-30 cursor-pointer min-h-[44px]">← Назад</button>
+          className="px-3 md:px-4 py-2 rounded-xl text-[14px] text-[#888] hover:bg-[#f0ede6] disabled:opacity-30 cursor-pointer min-h-[44px]">{t("prevCard")}</button>
         <span className="text-[13px] text-[#888]">{index + 1} / {content.cards.length}</span>
         <button onClick={() => { setIndex(Math.min(content.cards.length - 1, index + 1)); setFlipped(false); }} disabled={index === content.cards.length - 1}
-          className="px-3 md:px-4 py-2 rounded-xl text-[14px] text-[#888] hover:bg-[#f0ede6] disabled:opacity-30 cursor-pointer min-h-[44px]">Далее →</button>
+          className="px-3 md:px-4 py-2 rounded-xl text-[14px] text-[#888] hover:bg-[#f0ede6] disabled:opacity-30 cursor-pointer min-h-[44px]">{t("nextCard")}</button>
       </div>
     </div>
   );
 }
 
 function TrueFalsePlayer({ section, onScore }: { section: HomeworkSection; onScore: (score: number) => void }) {
+  const { t } = useTranslation();
   const c = section.content as TrueFalseContent;
   const [answers, setAnswers] = useState<(boolean | null)[]>(() => new Array(c.questions.length).fill(null));
   const [submitted, setSubmitted] = useState(false);
@@ -366,7 +372,7 @@ function TrueFalsePlayer({ section, onScore }: { section: HomeworkSection; onSco
                   isWrong && answered === true ? "border-red-300 bg-red-50 text-red-600" :
                   answered === true && !submitted ? "border-[#ccc] bg-[#f5f3ee]" :
                   "border-[#e8e5de] hover:border-[#d0ccc4]"
-                }`}>✓ Верно</button>
+                }`}>{t("trueBtn")}</button>
               <button onClick={() => selectTF(qi, false)}
                 disabled={submitted}
                 className={`flex-1 py-2.5 md:py-2.5 rounded-xl text-[13px] md:text-[14px] font-medium border cursor-pointer transition-colors min-h-[44px] ${
@@ -374,11 +380,11 @@ function TrueFalsePlayer({ section, onScore }: { section: HomeworkSection; onSco
                   isWrong && answered === false ? "border-red-300 bg-red-50 text-red-600" :
                   answered === false && !submitted ? "border-[#ccc] bg-[#f5f3ee]" :
                   "border-[#e8e5de] hover:border-[#d0ccc4]"
-                }`}>✗ Неверно</button>
+                }`}>{t("falseBtn")}</button>
             </div>
             {submitted && q.explanation && (
               <div className="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2 ml-0.5 md:ml-1">
-                <p className="text-[13px] text-blue-700">Пояснение: {q.explanation}</p>
+                <p className="text-[13px] text-blue-700">{t("explanationLabel")} {q.explanation}</p>
               </div>
             )}
           </div>
@@ -386,7 +392,7 @@ function TrueFalsePlayer({ section, onScore }: { section: HomeworkSection; onSco
       })}
       {submitted && (
         <div className="rounded-xl bg-[#f5f3ee] px-4 py-3">
-          <p className="text-[14px] font-medium">Результат: {c.questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0)}/{c.questions.length}</p>
+          <p className="text-[14px] font-medium">{t("result")} {c.questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0)}/{c.questions.length}</p>
         </div>
       )}
     </div>
@@ -407,18 +413,18 @@ function OpenAnswerPlayer({ section, onSubmitAnswer }: { section: HomeworkSectio
     <div className="space-y-3">
       <p className="text-[14px] md:text-[15px] text-[#666] whitespace-pre-wrap break-words">{c.prompt}</p>
       <textarea value={answer} onChange={(e) => !submitted && setAnswer(e.target.value)}
-        placeholder={c.placeholder || "Напиши свой ответ..."} rows={4} disabled={submitted}
+        placeholder={c.placeholder || t("writeAnswer")} rows={4} disabled={submitted}
         className="w-full rounded-xl border border-[#e8e5de] px-3 md:px-4 py-2.5 md:py-3 text-[14px] outline-none focus:border-[#ccc] resize-y min-h-[100px] disabled:bg-[#f5f3ee]" />
       {c.min_length && !submitted && (
-        <p className="text-[12px] text-[#888]">Минимум {c.min_length} символов ({answer.length}/{c.min_length})</p>
+        <p className="text-[12px] text-[#888]">{t("minChars")} {c.min_length} {t("chars")} ({answer.length}/{c.min_length})</p>
       )}
       {!submitted && (
         <button onClick={handleSubmit} disabled={!answer.trim() || (c.min_length ? answer.length < c.min_length : false)}
-          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">Отправить ответ</button>
+          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">{t("submitAnswer")}</button>
       )}
       {submitted && (
         <div className="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-3">
-          <p className="text-[14px] text-emerald-700 font-medium">✓ Ответ отправлен. Репетитор проверит его.</p>
+          <p className="text-[14px] text-emerald-700 font-medium">{t("answerSent")}</p>
         </div>
       )}
     </div>
