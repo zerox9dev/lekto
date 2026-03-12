@@ -123,12 +123,12 @@ export function SectionEditorPage() {
           }`}
         >
           {mobilePreview ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-          {mobilePreview ? "Редактор" : "Превью"}
+          {mobilePreview ? t("editor") : t("preview")}
         </button>
 
         {showErrors && validationErrors.length > 0 && (
           <span className="text-[12px] text-red-500 flex items-center gap-1 shrink-0 hidden sm:flex">
-            <AlertCircle className="h-3.5 w-3.5" /> {validationErrors.length} ошибок
+            <AlertCircle className="h-3.5 w-3.5" /> {validationErrors.length} {t("errors")}
           </span>
         )}
 
@@ -138,7 +138,7 @@ export function SectionEditorPage() {
           className="h-8 px-4 rounded-lg bg-[#1a1a1a] text-white text-[13px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer flex items-center gap-1.5 shrink-0 transition-colors"
         >
           <Save className="h-3.5 w-3.5" />
-          {saved ? "Сохранено" : "Сохранить"}
+          {saved ? t("saved") : t("save")}
         </button>
       </header>
 
@@ -149,11 +149,11 @@ export function SectionEditorPage() {
           <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-6 space-y-4">
             {/* Title */}
             <div>
-              <label className="text-[12px] font-medium text-[#888] mb-1 block">Название *</label>
+              <label className="text-[12px] font-medium text-[#888] mb-1 block">{t("titleRequired")}</label>
               <input
                 value={title}
                 onChange={(e) => { setTitle(e.target.value); setSaved(false); }}
-                placeholder={isHomework ? "Домашнее задание — Present Simple" : "Урок 5 — Present Simple"}
+                placeholder={isHomework ? t("hwTitlePlaceholder") : t("lessonTitlePlaceholder")}
                 className="w-full h-10 rounded-xl border border-[#e8e5de] px-3 text-[14px] outline-none focus:border-[#ccc]"
                 autoFocus
               />
@@ -166,7 +166,7 @@ export function SectionEditorPage() {
                   onClick={() => setShowTemplates(!showTemplates)}
                   className="inline-flex items-center gap-1.5 text-[12px] font-medium text-amber-600 hover:text-amber-700 cursor-pointer"
                 >
-                  <FileDown className="h-3.5 w-3.5" /> {showTemplates ? "Скрыть шаблоны" : `Из шаблона (${templates.length})`}
+                  <FileDown className="h-3.5 w-3.5" /> {showTemplates ? t("hideTemplates") : `${t("fromTemplate")} (${templates.length})`}
                 </button>
                 {showTemplates && (
                   <div className="mt-2 space-y-1.5">
@@ -203,7 +203,7 @@ export function SectionEditorPage() {
                 onClick={() => setShowAi(!showAi)}
                 className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#888] hover:text-[#666] cursor-pointer"
               >
-                <Sparkles className="h-3.5 w-3.5" /> {showAi ? "Скрыть AI" : "Сгенерировать с AI"}
+                <Sparkles className="h-3.5 w-3.5" /> {showAi ? t("hideAi") : t("generateWithAi")}
               </button>
               {showAi && (
                 <div className="mt-2 border border-dashed border-[#e8e5de] rounded-xl p-3 space-y-2">
@@ -256,9 +256,9 @@ export function SectionEditorPage() {
                     className="w-full h-9 rounded-lg bg-[#f0ede6] text-[13px] font-medium text-[#1a1a1a] hover:bg-[#e8e5de] disabled:opacity-40 cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     {aiLoading ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                    {aiLoading ? "Генерирую..." : isHomework ? "Сгенерировать домашку" : "Сгенерировать секции"}
+                    {aiLoading ? t("generating") : isHomework ? t("generateHomework") : t("generateSections")}
                   </button>
-                  <p className="text-[11px] text-[#888]">AI добавит секции к существующим. Введите название {isHomework ? "домашки" : "урока"} выше.</p>
+                  <p className="text-[11px] text-[#888]">{isHomework ? t("aiHintHw") : t("aiHintLesson")}</p>
                 </div>
               )}
             </div>
@@ -277,7 +277,7 @@ export function SectionEditorPage() {
                   onClick={() => addTemplate(title || "Шаблон", sections)}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium text-amber-600 hover:bg-amber-50 cursor-pointer"
                 >
-                  <Bookmark className="h-3 w-3" /> Сохранить как шаблон
+                  <Bookmark className="h-3 w-3" /> {t("saveAsTemplate")}
                 </button>
               </div>
             )}
@@ -287,16 +287,16 @@ export function SectionEditorPage() {
         {/* Right panel — Preview */}
         <div className={`${mobilePreview ? "flex" : "hidden"} md:flex flex-col w-full md:w-[45%] bg-[#f5f3ee] overflow-hidden`}>
           <div className="px-4 md:px-5 py-3 border-b border-[#e8e5de] bg-[#f5f3ee] shrink-0">
-            <p className="text-[12px] font-semibold text-[#888] uppercase tracking-wider">Предпросмотр</p>
+            <p className="text-[12px] font-semibold text-[#888] uppercase tracking-wider">{t("preview")}</p>
           </div>
           <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-6">
             {sections.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[#e8e5de] bg-white p-8 text-center">
-                <p className="text-[14px] text-[#888]">Добавьте секции слева — здесь появится предпросмотр</p>
+                <p className="text-[14px] text-[#888]">{t("addSectionsHint")}</p>
               </div>
             ) : (
               <div className="rounded-2xl bg-white border border-[#e8e5de] p-4 md:p-6 space-y-4 md:space-y-6">
-                <h3 className="text-[16px] md:text-[17px] font-bold">{title || "Без названия"}</h3>
+                <h3 className="text-[16px] md:text-[17px] font-bold">{title || t("noTitle")}</h3>
                 {sections.map((sec, i) => (
                   <div key={sec.id}>
                     {i > 0 && <div className="border-t border-[#e8e5de] mb-4 md:mb-6" />}

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import { GraduationCap, School, Globe, Library, BookOpen, PenLine, LinkIcon, BarChart3, FileText, TrendingUp, Smartphone, Palette } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 import s from "./landing.module.css";
 
 function useReveal() {
@@ -23,45 +24,39 @@ function Reveal({ children, className = "", id }: { children: React.ReactNode; c
   return <section ref={ref} id={id} className={`${s.reveal} ${className}`}>{children}</section>;
 }
 
-const AUDIENCE = [
-  { icon: GraduationCap, title: "Репетиторы", desc: "Ведут уроки один на один и хотят всё в одном месте", bg: s.audienceEmoji1 },
-  { icon: School, title: "Преподаватели", desc: "Работают с группами и нужен порядок в материалах", bg: s.audienceEmoji2 },
-  { icon: Globe, title: "Онлайн-учителя", desc: "Преподают удалённо и хотят удобную платформу", bg: s.audienceEmoji3 },
-  { icon: Library, title: "Языковые школы", desc: "Нужна структура для нескольких преподавателей", bg: s.audienceEmoji4 },
+const AUDIENCE_META = [
+  { icon: GraduationCap, titleKey: "landingAudience1Title", descKey: "landingAudience1Desc", bg: s.audienceEmoji1 },
+  { icon: School, titleKey: "landingAudience2Title", descKey: "landingAudience2Desc", bg: s.audienceEmoji2 },
+  { icon: Globe, titleKey: "landingAudience3Title", descKey: "landingAudience3Desc", bg: s.audienceEmoji3 },
+  { icon: Library, titleKey: "landingAudience4Title", descKey: "landingAudience4Desc", bg: s.audienceEmoji4 },
 ];
 
-const FEATURES = [
-  { icon: BookOpen, title: "Уроки и конспекты", desc: "Создавайте конспекты, прикрепляйте материалы к каждому занятию" },
-  { icon: PenLine, title: "10 типов домашек", desc: "Тесты, вставить слово, пары, сортировка, карточки — с автопроверкой" },
-  { icon: LinkIcon, title: "Ссылка ученику", desc: "Ученик открывает ссылку и видит свои уроки и домашки. Без регистрации" },
-  { icon: BarChart3, title: "Статистика", desc: "Следите за прогрессом каждого ученика" },
+const FEATURES_META = [
+  { icon: BookOpen, titleKey: "landingFeature1Title", descKey: "landingFeature1Desc" },
+  { icon: PenLine, titleKey: "landingFeature2Title", descKey: "landingFeature2Desc" },
+  { icon: LinkIcon, titleKey: "landingFeature3Title", descKey: "landingFeature3Desc" },
+  { icon: BarChart3, titleKey: "landingFeature4Title", descKey: "landingFeature4Desc" },
 ];
 
-const BENEFITS = [
-  { icon: FileText, title: "Интерактивные домашки", desc: "10 типов заданий с автопроверкой" },
-  { icon: TrendingUp, title: "Прогресс учеников", desc: "Статистика по каждому ученику" },
-  { icon: LinkIcon, title: "Персональная ссылка", desc: "Ученик видит всё без регистрации" },
-  { icon: Smartphone, title: "Мобильная версия", desc: "Работает на любом устройстве" },
-  { icon: Palette, title: "Шаблоны заданий", desc: "Создавайте и используйте повторно" },
+const BENEFITS_META = [
+  { icon: FileText, titleKey: "landingBenefit1Title", descKey: "landingBenefit1Desc" },
+  { icon: TrendingUp, titleKey: "landingBenefit2Title", descKey: "landingBenefit2Desc" },
+  { icon: LinkIcon, titleKey: "landingBenefit3Title", descKey: "landingBenefit3Desc" },
+  { icon: Smartphone, titleKey: "landingBenefit4Title", descKey: "landingBenefit4Desc" },
+  { icon: Palette, titleKey: "landingBenefit5Title", descKey: "landingBenefit5Desc" },
 ];
 
-const PRICING_CLOUD = [
-  "Безлимитные ученики",
-  "10 типов домашних заданий",
-  "Статистика прогресса",
-  "Шаблоны заданий",
-  "Автоматические обновления",
-  "Приоритетная поддержка",
+const PRICING_CLOUD_KEYS = [
+  "landingPricingCloudF1", "landingPricingCloudF2", "landingPricingCloudF3",
+  "landingPricingCloudF4", "landingPricingCloudF5", "landingPricingCloudF6",
 ];
 
-const PRICING_SELF = [
-  "Все функции Cloud",
-  "Свой сервер, свои данные",
-  "Открытый исходный код",
-  "Безлимитно и бесплатно",
+const PRICING_SELF_KEYS = [
+  "landingPricingSelfF1", "landingPricingSelfF2", "landingPricingSelfF3", "landingPricingSelfF4",
 ];
 
 export function LandingPage() {
+  const { t } = useTranslation();
   return (
     <div className={s.landing}>
       {/* ── Floating Pill Navbar ── */}
@@ -73,7 +68,7 @@ export function LandingPage() {
             <a href="#audience" className={s.navLink}>Для кого</a>
             <a href="#pricing" className={s.navLink}>Цены</a>
           </div>
-          <Link to="/login" className={s.navCta}>Попробовать</Link>
+          <a href="https://t.me/mirvald" target="_blank" rel="noopener noreferrer" className={s.navCta}>Написать</a>
         </nav>
       </div>
 
@@ -87,7 +82,7 @@ export function LandingPage() {
         <p className={s.heroDesc}>
           Уроки, интерактивные домашки и персональная ссылка для каждого ученика. Бесплатно.
         </p>
-        <Link to="/login" className={s.heroCta}>Начать бесплатно</Link>
+        <a href="https://t.me/mirvald" target="_blank" rel="noopener noreferrer" className={s.heroCta}>Попробовать бесплатно</a>
         <p className={s.heroNote}>Без регистрации для учеников</p>
       </section>
 
