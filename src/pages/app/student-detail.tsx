@@ -1,13 +1,10 @@
-import { useState, useMemo } from "react";
-import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Plus, BookOpen, ClipboardCheck, Pencil, Trash2, Copy, Check, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle, CopyPlus, Eye, X, AlertCircle, Upload, Bookmark, FileDown } from "lucide-react";
+import { useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, Plus, BookOpen, Pencil, Trash2, Copy, Check, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle, CopyPlus, X, Bookmark } from "lucide-react";
 import { useStore } from "@/lib/store";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, TrueFalseContent, OpenAnswerContent, Homework, Lesson } from "@/types/database";
-import { typeLabels, typeIcons, validateSections, SectionsListEditor } from "@/components/sections-editor";
-
-// Helpers, validation, section editors, emptySection, duplicateSection
-// are now imported from @/components/sections-editor
+import { typeLabels, typeIcons } from "@/components/sections-editor";
 
 function getCorrectIndices(q: QuizQuestion): number[] {
   return Array.isArray(q.correct) ? q.correct : [q.correct];
@@ -18,7 +15,7 @@ function isCorrectIndex(q: QuizQuestion, idx: number): boolean {
 }
 
 // ══════════════════════════════════════════════════════
-// Preview
+// Preview (kept for inline preview in lesson cards)
 // ══════════════════════════════════════════════════════
 
 function SectionPreview({ section }: { section: HomeworkSection }) {
@@ -103,35 +100,19 @@ function SectionPreview({ section }: { section: HomeworkSection }) {
   return null;
 }
 
-function HomeworkPreview({ title, sections }: { title: string; sections: HomeworkSection[] }) {
-  return (
-    <div className="space-y-4">
-      <h3 className="text-[16px] font-bold">{title || "Без названия"}</h3>
-      {sections.map((sec) => (
-        <div key={sec.id} className="rounded-xl border border-[#e8e5de] bg-white p-3 md:p-4 space-y-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[11px] font-medium text-[#888] bg-[#f0ede6] px-2 py-0.5 rounded-md">{typeLabels[sec.type]}</span>
-            <span className="text-[14px] font-semibold">{sec.title}</span>
-          </div>
-          <SectionPreview section={sec} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
 // ══════════════════════════════════════════════════════
 // Lesson Card
 // ══════════════════════════════════════════════════════
 
-function LessonCard({ lesson, homeworkItems, onEditLesson, onDeleteLesson, onNewHw, onEditHw, onDeleteHw, onDuplicateHw, onSaveAsTemplate }: {
-  lesson: Lesson; homeworkItems: Homework[];
+function LessonCard({ lesson, homeworkItems, studentId, onEditLesson, onDeleteLesson, onNewHw, onEditHw, onDeleteHw, onDuplicateHw, onSaveAsTemplate }: {
+  lesson: Lesson; homeworkItems: Homework[]; studentId: string;
   onEditLesson: () => void; onDeleteLesson: () => void;
   onNewHw: () => void; onEditHw: (h: Homework) => void; onDeleteHw: (id: string) => void; onDuplicateHw: (h: Homework) => void;
   onSaveAsTemplate: (h: Homework) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const completedHw = homeworkItems.filter((h) => h.completed).length;
+  const navigate = useNavigate();
 
   return (
     <div className="rounded-xl border border-[#e8e5de] bg-white overflow-hidden">
@@ -167,6 +148,25 @@ function LessonCard({ lesson, homeworkItems, onEditLesson, onDeleteLesson, onNew
               <p className="text-[13px] text-[#666] whitespace-pre-wrap leading-relaxed break-words">{lesson.notes}</p>
             </div>
           )}
+
+          {/* Edit lesson sections button */}
+          {lesson.sections && lesson.sections.length > 0 && (
+            <button
+              onClick={() => navigate(`/app/students/${studentId}/lesson/${lesson.id}/edit`)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+            >
+              <Pencil className="h-3 w-3" /> Редактировать секции урока ({lesson.sections.length})
+            </button>
+          )}
+          {(!lesson.sections || lesson.sections.length === 0) && (
+            <button
+              onClick={() => navigate(`/app/students/${studentId}/lesson/${lesson.id}/edit`)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#888] hover:bg-[#f0ede6] transition-colors cursor-pointer"
+            >
+              <Plus className="h-3 w-3" /> Добавить интерактивный контент
+            </button>
+          )}
+
           {homeworkItems.length > 0 && (
             <div className="space-y-2">
               <p className="text-[11px] font-medium text-[#888] uppercase tracking-wider">Домашние задания</p>
@@ -211,32 +211,21 @@ function LessonCard({ lesson, homeworkItems, onEditLesson, onDeleteLesson, onNew
 
 export function StudentDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { students, lessons, homework, addLesson, updateLesson, deleteLesson, addHomework, updateHomework, deleteHomework, templates, addTemplate, deleteTemplate } = useStore();
 
   const student = students.find((s) => s.id === id);
   const studentLessons = student ? lessons.filter((l) => l.student_id === student.id).sort((a, b) => b.date.localeCompare(a.date)) : [];
   const studentHomework = student ? homework.filter((h) => h.student_id === student.id) : [];
 
+  // Lesson dialog state (for basic fields: title, date, notes)
   const [lessonOpen, setLessonOpen] = useState(false);
   const [editLessonId, setEditLessonId] = useState<string | null>(null);
   const [lessonTitle, setLessonTitle] = useState("");
   const [lessonDate, setLessonDate] = useState(new Date().toISOString().slice(0, 10));
   const [lessonNotes, setLessonNotes] = useState("");
-  const [lessonSections, setLessonSections] = useState<HomeworkSection[]>([]);
-  const [lessonShowErrors, setLessonShowErrors] = useState(false);
-
-  const [hwOpen, setHwOpen] = useState(false);
-  const [editHwId, setEditHwId] = useState<string | null>(null);
-  const [hwTitle, setHwTitle] = useState("");
-  const [hwLessonId, setHwLessonId] = useState("");
-  const [hwSections, setHwSections] = useState<HomeworkSection[]>([]);
-  const [showPreview, setShowPreview] = useState(false);
-  const [showErrors, setShowErrors] = useState(false);
-  const [showTemplates, setShowTemplates] = useState(false);
 
   const [copied, setCopied] = useState(false);
-
-  const validationErrors = useMemo(() => validateSections(hwSections), [hwSections]);
 
   if (!student) {
     return (
@@ -253,32 +242,25 @@ export function StudentDetailPage() {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  const openNewLesson = () => { setEditLessonId(null); setLessonTitle(""); setLessonDate(new Date().toISOString().slice(0, 10)); setLessonNotes(""); setLessonSections([]); setLessonShowErrors(false); setLessonOpen(true); };
-  const openEditLesson = (l: Lesson) => { setEditLessonId(l.id); setLessonTitle(l.title); setLessonDate(l.date); setLessonNotes(l.notes || ""); setLessonSections(l.sections || []); setLessonShowErrors(false); setLessonOpen(true); };
+  const openNewLesson = () => { setEditLessonId(null); setLessonTitle(""); setLessonDate(new Date().toISOString().slice(0, 10)); setLessonNotes(""); setLessonOpen(true); };
+  const openEditLesson = (l: Lesson) => { setEditLessonId(l.id); setLessonTitle(l.title); setLessonDate(l.date); setLessonNotes(l.notes || ""); setLessonOpen(true); };
   const saveLesson = () => {
     if (!lessonTitle.trim()) return;
-    if (lessonSections.length > 0) {
-      const errors = validateSections(lessonSections);
-      if (errors.length > 0) { setLessonShowErrors(true); return; }
-    }
-    const sectionsData = lessonSections.length > 0 ? lessonSections : undefined;
-    if (editLessonId) updateLesson(editLessonId, { title: lessonTitle.trim(), date: lessonDate, notes: lessonNotes.trim() || null, sections: sectionsData });
-    else addLesson(student.id, lessonTitle.trim(), lessonDate, lessonNotes.trim() || undefined, sectionsData);
+    if (editLessonId) updateLesson(editLessonId, { title: lessonTitle.trim(), date: lessonDate, notes: lessonNotes.trim() || null });
+    else addLesson(student.id, lessonTitle.trim(), lessonDate, lessonNotes.trim() || undefined);
     setLessonOpen(false);
   };
 
-  const openNewHw = (lessonId: string) => { setEditHwId(null); setHwTitle(""); setHwLessonId(lessonId); setHwSections([]); setShowPreview(false); setShowErrors(false); setShowTemplates(false); setHwOpen(true); };
-  const openEditHw = (h: Homework) => { setEditHwId(h.id); setHwTitle(h.title); setHwLessonId(h.lesson_id); setHwSections(h.sections || []); setShowPreview(false); setShowErrors(false); setShowTemplates(false); setHwOpen(true); };
+  // Homework: navigate to full-page editor
+  const openNewHw = (lessonId: string) => {
+    navigate(`/app/students/${student.id}/homework/new/edit?lessonId=${lessonId}`);
+  };
+  const openEditHw = (h: Homework) => {
+    navigate(`/app/students/${student.id}/homework/${h.id}/edit`);
+  };
   const duplicateHw = (h: Homework, lessonId: string) => {
     addHomework({ lesson_id: lessonId, student_id: student.id, tutor_id: "local", title: h.title + " (копия)",
       sections: (h.sections || []).map((s) => ({ ...s, id: crypto.randomUUID() })), completed: false, student_answers: null, scores: null });
-  };
-  const saveHw = () => {
-    if (!hwTitle.trim() || hwSections.length === 0) return;
-    if (validationErrors.length > 0) { setShowErrors(true); return; }
-    if (editHwId) updateHomework(editHwId, { title: hwTitle.trim(), lesson_id: hwLessonId, sections: hwSections });
-    else addHomework({ lesson_id: hwLessonId, student_id: student.id, tutor_id: "local", title: hwTitle.trim(), sections: hwSections, completed: false, student_answers: null, scores: null });
-    setHwOpen(false);
   };
 
   const completedHw = studentHomework.filter((h) => h.completed).length;
@@ -326,7 +308,7 @@ export function StudentDetailPage() {
           <div className="rounded-2xl border border-dashed border-[#e8e5de] bg-white py-12 md:py-16 text-center"><p className="text-[14px] text-[#888]">Уроков пока нет</p></div>
         ) : (
           studentLessons.map((l) => (
-            <LessonCard key={l.id} lesson={l} homeworkItems={studentHomework.filter((h) => h.lesson_id === l.id)}
+            <LessonCard key={l.id} lesson={l} homeworkItems={studentHomework.filter((h) => h.lesson_id === l.id)} studentId={student.id}
               onEditLesson={() => openEditLesson(l)} onDeleteLesson={() => deleteLesson(l.id)}
               onNewHw={() => openNewHw(l.id)} onEditHw={openEditHw} onDeleteHw={deleteHomework} onDuplicateHw={(h) => duplicateHw(h, l.id)}
               onSaveAsTemplate={(h) => addTemplate(h.title, h.sections || [])} />
@@ -334,12 +316,12 @@ export function StudentDetailPage() {
         )}
       </div>
 
-      {/* Lesson Dialog */}
+      {/* Lesson Dialog — basic fields only (title, date, notes) */}
       <Dialog.Root open={lessonOpen} onOpenChange={setLessonOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-2xl h-full md:h-auto md:max-h-[90vh] overflow-y-auto overflow-x-hidden md:rounded-2xl bg-white shadow-xl z-50">
-            {/* Sticky header */}
+          <Dialog.Content className="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-lg h-full md:h-auto md:max-h-[90vh] overflow-y-auto overflow-x-hidden md:rounded-2xl bg-white shadow-xl z-50">
+            {/* Header */}
             <div className="sticky top-0 bg-white border-b border-[#e8e5de] px-4 md:px-6 py-3 md:py-4 flex items-center justify-between z-10">
               <Dialog.Title className="text-base md:text-lg font-bold truncate">{editLessonId ? "Редактировать урок" : "Новый урок"}</Dialog.Title>
               <Dialog.Close asChild><button className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-[#f0ede6] cursor-pointer"><X className="h-4 w-4 text-[#888]" /></button></Dialog.Close>
@@ -354,115 +336,16 @@ export function StudentDetailPage() {
                 <textarea value={lessonNotes} onChange={(e) => setLessonNotes(e.target.value)} placeholder="Что прошли на уроке, правила, ссылки на материалы..." rows={3}
                   className="w-full rounded-xl border border-[#e8e5de] px-3 py-2.5 text-[14px] outline-none focus:border-[#ccc] resize-y min-h-[80px]" /></div>
 
-              {/* Interactive sections */}
-              <div>
-                <label className="text-[12px] font-medium text-[#888] mb-2 block">Интерактивный контент (необязательно)</label>
-                <p className="text-[11px] text-[#888] mb-3">Добавьте тесты, карточки, задания — ученик увидит их на своей странице</p>
-                <SectionsListEditor sections={lessonSections} onChange={setLessonSections} showErrors={lessonShowErrors} />
-              </div>
+              <p className="text-[11px] text-[#888]">💡 Интерактивный контент (тесты, карточки) можно добавить после создания урока через конструктор секций</p>
             </div>
 
-            {/* Sticky footer */}
-            <div className="sticky bottom-0 bg-white border-t border-[#e8e5de] px-4 md:px-6 py-3 md:py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                {lessonShowErrors && lessonSections.length > 0 && validateSections(lessonSections).length > 0 && (
-                  <p className="text-[12px] text-red-500 flex items-center gap-1"><AlertCircle className="h-3.5 w-3.5" /> {validateSections(lessonSections).length} ошибок в секциях</p>
-                )}
-              </div>
-              <div className="flex gap-2 w-full sm:w-auto">
-                <Dialog.Close asChild><button className="flex-1 sm:flex-initial px-4 py-2.5 sm:py-2 rounded-full text-[13px] font-medium text-[#888] hover:bg-[#f0ede6] cursor-pointer">Отмена</button></Dialog.Close>
-                <button onClick={saveLesson} disabled={!lessonTitle.trim()}
-                  className="flex-1 sm:flex-initial px-5 py-2.5 sm:py-2 rounded-full bg-[#1a1a1a] text-white text-[13px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">
-                  {editLessonId ? "Сохранить" : "Создать"}
-                </button>
-              </div>
-            </div>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
-
-      {/* Homework Dialog */}
-      <Dialog.Root open={hwOpen} onOpenChange={setHwOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-2xl h-full md:h-auto md:max-h-[90vh] overflow-y-auto overflow-x-hidden md:rounded-2xl bg-white shadow-xl z-50">
-            {/* Sticky header */}
-            <div className="sticky top-0 bg-white border-b border-[#e8e5de] px-4 md:px-6 py-3 md:py-4 flex items-center justify-between z-10">
-              <Dialog.Title className="text-base md:text-lg font-bold truncate">{editHwId ? "Редактировать задание" : "Новое задание"}</Dialog.Title>
-              <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
-                <button onClick={() => setShowPreview(!showPreview)}
-                  className={`h-8 px-2.5 md:px-3 rounded-lg flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors ${showPreview ? "bg-[#1a1a1a] text-white" : "hover:bg-[#f0ede6] text-[#888]"}`}>
-                  <Eye className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{showPreview ? "Редактор" : "Предпросмотр"}</span>
-                </button>
-                <Dialog.Close asChild><button className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-[#f0ede6] cursor-pointer"><X className="h-4 w-4 text-[#888]" /></button></Dialog.Close>
-              </div>
-            </div>
-
-            <div className="px-4 md:px-6 py-4 space-y-4">
-              {showPreview ? (
-                <HomeworkPreview title={hwTitle} sections={hwSections} />
-              ) : (
-                <>
-                  <div><label className="text-[12px] font-medium text-[#888] mb-1 block">Название *</label>
-                    <input value={hwTitle} onChange={(e) => setHwTitle(e.target.value)} placeholder="Домашнее задание — Present Simple"
-                      className="w-full h-10 rounded-xl border border-[#e8e5de] px-3 text-[14px] outline-none focus:border-[#ccc]" autoFocus /></div>
-
-                  {/* Template picker */}
-                  {!editHwId && templates.length > 0 && (
-                    <div>
-                      <button onClick={() => setShowTemplates(!showTemplates)}
-                        className="inline-flex items-center gap-1.5 text-[12px] font-medium text-amber-600 hover:text-amber-700 cursor-pointer">
-                        <FileDown className="h-3.5 w-3.5" /> {showTemplates ? "Скрыть шаблоны" : `Из шаблона (${templates.length})`}
-                      </button>
-                      {showTemplates && (
-                        <div className="mt-2 space-y-1.5">
-                          {templates.map((t) => (
-                            <div key={t.id} className="flex items-center gap-2 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 group/tpl">
-                              <button onClick={() => {
-                                setHwTitle(t.title);
-                                setHwSections(t.sections.map((s) => ({ ...s, id: crypto.randomUUID() })));
-                                setShowTemplates(false);
-                              }} className="flex-1 text-left cursor-pointer min-w-0">
-                                <p className="text-[13px] font-medium text-[#666] truncate">{t.title}</p>
-                                <p className="text-[11px] text-[#888] truncate">{t.sections.length} секций · {t.sections.map((s) => typeLabels[s.type]).join(", ")}</p>
-                              </button>
-                              <button onClick={() => deleteTemplate(t.id)}
-                                className="h-6 w-6 rounded flex items-center justify-center md:opacity-0 md:group-hover/tpl:opacity-100 hover:bg-red-100 cursor-pointer shrink-0">
-                                <Trash2 className="h-3 w-3 text-red-400" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  <SectionsListEditor sections={hwSections} onChange={setHwSections} showErrors={showErrors} />
-                </>
-              )}
-            </div>
-
-            {/* Sticky footer */}
-            <div className="sticky bottom-0 bg-white border-t border-[#e8e5de] px-4 md:px-6 py-3 md:py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                {hwSections.length === 0 && <p className="text-[12px] text-[#888]">Добавьте хотя бы одну секцию</p>}
-                {hwSections.length > 0 && (
-                  <button onClick={() => { addTemplate(hwTitle || "Шаблон", hwSections); }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium text-amber-600 hover:bg-amber-50 cursor-pointer">
-                    <Bookmark className="h-3 w-3" /> Шаблон
-                  </button>
-                )}
-                {showErrors && validationErrors.length > 0 && (
-                  <p className="text-[12px] text-red-500 flex items-center gap-1"><AlertCircle className="h-3.5 w-3.5" /> {validationErrors.length} ошибок</p>
-                )}
-              </div>
-              <div className="flex gap-2 w-full sm:w-auto">
-                <Dialog.Close asChild><button className="flex-1 sm:flex-initial px-4 py-2.5 sm:py-2 rounded-full text-[13px] font-medium text-[#888] hover:bg-[#f0ede6] cursor-pointer">Отмена</button></Dialog.Close>
-                <button onClick={saveHw} disabled={!hwTitle.trim() || hwSections.length === 0}
-                  className="flex-1 sm:flex-initial px-5 py-2.5 sm:py-2 rounded-full bg-[#1a1a1a] text-white text-[13px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">
-                  {editHwId ? "Сохранить" : "Создать"}
-                </button>
-              </div>
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-white border-t border-[#e8e5de] px-4 md:px-6 py-3 md:py-4 flex justify-end gap-2">
+              <Dialog.Close asChild><button className="px-4 py-2.5 sm:py-2 rounded-full text-[13px] font-medium text-[#888] hover:bg-[#f0ede6] cursor-pointer">Отмена</button></Dialog.Close>
+              <button onClick={saveLesson} disabled={!lessonTitle.trim()}
+                className="px-5 py-2.5 sm:py-2 rounded-full bg-[#1a1a1a] text-white text-[13px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">
+                {editLessonId ? "Сохранить" : "Создать"}
+              </button>
             </div>
           </Dialog.Content>
         </Dialog.Portal>
