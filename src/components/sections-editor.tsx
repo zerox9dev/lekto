@@ -1,15 +1,16 @@
 import { useState, useMemo } from "react";
 import { Trash2, CopyPlus, ChevronDown, ChevronUp, Check, X, AlertCircle, Upload } from "lucide-react";
-import type { HomeworkType, HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, TrueFalseContent, TrueFalseQuestion, OpenAnswerContent } from "@/types/database";
+import type { HomeworkType, HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, TrueFalseContent, TrueFalseQuestion, OpenAnswerContent, MediaContent, MediaFile } from "@/types/database";
+import { supabase } from "@/lib/supabase";
 
 export const typeLabels: Record<HomeworkType, string> = {
   quiz: "Тест", fill_blanks: "Вставить слово", matching: "Соединить пары",
   ordering: "Порядок", cards: "Карточки", text: "Текст",
-  true_false: "Верно / Неверно", open_answer: "Открытый ответ",
+  true_false: "Верно / Неверно", open_answer: "Открытый ответ", media: "Медиа",
 };
 export const typeIcons: Record<HomeworkType, string> = {
   quiz: "📝", fill_blanks: "✏️", matching: "🔗", ordering: "📋", cards: "🃏", text: "📄",
-  true_false: "✅", open_answer: "💬",
+  true_false: "✅", open_answer: "💬", media: "📎",
 };
 
 // ── Helpers ──
@@ -78,6 +79,10 @@ export function validateSections(sections: HomeworkSection[]): ValidationError[]
     if (sec.type === "text") {
       const c = sec.content as { text: string };
       if (!c.text.trim()) errors.push({ sectionIndex: i, message: "Пустой текст" });
+    }
+    if (sec.type === "media") {
+      const c = sec.content as MediaContent;
+      if (c.files.length === 0) errors.push({ sectionIndex: i, message: "Нет файлов" });
     }
   });
   return errors;
@@ -369,6 +374,113 @@ function TextEditor({ section, onChange }: { section: HomeworkSection; onChange:
   );
 }
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILES = 5;
+const ACCEPT_TYPES = "image/*,audio/*,application/pdf";
+
+function getFileType(file: File): "image" | "pdf" | "audio" {
+  if (file.type.startsWith("image/")) return "image";
+  if (file.type === "application/pdf") return "pdf";
+  return "audio";
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + " Б";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " КБ";
+  return (bytes / (1024 * 1024)).toFixed(1) + " МБ";
+}
+
+function MediaEditor({ section, onChange }: { section: HomeworkSection; onChange: (s: HomeworkSection) => void }) {
+  const c = section.content as MediaContent;
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const addFiles = async (fileList: FileList | File[]) => {
+    const files = Array.from(fileList);
+    if (c.files.length + files.length > MAX_FILES) {
+      setError(`Максимум ${MAX_FILES} файлов`);
+      return;
+    }
+    const oversized = files.find((f) => f.size > MAX_FILE_SIZE);
+    if (oversized) {
+      setError(`Файл "${oversized.name}" превышает 10 МБ`);
+      return;
+    }
+    setError(null);
+    setUploading(true);
+    const newFiles: MediaFile[] = [];
+    for (const file of files) {
+      const id = crypto.randomUUID();
+      let url = "";
+      if (supabase) {
+        const path = `uploads/${id}_${file.name}`;
+        const { error: upErr } = await supabase.storage.from("media").upload(path, file);
+        if (upErr) { setError(`Ошибка загрузки: ${upErr.message}`); continue; }
+        const { data: pubData } = supabase.storage.from("media").getPublicUrl(path);
+        url = pubData.publicUrl;
+      } else {
+        url = URL.createObjectURL(file);
+      }
+      newFiles.push({ id, name: file.name, url, type: getFileType(file), size: file.size });
+    }
+    onChange({ ...section, content: { ...c, files: [...c.files, ...newFiles] } });
+    setUploading(false);
+  };
+
+  const removeFile = (id: string) => {
+    onChange({ ...section, content: { ...c, files: c.files.filter((f) => f.id !== id) } });
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
+        onClick={() => { const inp = document.createElement("input"); inp.type = "file"; inp.multiple = true; inp.accept = ACCEPT_TYPES; inp.onchange = () => inp.files && addFiles(inp.files); inp.click(); }}
+        className={`flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${
+          dragOver ? "border-blue-400 bg-blue-50" : "border-[#e8e5de] hover:border-[#d0ccc4] bg-[#faf9f6]"
+        }`}
+      >
+        <Upload className="h-5 w-5 text-[#888]" />
+        <p className="text-[12px] text-[#888] text-center">
+          {uploading ? "Загрузка..." : "Перетащите файлы или нажмите для загрузки"}
+        </p>
+        <p className="text-[10px] text-[#aaa]">Изображения, PDF, аудио · до 10 МБ · макс. {MAX_FILES} файлов</p>
+      </div>
+      {error && <p className="text-[11px] text-red-500">{error}</p>}
+      {c.files.length > 0 && (
+        <div className="space-y-1.5">
+          {c.files.map((f) => (
+            <div key={f.id} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[#e8e5de] bg-white">
+              {f.type === "image" && <img src={f.url} alt={f.name} className="h-10 w-10 rounded object-cover shrink-0" />}
+              {f.type === "pdf" && <span className="text-[18px] shrink-0">📄</span>}
+              {f.type === "audio" && <span className="text-[18px] shrink-0">🎵</span>}
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-medium truncate">{f.name}</p>
+                <p className="text-[10px] text-[#888]">{formatFileSize(f.size)}</p>
+              </div>
+              <button onClick={(e) => { e.stopPropagation(); removeFile(f.id); }}
+                className="h-6 w-6 rounded flex items-center justify-center hover:bg-[#fef2f2] shrink-0 cursor-pointer">
+                <X className="h-3 w-3 text-[#ccc] hover:text-red-400" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <input value={c.caption || ""} onChange={(e) => onChange({ ...section, content: { ...c, caption: e.target.value } })}
+        placeholder="Подпись (необязательно)" className="w-full h-8 rounded-lg border border-dashed border-[#e8e5de] px-3 text-[12px] text-[#888] outline-none focus:border-[#ccc]" />
+    </div>
+  );
+}
+
 export function SectionEditor({ section, onChange, onDelete, onDuplicate, onMoveUp, onMoveDown, isFirst, isLast, index, errors }: {
   section: HomeworkSection; onChange: (s: HomeworkSection) => void;
   onDelete: () => void; onDuplicate: () => void;
@@ -376,7 +488,7 @@ export function SectionEditor({ section, onChange, onDelete, onDuplicate, onMove
   isFirst: boolean; isLast: boolean; index: number;
   errors: string[];
 }) {
-  const editors: Record<HomeworkType, any> = { quiz: QuizEditor, fill_blanks: FillBlanksEditor, matching: MatchingEditor, ordering: OrderingEditor, cards: CardsEditor, text: TextEditor, true_false: TrueFalseEditor, open_answer: OpenAnswerEditor };
+  const editors: Record<HomeworkType, any> = { quiz: QuizEditor, fill_blanks: FillBlanksEditor, matching: MatchingEditor, ordering: OrderingEditor, cards: CardsEditor, text: TextEditor, true_false: TrueFalseEditor, open_answer: OpenAnswerEditor, media: MediaEditor };
   const Editor = editors[section.type];
   const hasErrors = errors.length > 0;
 
@@ -419,6 +531,7 @@ export function emptySection(type: HomeworkType): HomeworkSection {
     case "text": return { id, type, title: "Задание", content: { text: "" } };
     case "true_false": return { id, type, title: "Верно / Неверно", content: { questions: [{ statement: "", correct: true }] } };
     case "open_answer": return { id, type, title: "Открытый ответ", content: { prompt: "" } };
+    case "media": return { id, type, title: "Медиа", content: { files: [], caption: "" } };
   }
 }
 

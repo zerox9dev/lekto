@@ -19,13 +19,14 @@ export interface Lesson {
   created_at: string;
 }
 
-export type HomeworkType = "quiz" | "fill_blanks" | "matching" | "ordering" | "text" | "cards" | "true_false" | "open_answer";
+export type HomeworkType = "quiz" | "fill_blanks" | "matching" | "ordering" | "text" | "cards" | "true_false" | "open_answer" | "media";
 
 export interface QuizQuestion {
   question: string;
   options: string[];
   correct: number | number[]; // single index OR array of correct indices (multi-select)
   explanation?: string; // shown after answer check
+  image?: string; // optional image URL shown above the question
 }
 
 export interface TrueFalseQuestion {
@@ -59,14 +60,27 @@ export interface OrderingContent {
 }
 
 export interface CardsContent {
-  cards: { front: string; back: string }[];
+  cards: { front: string; back: string; image?: string }[];
+}
+
+export interface MediaFile {
+  id: string;
+  name: string;
+  url: string;       // Supabase Storage URL or blob URL for preview
+  type: "image" | "pdf" | "audio";
+  size: number;      // bytes
+}
+
+export interface MediaContent {
+  files: MediaFile[];
+  caption?: string;
 }
 
 export interface HomeworkSection {
   id: string;
   type: HomeworkType;
   title: string;
-  content: QuizQuestion[] | FillBlanksContent | MatchingContent | OrderingContent | CardsContent | TrueFalseContent | OpenAnswerContent | { text: string };
+  content: QuizQuestion[] | FillBlanksContent | MatchingContent | OrderingContent | CardsContent | TrueFalseContent | OpenAnswerContent | MediaContent | { text: string };
 }
 
 export interface HomeworkTemplate {
