@@ -64,26 +64,24 @@ export function LandingPage() {
         <nav className={s.nav}>
           <Link to="/" className={s.logo}>Lekto</Link>
           <div className={s.navLinks}>
-            <a href="#features" className={s.navLink}>Возможности</a>
-            <a href="#audience" className={s.navLink}>Для кого</a>
-            <a href="#pricing" className={s.navLink}>Цены</a>
+            <a href="#features" className={s.navLink}>{t("landingNavFeatures")}</a>
+            <a href="#audience" className={s.navLink}>{t("landingNavAudience")}</a>
+            <a href="#pricing" className={s.navLink}>{t("landingNavPricing")}</a>
           </div>
-          <a href="https://t.me/mirvald" target="_blank" rel="noopener noreferrer" className={s.navCta}>Написать</a>
+          <a href="https://t.me/mirvald" target="_blank" rel="noopener noreferrer" className={s.navCta}>{t("landingNavCta")}</a>
         </nav>
       </div>
 
       {/* ── Hero ── */}
       <section className={s.hero}>
         <h1 className={s.heroTitle}>
-          Платформа для<br />
-          репетиторов, которые<br />
-          ценят порядок
+          {t("landingHeroTitle").split("\n").map((line, i, arr) => <span key={i}>{line}{i < arr.length - 1 && <br />}</span>)}
         </h1>
         <p className={s.heroDesc}>
-          Уроки, интерактивные домашки и персональная ссылка для каждого ученика. Бесплатно.
+          {t("landingHeroDesc")}
         </p>
-        <a href="https://t.me/mirvald" target="_blank" rel="noopener noreferrer" className={s.heroCta}>Попробовать бесплатно</a>
-        <p className={s.heroNote}>Без регистрации для учеников</p>
+        <Link to="/login" className={s.heroCta}>{t("landingHeroCta")}</Link>
+        <p className={s.heroNote}>{t("landingHeroNote")}</p>
       </section>
 
       {/* ── Preview ── */}
@@ -93,9 +91,9 @@ export function LandingPage() {
             {/* Sidebar */}
             <div className={s.prevSidebar}>
               <div className={s.prevLogo}>Lekto</div>
-              <div className={`${s.prevNavItem} ${s.prevNavActive}`}>Ученики</div>
-              <div className={s.prevNavItem}>Курсы</div>
-              <div className={s.prevNavItem}>Настройки</div>
+              <div className={`${s.prevNavItem} ${s.prevNavActive}`}>{t("landingPreviewStudents")}</div>
+              <div className={s.prevNavItem}>{t("landingPreviewCourses")}</div>
+              <div className={s.prevNavItem}>{t("landingPreviewSettings")}</div>
             </div>
             {/* Main content */}
             <div className={s.prevMain}>
@@ -103,13 +101,13 @@ export function LandingPage() {
                 <div className={s.prevPageHeader}>
                   <div className={s.prevBackBtn}>←</div>
                   <div className={s.prevPageTitle}>Piotr Nowak</div>
-                  <span className={s.prevAddBtn}>+ Урок</span>
+                  <span className={s.prevAddBtn}>{t("landingPreviewAddLesson")}</span>
                 </div>
                 {/* Stats */}
                 <div className={s.prevStats}>
-                  <div className={s.prevStatCard}><div className={s.prevStatVal}>12</div><div className={s.prevStatLbl}>Уроков</div></div>
-                  <div className={s.prevStatCard}><div className={s.prevStatVal}>8</div><div className={s.prevStatLbl}>Домашек</div></div>
-                  <div className={s.prevStatCard}><div className={s.prevStatVal}>85%</div><div className={s.prevStatLbl}>Средний балл</div></div>
+                  <div className={s.prevStatCard}><div className={s.prevStatVal}>12</div><div className={s.prevStatLbl}>{t("landingPreviewLessons")}</div></div>
+                  <div className={s.prevStatCard}><div className={s.prevStatVal}>8</div><div className={s.prevStatLbl}>{t("landingPreviewHomework")}</div></div>
+                  <div className={s.prevStatCard}><div className={s.prevStatVal}>85%</div><div className={s.prevStatLbl}>{t("landingPreviewAvgScore")}</div></div>
                 </div>
                 {/* Lesson expanded */}
                 <div className={`${s.prevLesson} ${s.prevLessonOpen}`}>
@@ -118,10 +116,10 @@ export function LandingPage() {
                   </div>
                   <div className={s.prevLessonBody}>
                     <div className={s.prevTags}>
-                      <span className={s.prevTag}>Теория</span>
-                      <span className={s.prevTag}>Карточки</span>
-                      <span className={s.prevTag}>Тест</span>
-                      <span className={s.prevTag}>Пропуски</span>
+                      <span className={s.prevTag}>{t("landingPreviewTheory")}</span>
+                      <span className={s.prevTag}>{t("landingPreviewCards")}</span>
+                      <span className={s.prevTag}>{t("landingPreviewTest")}</span>
+                      <span className={s.prevTag}>{t("landingPreviewBlanks")}</span>
                     </div>
                     {/* Quiz preview */}
                     <div className={s.prevQuiz}>
@@ -134,7 +132,7 @@ export function LandingPage() {
                     </div>
                     <div className={s.prevHw}>
                       <span className={s.prevHwCheck}>✓</span>
-                      <span className={s.prevHwName}>Домашка: Numbers &amp; Colors</span>
+                      <span className={s.prevHwName}>{t("homeworkTitle")}: Numbers &amp; Colors</span>
                       <span className={s.prevHwBadge}>92%</span>
                     </div>
                   </div>
@@ -178,14 +176,14 @@ export function LandingPage() {
 
       {/* ── Who this is for ── */}
       <Reveal id="audience" className={s.section}>
-        <h2 className={s.sectionTitle}>Для кого это</h2>
-        <p className={s.sectionDesc}>Помогаем репетиторам организовать работу и сделать обучение удобнее</p>
+        <h2 className={s.sectionTitle}>{t("landingAudienceTitle")}</h2>
+        <p className={s.sectionDesc}>{t("landingAudienceDesc")}</p>
         <div className={s.audienceGrid}>
-          {AUDIENCE.map((a) => (
-            <div key={a.title} className={s.audienceCard}>
+          {AUDIENCE_META.map((a) => (
+            <div key={a.titleKey} className={s.audienceCard}>
               <div className={`${s.audienceEmoji} ${a.bg}`}><a.icon className="h-6 w-6 text-[#555]" /></div>
-              <h3 className={s.audienceName}>{a.title}</h3>
-              <p className={s.audienceDesc}>{a.desc}</p>
+              <h3 className={s.audienceName}>{t(a.titleKey)}</h3>
+              <p className={s.audienceDesc}>{t(a.descKey)}</p>
             </div>
           ))}
         </div>
@@ -193,14 +191,14 @@ export function LandingPage() {
 
       {/* ── Features ── */}
       <Reveal id="features" className={s.section}>
-        <h2 className={s.sectionTitle}>Всё что нужно для занятий</h2>
-        <p className={s.sectionDesc}>Каждая функция решает реальную проблему репетитора</p>
+        <h2 className={s.sectionTitle}>{t("landingFeaturesTitle")}</h2>
+        <p className={s.sectionDesc}>{t("landingFeaturesDesc")}</p>
         <div className={s.featuresGrid}>
-          {FEATURES.map((f) => (
-            <div key={f.title} className={s.featureCard}>
+          {FEATURES_META.map((f) => (
+            <div key={f.titleKey} className={s.featureCard}>
               <div className={s.featureIcon}><f.icon className="h-7 w-7 text-[#555]" /></div>
-              <h3 className={s.featureName}>{f.title}</h3>
-              <p className={s.featureDesc}>{f.desc}</p>
+              <h3 className={s.featureName}>{t(f.titleKey)}</h3>
+              <p className={s.featureDesc}>{t(f.descKey)}</p>
             </div>
           ))}
         </div>
@@ -208,15 +206,15 @@ export function LandingPage() {
 
       {/* ── What you get – horizontal scroll ── */}
       <Reveal className={s.section}>
-        <h2 className={s.sectionTitle}>Что вы получаете</h2>
-        <p className={s.sectionDesc}>Всё для продуктивных занятий</p>
+        <h2 className={s.sectionTitle}>{t("landingBenefitsTitle")}</h2>
+        <p className={s.sectionDesc}>{t("landingBenefitsDesc")}</p>
         <div className={s.benefitsWrap}>
           <div className={s.benefitsRow}>
-            {BENEFITS.map((b) => (
-              <div key={b.title} className={s.benefitCard}>
+            {BENEFITS_META.map((b) => (
+              <div key={b.titleKey} className={s.benefitCard}>
                 <div className={s.benefitEmoji}><b.icon className="h-7 w-7 text-[#555]" /></div>
-                <h3 className={s.benefitName}>{b.title}</h3>
-                <p className={s.benefitDesc}>{b.desc}</p>
+                <h3 className={s.benefitName}>{t(b.titleKey)}</h3>
+                <p className={s.benefitDesc}>{t(b.descKey)}</p>
               </div>
             ))}
           </div>
@@ -224,24 +222,24 @@ export function LandingPage() {
 
         <div className={s.statsRow}>
           <div className={s.stat}>
-            <div className={s.statValue}>10</div>
-            <div className={s.statLabel}>типов заданий</div>
+            <div className={s.statValue}>{t("landingStat1Value")}</div>
+            <div className={s.statLabel}>{t("landingStat1Label")}</div>
           </div>
           <div className={s.stat}>
-            <div className={s.statValue}>∞</div>
-            <div className={s.statLabel}>учеников</div>
+            <div className={s.statValue}>{t("landingStat2Value")}</div>
+            <div className={s.statLabel}>{t("landingStat2Label")}</div>
           </div>
           <div className={s.stat}>
-            <div className={s.statValue}>0</div>
-            <div className={s.statLabel}>регистраций для учеников</div>
+            <div className={s.statValue}>{t("landingStat3Value")}</div>
+            <div className={s.statLabel}>{t("landingStat3Label")}</div>
           </div>
         </div>
       </Reveal>
 
       {/* ── Pricing ── */}
       <Reveal id="pricing" className={s.section}>
-        <h2 className={s.sectionTitle}>Beta</h2>
-        <p className={s.sectionDesc}>Набираем первых пользователей</p>
+        <h2 className={s.sectionTitle}>{t("landingPricingTitle")}</h2>
+        <p className={s.sectionDesc}>{t("landingPricingDesc")}</p>
         <div className={s.pricingGrid}>
           <div className={s.pricingCard}>
             <div className={s.pricingLabel}>Beta</div>
