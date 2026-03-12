@@ -115,16 +115,13 @@ export function CoursesPage() {
                 <p className="text-[13px] text-[#888] line-clamp-2 mb-3">{sc.description}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-[12px] text-[#aaa]">{sc.lessons.length} уроков</span>
-                  <button onClick={() => {
+                  <button onClick={async () => {
                     const course = addCourse(sc.title, sc.description);
+                    // Wait for course to be saved to Supabase before creating lessons (FK constraint)
+                    if ((course as any)._dbPromise) await (course as any)._dbPromise;
                     for (const sl of sc.lessons) {
                       const today = new Date().toISOString().slice(0, 10);
-                      const lesson = addLesson(null, sl.title, sl.date || today, sl.notes || undefined, sl.sections, course.id, sl.order_index);
-                      if (sl.homework) {
-                        for (const hw of sl.homework) {
-                          addHomework({ lesson_id: lesson.id, student_id: "", tutor_id: "local", title: hw.title, sections: hw.sections, completed: false, student_answers: null, scores: null });
-                        }
-                      }
+                      addLesson(null, sl.title, sl.date || today, sl.notes || undefined, sl.sections, course.id, sl.order_index);
                     }
                   }}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1a1a1a] text-white text-[12px] font-medium hover:bg-[#333] cursor-pointer">

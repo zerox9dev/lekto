@@ -186,7 +186,9 @@ export function useStore(userId?: string) {
     };
     _data = { ..._data, courses: [c, ...(_data.courses || [])] };
     notify();
-    db().from("courses").upsert(c, { onConflict: "id" }).then(() => {});
+    const _promise = db().from("courses").upsert(c, { onConflict: "id" });
+    _promise.then(() => {});
+    (c as any)._dbPromise = _promise;
     return c;
   }, []);
 
