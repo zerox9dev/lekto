@@ -145,7 +145,7 @@ export function CourseDetailPage() {
                 {l.sections && l.sections.length > 0 ? (
                   l.sections.map((sec) => (
                     <div key={sec.id} className="bg-white rounded-xl border border-[#e8e5de] p-3">
-                      <SectionPlayer section={sec} answer={undefined} onAnswer={() => {}} />
+                      <SectionPlayer section={sec} onScore={() => {}} />
                     </div>
                   ))
                 ) : (
