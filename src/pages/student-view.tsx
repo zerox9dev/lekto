@@ -266,7 +266,7 @@ export function StudentView() {
                             <p className="text-[14px] md:text-[15px] font-medium truncate">{l.title}</p>
                             <p className="text-[12px] md:text-[13px] text-[#888] mt-0.5">
                               {l.date}
-                              {l.sections && l.sections.length > 0 && ` · 🎯 ${l.sections.length} секций`}
+                              {l.sections && l.sections.length > 0 && ` · ${l.sections.length} секций`}
                               {lhw.length > 0 && (
                                 <span className={lhwDone === lhw.length && lhw.length > 0 ? "text-emerald-500" : ""}>
                                   {" "}· {lhwDone}/{lhw.length} заданий

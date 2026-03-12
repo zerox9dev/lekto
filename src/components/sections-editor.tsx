@@ -9,8 +9,8 @@ export const typeLabels: Record<HomeworkType, string> = {
   true_false: "Верно / Неверно", open_answer: "Открытый ответ", media: "Медиа",
 };
 export const typeIcons: Record<HomeworkType, string> = {
-  quiz: "📝", fill_blanks: "✏️", matching: "🔗", ordering: "📋", cards: "🃏", text: "📄",
-  true_false: "✅", open_answer: "💬", media: "📎",
+  quiz: "Т", fill_blanks: "В", matching: "П", ordering: "С", cards: "К", text: "Tx",
+  true_false: "В/Н", open_answer: "О", media: "М",
 };
 
 // ── Helpers ──
@@ -357,7 +357,7 @@ function OpenAnswerEditor({ section, onChange }: { section: HomeworkSection; onC
       </div>
       <input value={c.placeholder || ""} onChange={(e) => onChange({ ...section, content: { ...c, placeholder: e.target.value } })}
         placeholder="Подсказка в поле ответа (необязательно)" className="w-full h-8 rounded-lg border border-dashed border-[#e8e5de] px-3 text-[12px] text-[#888] outline-none focus:border-[#ccc]" />
-      <p className="text-[11px] text-[#888]">💬 Ученик напишет ответ текстом. Оценивается репетитором вручную.</p>
+      <p className="text-[11px] text-[#888]">Ученик напишет ответ текстом. Оценивается репетитором вручную.</p>
     </div>
   );
 }
@@ -462,8 +462,8 @@ function MediaEditor({ section, onChange }: { section: HomeworkSection; onChange
           {c.files.map((f) => (
             <div key={f.id} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[#e8e5de] bg-white">
               {f.type === "image" && <img src={f.url} alt={f.name} className="h-10 w-10 rounded object-cover shrink-0" />}
-              {f.type === "pdf" && <span className="text-[18px] shrink-0">📄</span>}
-              {f.type === "audio" && <span className="text-[18px] shrink-0">🎵</span>}
+              {f.type === "pdf" && <span className="text-[18px] shrink-0">PDF</span>}
+              {f.type === "audio" && <span className="text-[14px] font-medium text-[#888] shrink-0">Audio</span>}
               <div className="flex-1 min-w-0">
                 <p className="text-[12px] font-medium truncate">{f.name}</p>
                 <p className="text-[10px] text-[#888]">{formatFileSize(f.size)}</p>

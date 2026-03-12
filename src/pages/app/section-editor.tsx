@@ -136,7 +136,7 @@ export function SectionEditorPage() {
           className="h-8 px-4 rounded-lg bg-[#1a1a1a] text-white text-[13px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer flex items-center gap-1.5 shrink-0 transition-colors"
         >
           <Save className="h-3.5 w-3.5" />
-          {saved ? "Сохранено ✓" : "Сохранить"}
+          {saved ? "Сохранено" : "Сохранить"}
         </button>
       </header>
 

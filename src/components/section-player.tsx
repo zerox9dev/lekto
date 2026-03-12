@@ -123,7 +123,7 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
             </div>
             {submitted && q.explanation && (
               <div className="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2 ml-0.5 md:ml-1">
-                <p className="text-[13px] text-blue-700">💡 {q.explanation}</p>
+                <p className="text-[13px] text-blue-700">Пояснение: {q.explanation}</p>
               </div>
             )}
           </div>
@@ -378,7 +378,7 @@ function TrueFalsePlayer({ section, onScore }: { section: HomeworkSection; onSco
             </div>
             {submitted && q.explanation && (
               <div className="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2 ml-0.5 md:ml-1">
-                <p className="text-[13px] text-blue-700">💡 {q.explanation}</p>
+                <p className="text-[13px] text-blue-700">Пояснение: {q.explanation}</p>
               </div>
             )}
           </div>
@@ -440,7 +440,7 @@ function MediaPlayer({ section }: { section: HomeworkSection }) {
           {f.type === "pdf" && (
             <a href={f.url} target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#e8e5de] hover:bg-[#f5f3ee] transition-colors">
-              <span className="text-[24px]">📄</span>
+              <span className="text-[14px] font-medium text-[#888]">PDF</span>
               <div className="min-w-0">
                 <p className="text-[14px] font-medium truncate">{f.name}</p>
                 <p className="text-[12px] text-[#888]">{(f.size / 1024).toFixed(0)} КБ · Скачать</p>
@@ -449,7 +449,7 @@ function MediaPlayer({ section }: { section: HomeworkSection }) {
           )}
           {f.type === "audio" && (
             <div className="space-y-1">
-              <p className="text-[12px] text-[#888]">🎵 {f.name}</p>
+              <p className="text-[12px] text-[#888]">{f.name}</p>
               <audio controls src={f.url} className="w-full" />
             </div>
           )}

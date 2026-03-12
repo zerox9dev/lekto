@@ -61,7 +61,7 @@ export function LessonsPage() {
                     <p className="text-[14px] font-medium text-[#1a1a1a] truncate">{lesson.title}</p>
                     {sectionCount > 0 && (
                       <span className="text-[11px] bg-[#e8f5e9] text-[#2d5a3d] px-2 py-0.5 rounded-full shrink-0">
-                        🎯 {sectionCount}
+                        {sectionCount}
                       </span>
                     )}
                   </div>

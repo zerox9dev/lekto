@@ -58,7 +58,7 @@ export function DashboardPage() {
                   </div>
                   {lesson.sections && lesson.sections.length > 0 && (
                     <span className="text-[11px] bg-[#f0ede6] text-[#888] px-2 py-0.5 rounded-full">
-                      🎯 {lesson.sections.length}
+                      {lesson.sections.length}
                     </span>
                   )}
                 </Link>

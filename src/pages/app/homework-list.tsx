@@ -9,8 +9,8 @@ const typeLabels: Record<string, string> = {
   open_answer: "Открытый ответ", media: "Медиа",
 };
 const typeIcons: Record<string, string> = {
-  quiz: "📝", fill_blanks: "✏️", matching: "🔗", ordering: "📋", cards: "🃏",
-  text: "📄", true_false: "✅", open_answer: "💬", media: "📎",
+  quiz: "Т", fill_blanks: "В", matching: "П", ordering: "С", cards: "К",
+  text: "Tx", true_false: "В/Н", open_answer: "О", media: "М",
 };
 
 export function HomeworkPage() {
@@ -68,7 +68,7 @@ export function HomeworkPage() {
                     <div className="flex gap-1 shrink-0">
                       {sections.map((sec, i) => (
                         <span key={i} className="text-[11px]" title={typeLabels[sec.type]}>
-                          {typeIcons[sec.type] || "📄"}
+                          {typeIcons[sec.type] || "Tx"}
                         </span>
                       ))}
                     </div>

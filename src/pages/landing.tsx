@@ -1,26 +1,27 @@
 import { Link } from "react-router-dom";
+import { GraduationCap, School, Globe, Library, BookOpen, PenLine, LinkIcon, BarChart3, FileText, TrendingUp, Smartphone, Palette } from "lucide-react";
 import s from "./landing.module.css";
 
 const AUDIENCE = [
-  { emoji: "👩‍🏫", title: "Репетиторы", desc: "Ведут уроки один на один и хотят всё в одном месте", bg: s.audienceEmoji1 },
-  { emoji: "🏫", title: "Преподаватели", desc: "Работают с группами и нужен порядок в материалах", bg: s.audienceEmoji2 },
-  { emoji: "🌍", title: "Онлайн-учителя", desc: "Преподают удалённо и хотят удобную платформу", bg: s.audienceEmoji3 },
-  { emoji: "📚", title: "Языковые школы", desc: "Нужна структура для нескольких преподавателей", bg: s.audienceEmoji4 },
+  { icon: GraduationCap, title: "Репетиторы", desc: "Ведут уроки один на один и хотят всё в одном месте", bg: s.audienceEmoji1 },
+  { icon: School, title: "Преподаватели", desc: "Работают с группами и нужен порядок в материалах", bg: s.audienceEmoji2 },
+  { icon: Globe, title: "Онлайн-учителя", desc: "Преподают удалённо и хотят удобную платформу", bg: s.audienceEmoji3 },
+  { icon: Library, title: "Языковые школы", desc: "Нужна структура для нескольких преподавателей", bg: s.audienceEmoji4 },
 ];
 
 const FEATURES = [
-  { icon: "📖", title: "Уроки и конспекты", desc: "Создавайте конспекты, прикрепляйте материалы к каждому занятию" },
-  { icon: "✏️", title: "10 типов домашек", desc: "Тесты, вставить слово, пары, сортировка, карточки — с автопроверкой" },
-  { icon: "🔗", title: "Ссылка ученику", desc: "Ученик открывает ссылку и видит свои уроки и домашки. Без регистрации" },
-  { icon: "📊", title: "Статистика", desc: "Следите за прогрессом каждого ученика" },
+  { icon: BookOpen, title: "Уроки и конспекты", desc: "Создавайте конспекты, прикрепляйте материалы к каждому занятию" },
+  { icon: PenLine, title: "10 типов домашек", desc: "Тесты, вставить слово, пары, сортировка, карточки — с автопроверкой" },
+  { icon: LinkIcon, title: "Ссылка ученику", desc: "Ученик открывает ссылку и видит свои уроки и домашки. Без регистрации" },
+  { icon: BarChart3, title: "Статистика", desc: "Следите за прогрессом каждого ученика" },
 ];
 
 const BENEFITS = [
-  { emoji: "📝", title: "Интерактивные домашки", desc: "10 типов заданий с автопроверкой" },
-  { emoji: "📊", title: "Прогресс учеников", desc: "Статистика по каждому ученику" },
-  { emoji: "🔗", title: "Персональная ссылка", desc: "Ученик видит всё без регистрации" },
-  { emoji: "📱", title: "Мобильная версия", desc: "Работает на любом устройстве" },
-  { emoji: "🎨", title: "Шаблоны заданий", desc: "Создавайте и используйте повторно" },
+  { icon: FileText, title: "Интерактивные домашки", desc: "10 типов заданий с автопроверкой" },
+  { icon: TrendingUp, title: "Прогресс учеников", desc: "Статистика по каждому ученику" },
+  { icon: LinkIcon, title: "Персональная ссылка", desc: "Ученик видит всё без регистрации" },
+  { icon: Smartphone, title: "Мобильная версия", desc: "Работает на любом устройстве" },
+  { icon: Palette, title: "Шаблоны заданий", desc: "Создавайте и используйте повторно" },
 ];
 
 const PRICING_CLOUD = [
@@ -141,7 +142,7 @@ export function LandingPage() {
         <div className={s.audienceGrid}>
           {AUDIENCE.map((a) => (
             <div key={a.title} className={s.audienceCard}>
-              <div className={`${s.audienceEmoji} ${a.bg}`}>{a.emoji}</div>
+              <div className={`${s.audienceEmoji} ${a.bg}`}><a.icon className="h-6 w-6 text-[#555]" /></div>
               <h3 className={s.audienceName}>{a.title}</h3>
               <p className={s.audienceDesc}>{a.desc}</p>
             </div>
@@ -156,7 +157,7 @@ export function LandingPage() {
         <div className={s.featuresGrid}>
           {FEATURES.map((f) => (
             <div key={f.title} className={s.featureCard}>
-              <div className={s.featureIcon}>{f.icon}</div>
+              <div className={s.featureIcon}><f.icon className="h-7 w-7 text-[#555]" /></div>
               <h3 className={s.featureName}>{f.title}</h3>
               <p className={s.featureDesc}>{f.desc}</p>
             </div>
@@ -172,7 +173,7 @@ export function LandingPage() {
           <div className={s.benefitsRow}>
             {BENEFITS.map((b) => (
               <div key={b.title} className={s.benefitCard}>
-                <div className={s.benefitEmoji}>{b.emoji}</div>
+                <div className={s.benefitEmoji}><b.icon className="h-7 w-7 text-[#555]" /></div>
                 <h3 className={s.benefitName}>{b.title}</h3>
                 <p className={s.benefitDesc}>{b.desc}</p>
               </div>

@@ -246,7 +246,7 @@ export const STARTER_COURSES: StarterCourse[] = [
         date: "", notes: "Jaka jest pogoda? Jest ciepło/zimno.",
         order_index: 8,
         sections: [
-          { id: "s9-1", type: "text", title: "Времена года", content: { text: "wiosna — весна 🌸\nlato — лето ☀️\njesień — осень 🍂\nzima — зима ❄️\n\nJaka jest pogoda?\nJest ciepło. — Тепло.\nJest zimno. — Холодно.\nPada deszcz. — Идёт дождь.\nPada śnieg. — Идёт снег.\nŚwieci słońce. — Светит солнце.\nJest wietrznie. — Ветрено." } },
+          { id: "s9-1", type: "text", title: "Времена года", content: { text: "wiosna — весна \nlato — лето \njesień — осень \nzima — зима \n\nJaka jest pogoda?\nJest ciepło. — Тепло.\nJest zimno. — Холодно.\nPada deszcz. — Идёт дождь.\nPada śnieg. — Идёт снег.\nŚwieci słońce. — Светит солнце.\nJest wietrznie. — Ветрено." } },
           { id: "s9-2", type: "cards", title: "Словарь: погода", content: { cards: [
             { front: "pogoda", back: "погода" },
             { front: "deszcz", back: "дождь" },
@@ -374,7 +374,7 @@ export const STARTER_COURSES: StarterCourse[] = [
         date: "", notes: "Повторение всех тем курса. Финальный тест.",
         order_index: 11,
         sections: [
-          { id: "s12-1", type: "text", title: "Повторение: все темы", content: { text: "🎓 Поздравляем! Вы прошли весь курс польского A1!\n\nВ этом уроке мы повторим все темы:\n1. Приветствия и знакомство\n2. Числа и возраст\n3. Профессии\n4. Семья\n5. Дни недели и время\n6. Покупки\n7. Еда и ресторан\n8. Город и транспорт\n9. Погода и времена года\n10. Хобби\n11. Здоровье\n\nPowodzenia! (Удачи!)" } },
+          { id: "s12-1", type: "text", title: "Повторение: все темы", content: { text: "Поздравляем! Вы прошли весь курс польского A1!\n\nВ этом уроке мы повторим все темы:\n1. Приветствия и знакомство\n2. Числа и возраст\n3. Профессии\n4. Семья\n5. Дни недели и время\n6. Покупки\n7. Еда и ресторан\n8. Город и транспорт\n9. Погода и времена года\n10. Хобби\n11. Здоровье\n\nPowodzenia! (Удачи!)" } },
           { id: "s12-2", type: "quiz", title: "Финальный тест — часть 1", content: [
             { question: "Как сказать 'Привет'?", options: ["Do widzenia", "Cześć", "Dziękuję", "Przepraszam"], correct: 1 },
             { question: "Число 15 по-польски:", options: ["pięć", "piętnaście", "pięćdziesiąt", "piętset"], correct: 1 },
