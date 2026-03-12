@@ -186,10 +186,10 @@ export function useStore(userId?: string) {
   // ── Lessons ──
   const lessons = _data.lessons;
 
-  const addLesson = useCallback((studentId: string, title: string, date: string, notes?: string, sections?: Lesson["sections"]) => {
+  const addLesson = useCallback((studentId: string | null, title: string, date: string, notes?: string, sections?: Lesson["sections"]) => {
     const l: Lesson = {
       id: uid(),
-      student_id: studentId,
+      student_id: studentId || "",
       tutor_id: _currentUserId,
       title,
       date,
