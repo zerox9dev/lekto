@@ -441,10 +441,219 @@
   border: 1px solid #e8e5de;
   background: white;
 }
-.previewImg {
-  width: 100%;
-  height: auto;
-  display: block;
+.previewWindow {
+  display: flex;
+  height: 480px;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+/* Preview sidebar */
+.prevSidebar {
+  width: 160px;
+  background: #f5f3ee;
+  border-right: 1px solid #e8e5de;
+  padding: 16px 0;
+  flex-shrink: 0;
+}
+.prevLogo {
+  font-family: Georgia, serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  padding: 0 14px 20px;
+}
+.prevNavItem {
+  padding: 8px 14px;
+  font-size: 12px;
+  color: #888;
+}
+.prevNavActive {
+  color: #1a1a1a;
+  font-weight: 600;
+  background: rgba(0,0,0,0.04);
+  border-right: 2px solid #1a1a1a;
+}
+
+/* Preview main */
+.prevMain {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.prevTopbar {
+  height: 48px;
+  border-bottom: 1px solid #e8e5de;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 12px;
+}
+.prevTopbarTitle {
+  font-family: Georgia, serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  flex: 1;
+}
+.prevTopbarBtn {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 7px;
+  background: #1a1a1a;
+  color: white;
+  font-size: 11px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+.prevContent {
+  flex: 1;
+  padding: 16px 20px;
+  overflow: hidden;
+}
+
+/* Stats */
+.prevStats {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.prevStatCard {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e8e5de;
+}
+.prevStatVal {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  font-family: Georgia, serif;
+}
+.prevStatLbl {
+  font-size: 10px;
+  color: #888;
+  margin-top: 2px;
+}
+
+/* Lessons */
+.prevLesson {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #e8e5de;
+  border-radius: 10px;
+  margin-bottom: 6px;
+}
+.prevLessonOpen {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+.prevLessonHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.prevDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2d5a3d;
+  flex-shrink: 0;
+}
+.prevDotGray { background: #ccc; }
+.prevLessonName {
+  font-size: 12px;
+  font-weight: 500;
+  color: #1a1a1a;
+  flex: 1;
+}
+.prevDate {
+  font-size: 11px;
+  color: #888;
+}
+
+/* Tags */
+.prevTags {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.prevTag {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  border: 1px solid #e8e5de;
+  color: #666;
+  background: #faf8f5;
+}
+
+/* Flashcards */
+.prevCards {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.prevCard {
+  width: 120px;
+  height: 72px;
+  border-radius: 10px;
+  border: 1px solid #e8e5de;
+  background: #faf8f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #1a1a1a;
+  flex-shrink: 0;
+}
+.prevCardBack {
+  background: white;
+  color: #888;
+  font-size: 11px;
+}
+
+/* Homework row */
+.prevHw {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #faf8f5;
+}
+.prevHwCheck {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: #2d5a3d;
+  color: white;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.prevHwName {
+  font-size: 11px;
+  color: #1a1a1a;
+  font-weight: 500;
+  flex: 1;
+}
+.prevHwBadge {
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  background: #ddefd7;
+  color: #2d5a3d;
 }
 
 /* ─── Mobile ─── */
@@ -459,4 +668,9 @@
   .statsRow { gap: 24px; }
   .pricingGrid { grid-template-columns: 1fr; }
   .footerInner { flex-direction: column; gap: 16px; text-align: center; }
+  .previewWindow { height: 360px; }
+  .prevSidebar { width: 120px; }
+  .prevCards { display: none; }
+  .prevStats { gap: 4px; }
+  .prevStatVal { font-size: 16px; }
 }

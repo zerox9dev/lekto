@@ -72,7 +72,60 @@ export function LandingPage() {
       {/* ── Preview ── */}
       <section className={s.previewSection}>
         <div className={s.previewWrap}>
-          <img src="/preview.png" alt="Lekto — платформа для репетиторов" className={s.previewImg} />
+          <div className={s.previewWindow}>
+            {/* Sidebar */}
+            <div className={s.prevSidebar}>
+              <div className={s.prevLogo}>Lekto</div>
+              <div className={`${s.prevNavItem} ${s.prevNavActive}`}>Ученики</div>
+              <div className={s.prevNavItem}>Курсы</div>
+              <div className={s.prevNavItem}>Настройки</div>
+            </div>
+            {/* Main */}
+            <div className={s.prevMain}>
+              <div className={s.prevTopbar}>
+                <span className={s.prevTopbarTitle}>Piotr Nowak</span>
+                <span className={s.prevTopbarBtn}>+ Добавить урок</span>
+              </div>
+              <div className={s.prevContent}>
+                {/* Stats */}
+                <div className={s.prevStats}>
+                  <div className={s.prevStatCard}><div className={s.prevStatVal}>12</div><div className={s.prevStatLbl}>Уроков</div></div>
+                  <div className={s.prevStatCard}><div className={s.prevStatVal}>8</div><div className={s.prevStatLbl}>Домашек</div></div>
+                  <div className={s.prevStatCard}><div className={s.prevStatVal}>85%</div><div className={s.prevStatLbl}>Средний балл</div></div>
+                </div>
+                {/* Lessons */}
+                <div className={s.prevLesson}>
+                  <span className={s.prevDot} /><span className={s.prevLessonName}>Lesson 1: Greetings &amp; Basics</span><span className={s.prevDate}>12 окт</span>
+                </div>
+                <div className={`${s.prevLesson} ${s.prevLessonOpen}`}>
+                  <div className={s.prevLessonHeader}>
+                    <span className={s.prevDot} /><span className={s.prevLessonName}>Lesson 2: Numbers &amp; Colors</span><span className={s.prevDate}>15 окт</span>
+                  </div>
+                  <div className={s.prevTags}>
+                    <span className={s.prevTag}>Теория</span>
+                    <span className={s.prevTag}>Карточки</span>
+                    <span className={s.prevTag}>Тест</span>
+                    <span className={s.prevTag}>Пропуски</span>
+                    <span className={s.prevTag}>Пары</span>
+                  </div>
+                  <div className={s.prevCards}>
+                    <div className={s.prevCard}>Dzień dobry</div>
+                    <div className={`${s.prevCard} ${s.prevCardBack}`}>Доброе утро</div>
+                    <div className={s.prevCard}>Dziękuję</div>
+                    <div className={`${s.prevCard} ${s.prevCardBack}`}>Спасибо</div>
+                  </div>
+                  <div className={s.prevHw}>
+                    <span className={s.prevHwCheck}>✓</span>
+                    <span className={s.prevHwName}>Домашка: Numbers &amp; Colors</span>
+                    <span className={s.prevHwBadge}>92%</span>
+                  </div>
+                </div>
+                <div className={s.prevLesson}>
+                  <span className={`${s.prevDot} ${s.prevDotGray}`} /><span className={s.prevLessonName}>Lesson 3: Food &amp; Drink</span><span className={s.prevDate}>18 окт</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
