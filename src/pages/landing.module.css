@@ -427,6 +427,26 @@
 
 .footerLink:hover { color: white; }
 
+/* ─── Preview ─── */
+.previewSection {
+  max-width: 960px;
+  margin: -40px auto 0;
+  padding: 0 24px 80px;
+  position: relative;
+  z-index: 2;
+}
+.previewWrap {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #e8e5de;
+  background: white;
+}
+.previewImg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* ─── Mobile ─── */
 @media (max-width: 768px) {
   .nav { padding: 8px 8px 8px 16px; gap: 12px; }

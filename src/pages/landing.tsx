@@ -69,6 +69,13 @@ export function LandingPage() {
         <p className={s.heroNote}>Без регистрации для учеников</p>
       </section>
 
+      {/* ── Preview ── */}
+      <section className={s.previewSection}>
+        <div className={s.previewWrap}>
+          <img src="/preview.png" alt="Lekto — платформа для репетиторов" className={s.previewImg} />
+        </div>
+      </section>
+
       {/* ── Who this is for ── */}
       <section id="audience" className={s.section}>
         <h2 className={s.sectionTitle}>Для кого это</h2>
