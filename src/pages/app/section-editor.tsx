@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Eye, EyeOff, AlertCircle, FileDown, Bookmark, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Eye, EyeOff, AlertCircle, FileDown, Bookmark, Trash2, Sparkles, Loader } from "lucide-react";
 import { useStore } from "@/features/store";
+import { generateContent } from "@/lib/ai";
 import { SectionsListEditor, validateSections, typeLabels } from "@/components/sections-editor";
 import { SectionPlayer } from "@/components/section-player";
 import type { HomeworkSection } from "@/types/database";
@@ -31,6 +32,8 @@ export function SectionEditorPage() {
   const [saved, setSaved] = useState(false);
   const [mobilePreview, setMobilePreview] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [showAi, setShowAi] = useState(false);
 
   // Load data on mount
   useEffect(() => {
@@ -191,6 +194,72 @@ export function SectionEditorPage() {
                 )}
               </div>
             )}
+
+            {/* AI Generation */}
+            <div>
+              <button
+                onClick={() => setShowAi(!showAi)}
+                className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#888] hover:text-[#666] cursor-pointer"
+              >
+                <Sparkles className="h-3.5 w-3.5" /> {showAi ? "Скрыть AI" : "Сгенерировать с AI"}
+              </button>
+              {showAi && (
+                <div className="mt-2 border border-dashed border-[#e8e5de] rounded-xl p-3 space-y-2">
+                  <div className="flex gap-2">
+                    <select id="ai-editor-lang" defaultValue="polish" className="h-9 rounded-lg border border-[#e8e5de] px-2 text-[13px] flex-1">
+                      <option value="polish">Польский</option>
+                      <option value="english">Английский</option>
+                      <option value="german">Немецкий</option>
+                      <option value="french">Французский</option>
+                      <option value="spanish">Испанский</option>
+                      <option value="ukrainian">Украинский</option>
+                      <option value="czech">Чешский</option>
+                    </select>
+                    <select id="ai-editor-level" defaultValue="A1" className="h-9 rounded-lg border border-[#e8e5de] px-2 text-[13px] w-20">
+                      <option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option>
+                    </select>
+                  </div>
+                  <button
+                    disabled={!title.trim() || aiLoading}
+                    onClick={async () => {
+                      setAiLoading(true);
+                      try {
+                        const lang = (document.getElementById("ai-editor-lang") as HTMLSelectElement)?.value || "polish";
+                        const level = (document.getElementById("ai-editor-level") as HTMLSelectElement)?.value || "A1";
+                        // For homework — send lesson content for context
+                        let lessonContent: string | undefined;
+                        if (isHomework && hwLessonId) {
+                          const parentLesson = lessons.find(l => l.id === hwLessonId);
+                          if (parentLesson) {
+                            lessonContent = [parentLesson.title, parentLesson.notes || "",
+                              ...(parentLesson.sections || []).map(s => s.title + ": " + JSON.stringify(s.content).slice(0, 200))
+                            ].join("\n");
+                          }
+                        }
+                        const result = await generateContent({
+                          type: isHomework ? "homework" : "lesson",
+                          topic: title.trim(),
+                          language: lang, level, lessonContent,
+                        });
+                        if (result.sections?.length) {
+                          setSections(prev => [...prev, ...result.sections]);
+                          setSaved(false);
+                        }
+                        setShowAi(false);
+                      } catch (e: any) {
+                        alert("Ошибка AI: " + (e.message || "попробуйте позже"));
+                      }
+                      setAiLoading(false);
+                    }}
+                    className="w-full h-9 rounded-lg bg-[#f0ede6] text-[13px] font-medium text-[#1a1a1a] hover:bg-[#e8e5de] disabled:opacity-40 cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    {aiLoading ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                    {aiLoading ? "Генерирую..." : isHomework ? "Сгенерировать домашку" : "Сгенерировать секции"}
+                  </button>
+                  <p className="text-[11px] text-[#888]">AI добавит секции к существующим. Введите название {isHomework ? "домашки" : "урока"} выше.</p>
+                </div>
+              )}
+            </div>
 
             {/* Sections editor */}
             <SectionsListEditor
