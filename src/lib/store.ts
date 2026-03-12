@@ -106,7 +106,7 @@ export function useStore() {
   useEffect(() => {
     if (_supabaseLoaded || !supabase) return;
     _supabaseLoaded = true;
-    loadFromSupabase().then((remote) => {
+    loadFromSupabase().then(async (remote) => {
       if (!remote) return;
       const remoteHasData = remote.students.length > 0 || remote.lessons.length > 0 || remote.homework.length > 0;
       const localHasData = _data.students.length > 0 || _data.lessons.length > 0 || _data.homework.length > 0;
