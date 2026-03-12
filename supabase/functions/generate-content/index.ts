@@ -115,8 +115,9 @@ Return JSON: { "notes": "...", "sections": [...] }`
 
     if (!response.ok) {
       const err = await response.text()
+      console.error("OpenAI error:", response.status, err)
       return new Response(JSON.stringify({ error: `OpenAI error: ${response.status}`, details: err }), {
-        status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
     }
 

@@ -40,12 +40,12 @@ export async function generateContent(opts: GenerateOptions): Promise<LessonResu
     }),
   })
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'Unknown error' }))
-    throw new Error(err.error || `HTTP ${res.status}`)
-  }
-
   const data = await res.json()
+
+  if (data.error) {
+    console.error('AI error:', data)
+    throw new Error(data.details || data.error || 'Unknown error')
+  }
 
   // Ensure sections have ids
   if (data.sections) {
