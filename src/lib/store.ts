@@ -119,7 +119,7 @@ export function useStore(userId?: string) {
 
   const addLesson = useCallback((studentId: string | null, title: string, date: string, notes?: string, sections?: Lesson["sections"], courseId?: string, orderIndex?: number) => {
     const l: Lesson = {
-      id: uid(), student_id: studentId || "", tutor_id: _currentUserId,
+      id: uid(), student_id: studentId || null as any, tutor_id: _currentUserId,
       title, date, notes: notes || null, materials_url: null,
       sections: sections && sections.length > 0 ? sections : undefined,
       course_id: courseId || null,
