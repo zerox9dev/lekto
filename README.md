@@ -1,6 +1,9 @@
-# Lekto
+<p align="center">
+  <img src=".github/cover.png" alt="Lekto" width="100%" />
+</p>
 
-Platform for tutors: lessons, interactive homework, courses, and student portals.
+<h1 align="center">Lekto</h1>
+<p align="center">Platform for tutors: lessons, interactive homework, courses, and student portals.</p>
 
 **[lekto.online](https://lekto.online)**
 
