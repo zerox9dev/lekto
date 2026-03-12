@@ -105,10 +105,10 @@ function SectionPreview({ section }: { section: HomeworkSection }) {
 // Lesson Card
 // ══════════════════════════════════════════════════════
 
-function LessonCard({ lesson, homeworkItems, studentId, onEditLesson, onDeleteLesson, onNewHw, onEditHw, onDeleteHw, onDuplicateHw, onSaveAsTemplate }: {
+function LessonCard({ lesson, homeworkItems, studentId, onEditLesson, onDeleteLesson, onNewHw, onGenerateHw, onEditHw, onDeleteHw, onDuplicateHw, onSaveAsTemplate }: {
   lesson: Lesson; homeworkItems: Homework[]; studentId: string;
   onEditLesson: () => void; onDeleteLesson: () => void;
-  onNewHw: () => void; onEditHw: (h: Homework) => void; onDeleteHw: (id: string) => void; onDuplicateHw: (h: Homework) => void;
+  onNewHw: () => void; onGenerateHw: () => void; onEditHw: (h: Homework) => void; onDeleteHw: (id: string) => void; onDuplicateHw: (h: Homework) => void;
   onSaveAsTemplate: (h: Homework) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -197,9 +197,14 @@ function LessonCard({ lesson, homeworkItems, studentId, onEditLesson, onDeleteLe
               })}
             </div>
           )}
-          <button onClick={onNewHw} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#888] hover:bg-[#f0ede6] transition-colors cursor-pointer">
-            <Plus className="h-3.5 w-3.5" /> Добавить домашку
-          </button>
+          <div className="flex gap-2">
+            <button onClick={onNewHw} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#888] hover:bg-[#f0ede6] transition-colors cursor-pointer">
+              <Plus className="h-3.5 w-3.5" /> Добавить домашку
+            </button>
+            <button onClick={onGenerateHw} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#888] hover:bg-[#f0ede6] transition-colors cursor-pointer">
+              <Sparkles className="h-3.5 w-3.5" /> AI
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -266,6 +271,26 @@ export function StudentDetailPage() {
       sections: (h.sections || []).map((s) => ({ ...s, id: crypto.randomUUID() })), completed: false, student_answers: null, scores: null });
   };
 
+  const handleGenerateHw = async (lesson: Lesson) => {
+    setAiLoading(true); setAiError(null);
+    try {
+      const lessonContent = [
+        lesson.title,
+        lesson.notes || "",
+        ...(lesson.sections || []).map((s) => s.title + ": " + JSON.stringify(s.content).slice(0, 200)),
+      ].join("\n");
+      const result = await generateContent({ type: "homework", topic: lesson.title, lessonContent });
+      if (result.sections && result.sections.length > 0) {
+        addHomework({
+          lesson_id: lesson.id, student_id: student.id, tutor_id: student.tutor_id,
+          title: `Домашка: ${lesson.title}`,
+          sections: result.sections, completed: false, student_answers: null, scores: null,
+        });
+      }
+    } catch (e: any) { setAiError(e.message || "Ошибка AI"); alert("Ошибка AI: " + (e.message || "попробуйте позже")); }
+    setAiLoading(false);
+  };
+
   const completedHw = studentHomework.filter((h) => h.completed).length;
   const avgScore = (() => {
     const scored = studentHomework.filter((h) => h.scores && Object.keys(h.scores).length > 0);
@@ -313,7 +338,7 @@ export function StudentDetailPage() {
           studentLessons.map((l) => (
             <LessonCard key={l.id} lesson={l} homeworkItems={studentHomework.filter((h) => h.lesson_id === l.id)} studentId={student.id}
               onEditLesson={() => openEditLesson(l)} onDeleteLesson={() => deleteLesson(l.id)}
-              onNewHw={() => openNewHw(l.id)} onEditHw={openEditHw} onDeleteHw={deleteHomework} onDuplicateHw={(h) => duplicateHw(h, l.id)}
+              onNewHw={() => openNewHw(l.id)} onGenerateHw={() => handleGenerateHw(l)} onEditHw={openEditHw} onDeleteHw={deleteHomework} onDuplicateHw={(h) => duplicateHw(h, l.id)}
               onSaveAsTemplate={(h) => addTemplate(h.title, h.sections || [])} />
           ))
         )}
