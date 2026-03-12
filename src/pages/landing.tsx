@@ -220,19 +220,19 @@ export function LandingPage() {
 
       {/* ── Pricing ── */}
       <Reveal id="pricing" className={s.section}>
-        <h2 className={s.sectionTitle}>Простые цены</h2>
-        <p className={s.sectionDesc}>Начните бесплатно, обновитесь когда нужно</p>
+        <h2 className={s.sectionTitle}>Beta</h2>
+        <p className={s.sectionDesc}>Набираем первых пользователей</p>
         <div className={s.pricingGrid}>
           <div className={s.pricingCard}>
-            <div className={s.pricingLabel}>Cloud</div>
-            <div className={s.pricingAmount}>$5</div>
-            <div className={s.pricingPeriod}>в месяц</div>
+            <div className={s.pricingLabel}>Beta</div>
+            <div className={s.pricingAmount}>$0</div>
+            <div className={s.pricingPeriod}>бесплатный триал на месяц</div>
             <ul className={s.pricingFeatures}>
               {PRICING_CLOUD.map((f) => (
                 <li key={f} className={s.pricingFeature}>{f}</li>
               ))}
             </ul>
-            <Link to="/login" className={s.pricingCta}>Начать</Link>
+            <a href="https://t.me/mirvald" target="_blank" rel="noopener noreferrer" className={s.pricingCta}>Написать в Telegram</a>
           </div>
           <div className={s.pricingCard}>
             <div className={s.pricingLabel}>Self-hosted</div>

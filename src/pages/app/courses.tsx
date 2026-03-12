@@ -97,7 +97,7 @@ export function CoursesPage() {
                 </div>
                 {c.description && <p className="text-[13px] text-[#888] line-clamp-2 mb-3">{c.description}</p>}
                 <div className="flex items-center justify-between text-[12px] text-[#aaa]">
-                  <span>{lessonCount} уроков</span>
+                  <span>{lessonCount} {t("lessonsN")}</span>
                   <span>{created}</span>
                 </div>
               </Link>
@@ -109,7 +109,7 @@ export function CoursesPage() {
       {/* Starter courses */}
       {STARTER_COURSES.filter((sc) => !courses.some((c) => c.title === sc.title)).length > 0 && (
         <div className="space-y-3 pt-2">
-          <h2 className="text-[14px] font-semibold text-[#888]">Готовые курсы</h2>
+          <h2 className="text-[14px] font-semibold text-[#888]">{t("starterCourses")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {STARTER_COURSES.filter((sc) => !courses.some((c) => c.title === sc.title)).map((sc) => (
               <div key={sc.id} className="rounded-2xl border border-dashed border-[#d0ccc4] bg-[#faf9f6] px-4 py-4">
