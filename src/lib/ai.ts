@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
-import type { HomeworkSection, Lesson } from '@/types/database'
+import { aiLessonSchema, aiHomeworkSchema } from './schemas'
+import type { HomeworkSection } from '@/types/database'
 
 const FUNCTION_URL = import.meta.env.VITE_SUPABASE_URL
   ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-content`
@@ -40,20 +41,21 @@ export async function generateContent(opts: GenerateOptions): Promise<LessonResu
     }),
   })
 
-  const data = await res.json()
+  const raw = await res.json()
 
-  if (data.error) {
-    console.error('AI error:', data)
-    throw new Error(data.details || data.error || 'Unknown error')
+  if (raw.error) {
+    console.error('AI error:', raw)
+    throw new Error(raw.details || raw.error || 'Unknown error')
   }
 
-  // Ensure sections have ids
-  if (data.sections) {
-    data.sections = data.sections.map((s: any) => ({
-      ...s,
-      id: s.id || crypto.randomUUID(),
-    }))
+  // Validate with Zod
+  const schema = opts.type === 'homework' ? aiHomeworkSchema : aiLessonSchema
+  const parsed = schema.safeParse(raw)
+
+  if (!parsed.success) {
+    console.error('AI response validation failed:', parsed.error.issues)
+    throw new Error('AI вернул некорректный формат. Попробуйте еще раз.')
   }
 
-  return data
+  return parsed.data as LessonResult
 }
