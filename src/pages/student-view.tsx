@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { BookOpen, GraduationCap, CheckCircle2, Circle, ChevronRight, ArrowLeft, Loader2 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { SectionPlayer } from "@/components/section-player";
-import type { Homework, Lesson, Student } from "@/types/database";
+import type { Homework, Lesson, Student, Course } from "@/types/database";
 
 // ── Lesson View (full page for one lesson) ──
 
@@ -106,6 +106,7 @@ export function StudentView() {
   const [remoteStudent, setRemoteStudent] = useState<Student | null>(null);
   const [remoteLessons, setRemoteLessons] = useState<Lesson[]>([]);
   const [remoteHomework, setRemoteHomework] = useState<Homework[]>([]);
+  const [remoteCourses, setRemoteCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [tried, setTried] = useState(false);
 
@@ -117,10 +118,16 @@ export function StudentView() {
         const { data: s } = await (supabase as any).from("students").select().eq("share_id", shareId).single();
         if (cancelled || !s) { setLoading(false); setTried(true); return; }
         setRemoteStudent(s);
-        const { data: ls } = await (supabase as any).from("lessons").select().eq("student_id", s.id).order("date", { ascending: false });
-        if (!cancelled) setRemoteLessons(ls || []);
-        const { data: hw } = await (supabase as any).from("homework").select().eq("student_id", s.id).order("created_at", { ascending: false });
-        if (!cancelled) setRemoteHomework(hw || []);
+        const [lsRes, hwRes, cRes] = await Promise.all([
+          (supabase as any).from("lessons").select().eq("student_id", s.id).order("date", { ascending: false }),
+          (supabase as any).from("homework").select().eq("student_id", s.id).order("created_at", { ascending: false }),
+          (supabase as any).from("courses").select().eq("tutor_id", s.tutor_id).order("created_at", { ascending: false }),
+        ]);
+        if (!cancelled) {
+          setRemoteLessons(lsRes.data || []);
+          setRemoteHomework(hwRes.data || []);
+          setRemoteCourses(cRes.error ? [] : (cRes.data || []));
+        }
       } catch {}
       if (!cancelled) { setLoading(false); setTried(true); }
     })();
@@ -136,6 +143,32 @@ export function StudentView() {
   const studentHomework = student
     ? (remoteStudent ? remoteHomework : store.homework.filter((h) => h.student_id === student.id))
     : [];
+  const allCourses = remoteStudent ? remoteCourses : (store.courses || []);
+
+  // Group lessons by course
+  const groupedLessons = useMemo(() => {
+    const courseMap = new Map<string | null, Lesson[]>();
+    for (const l of studentLessons) {
+      const key = l.course_id || null;
+      if (!courseMap.has(key)) courseMap.set(key, []);
+      courseMap.get(key)!.push(l);
+    }
+    const groups: { course: Course | null; lessons: Lesson[] }[] = [];
+    // Courses with lessons first
+    for (const c of allCourses) {
+      const cls = courseMap.get(c.id);
+      if (cls && cls.length > 0) {
+        groups.push({ course: c, lessons: cls.sort((a, b) => (a.order_index || 0) - (b.order_index || 0)) });
+      }
+    }
+    // Lessons without course
+    const uncategorized = courseMap.get(null);
+    if (uncategorized && uncategorized.length > 0) {
+      groups.push({ course: null, lessons: uncategorized });
+    }
+    return groups;
+  }, [studentLessons, allCourses]);
+  const hasCourseGrouping = groupedLessons.some((g) => g.course !== null);
 
   if (loading) {
     return (
@@ -198,33 +231,41 @@ export function StudentView() {
                 <p className="text-[14px] md:text-[15px] text-[#888]">Уроков пока нет. Ваш репетитор добавит их сюда.</p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {studentLessons.map((l) => {
-                  const lhw = studentHomework.filter((h) => h.lesson_id === l.id);
-                  const lhwDone = lhw.filter((h) => h.completed).length;
-
-                  return (
-                    <button key={l.id} onClick={() => setSelectedLessonId(l.id)}
-                      className="w-full rounded-xl border border-[#e8e5de] bg-white px-3 md:px-5 py-3 md:py-4 flex items-center gap-3 md:gap-4 text-left hover:border-[#d0ccc4] transition-colors cursor-pointer group min-h-[56px]">
-                      <div className="h-10 w-10 rounded-xl bg-[#f0ede6] flex items-center justify-center shrink-0">
-                        <BookOpen className="h-4.5 w-4.5 text-[#888]" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[14px] md:text-[15px] font-medium truncate">{l.title}</p>
-                        <p className="text-[12px] md:text-[13px] text-[#888] mt-0.5">
-                          {l.date}
-                          {l.sections && l.sections.length > 0 && ` · 🎯 ${l.sections.length} секций`}
-                          {lhw.length > 0 && (
-                            <span className={lhwDone === lhw.length && lhw.length > 0 ? "text-emerald-500" : ""}>
-                              {" "}· {lhwDone}/{lhw.length} заданий
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-[#ccc] group-hover:text-[#888] shrink-0" />
-                    </button>
-                  );
-                })}
+              <div className="space-y-4">
+                {groupedLessons.map((group, gi) => (
+                  <div key={group.course?.id || "uncategorized"} className="space-y-2">
+                    {hasCourseGrouping && (
+                      <h3 className="text-[13px] font-semibold text-[#888] uppercase tracking-wider px-1">
+                        {group.course ? group.course.title : "Без курса"}
+                      </h3>
+                    )}
+                    {group.lessons.map((l) => {
+                      const lhw = studentHomework.filter((h) => h.lesson_id === l.id);
+                      const lhwDone = lhw.filter((h) => h.completed).length;
+                      return (
+                        <button key={l.id} onClick={() => setSelectedLessonId(l.id)}
+                          className="w-full rounded-xl border border-[#e8e5de] bg-white px-3 md:px-5 py-3 md:py-4 flex items-center gap-3 md:gap-4 text-left hover:border-[#d0ccc4] transition-colors cursor-pointer group min-h-[56px]">
+                          <div className="h-10 w-10 rounded-xl bg-[#f0ede6] flex items-center justify-center shrink-0">
+                            <BookOpen className="h-4.5 w-4.5 text-[#888]" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[14px] md:text-[15px] font-medium truncate">{l.title}</p>
+                            <p className="text-[12px] md:text-[13px] text-[#888] mt-0.5">
+                              {l.date}
+                              {l.sections && l.sections.length > 0 && ` · 🎯 ${l.sections.length} секций`}
+                              {lhw.length > 0 && (
+                                <span className={lhwDone === lhw.length && lhw.length > 0 ? "text-emerald-500" : ""}>
+                                  {" "}· {lhwDone}/{lhw.length} заданий
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-[#ccc] group-hover:text-[#888] shrink-0" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             )}
           </div>

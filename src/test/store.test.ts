@@ -272,10 +272,12 @@ describe("useStore — Templates", () => {
     act(() => {
       tmpl = result.current.addTemplate("T", []);
     });
+    const before = result.current.templates.length;
     act(() => {
       result.current.deleteTemplate(tmpl.id);
     });
-    expect(result.current.templates).toHaveLength(0);
+    expect(result.current.templates.length).toBe(before - 1);
+    expect(result.current.templates.find((t: any) => t.id === tmpl.id)).toBeUndefined();
   });
 });
 

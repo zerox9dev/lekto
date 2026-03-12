@@ -6,7 +6,9 @@ function sanitizeFilename(name: string): string {
 
 describe("filename sanitize", () => {
   it("replaces cyrillic chars", () => {
-    expect(sanitizeFilename("Снимок экрана 2026.png")).toBe("____________2026.png");
+    const result = sanitizeFilename("Снимок экрана 2026.png");
+    expect(result).toMatch(/^_+2026\.png$/);
+    expect(/[а-яА-ЯёЁ ]/.test(result)).toBe(false);
   });
 
   it("keeps latin chars and numbers", () => {

@@ -1,5 +1,5 @@
 import { Routes, Route, NavLink, Link, useLocation } from "react-router-dom";
-import { Users, Settings, LogOut, GraduationCap, BookOpen, ClipboardList, LayoutDashboard } from "lucide-react";
+import { Users, Settings, LogOut, GraduationCap, BookOpen, ClipboardList, LayoutDashboard, Library } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useStore } from "@/lib/store";
 import { StudentsPage } from "./students";
@@ -8,10 +8,13 @@ import { SettingsPage } from "./settings";
 import { DashboardPage } from "./dashboard";
 import { LessonsPage } from "./lessons";
 import { HomeworkPage } from "./homework-list";
+import { CoursesPage } from "./courses";
+import { CourseDetailPage } from "./course-detail";
 
 const nav = [
   { label: "Главная", icon: LayoutDashboard, href: "/app" },
   { label: "Ученики", icon: Users, href: "/app/students" },
+  { label: "Курсы", icon: Library, href: "/app/courses" },
   { label: "Уроки", icon: BookOpen, href: "/app/lessons" },
   { label: "Домашки", icon: ClipboardList, href: "/app/homework" },
 ];
@@ -49,9 +52,9 @@ function MobileNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#e8e5de] flex md:hidden">
       <MobileNavItem to="/app" icon={LayoutDashboard} label="Главная" end />
       <MobileNavItem to="/app/students" icon={Users} label="Ученики" />
+      <MobileNavItem to="/app/courses" icon={Library} label="Курсы" />
       <MobileNavItem to="/app/lessons" icon={BookOpen} label="Уроки" />
       <MobileNavItem to="/app/homework" icon={ClipboardList} label="Домашки" />
-      <MobileNavItem to="/app/settings" icon={Settings} label="⚙️" />
     </nav>
   );
 }
@@ -88,6 +91,8 @@ export function AppLayout() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/students" element={<StudentsPage />} />
             <Route path="/students/:id" element={<StudentDetailPage />} />
+            <Route path="/courses" element={<CoursesPage />} />
+            <Route path="/courses/:id" element={<CourseDetailPage />} />
             <Route path="/lessons" element={<LessonsPage />} />
             <Route path="/homework" element={<HomeworkPage />} />
             <Route path="/settings" element={<SettingsPage />} />
