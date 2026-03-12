@@ -95,7 +95,7 @@ export function useStore() {
   // ── Lessons ──
   const lessons = _data.lessons;
 
-  const addLesson = useCallback((studentId: string, title: string, date: string, notes?: string) => {
+  const addLesson = useCallback((studentId: string, title: string, date: string, notes?: string, sections?: Lesson["sections"]) => {
     const l: Lesson = {
       id: uid(),
       student_id: studentId,
@@ -104,6 +104,7 @@ export function useStore() {
       date,
       notes: notes || null,
       materials_url: null,
+      sections: sections && sections.length > 0 ? sections : undefined,
       created_at: new Date().toISOString(),
     };
     _data = { ..._data, lessons: [l, ..._data.lessons] };

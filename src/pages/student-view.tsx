@@ -7,6 +7,7 @@ import type { Homework, HomeworkSection, QuizQuestion, FillBlanksContent, Matchi
 const typeLabels: Record<string, string> = {
   quiz: "Тест", fill_blanks: "Вставить слово", matching: "Соединить пары",
   ordering: "Расставить по порядку", cards: "Карточки", text: "Задание",
+  true_false: "Верно / Неверно", open_answer: "Открытый ответ",
 };
 
 // ── Section Players ──
@@ -490,7 +491,20 @@ function LessonView({ lesson, homeworkItems, onBack }: { lesson: Lesson; homewor
         </div>
       )}
 
-      {homeworkItems.length === 0 && !lesson.notes && (
+      {/* Lesson interactive sections */}
+      {lesson.sections && lesson.sections.length > 0 && (
+        <div className="rounded-2xl bg-white border border-[#e8e5de] p-4 md:p-6 space-y-4 md:space-y-6">
+          <p className="text-[12px] font-semibold text-[#888] uppercase tracking-wider">Материалы урока</p>
+          {lesson.sections.map((sec, i) => (
+            <div key={sec.id}>
+              {i > 0 && <div className="border-t border-[#e8e5de] mb-4 md:mb-6" />}
+              <SectionPlayer section={sec} onScore={() => {}} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {homeworkItems.length === 0 && !lesson.notes && (!lesson.sections || lesson.sections.length === 0) && (
         <div className="rounded-2xl border border-dashed border-[#e8e5de] bg-white p-8 md:p-12 text-center">
           <p className="text-[15px] text-[#888]">Материалов пока нет</p>
         </div>
@@ -578,6 +592,7 @@ export function StudentView() {
                         <p className="text-[14px] md:text-[15px] font-medium truncate">{l.title}</p>
                         <p className="text-[12px] md:text-[13px] text-[#888] mt-0.5">
                           {l.date}
+                          {l.sections && l.sections.length > 0 && ` · 🎯 ${l.sections.length} секций`}
                           {lhw.length > 0 && (
                             <span className={lhwDone === lhw.length && lhw.length > 0 ? "text-emerald-500" : ""}>
                               {" "}· {lhwDone}/{lhw.length} заданий

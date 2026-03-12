@@ -15,6 +15,7 @@ export interface Lesson {
   date: string;
   notes: string | null;
   materials_url: string | null;
+  sections?: HomeworkSection[];
   created_at: string;
 }
 
