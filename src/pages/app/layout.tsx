@@ -65,7 +65,7 @@ export function AppLayout() {
   useStore(user?.id);
   return (
     <div className="min-h-screen flex bg-[#f5f3ee] overflow-x-hidden">
-      <aside className="hidden md:flex h-screen w-52 flex-col border-r border-[#e8e5de] bg-white py-4 px-3 sticky top-0">
+      <aside className="hidden md:flex h-screen w-52 flex-col border-r border-[#e8e5de] bg-white py-4 px-3 fixed top-0 left-0 z-40">
         <Link to="/" className="flex items-center gap-2.5 px-3 mb-6">
           <div className="h-7 w-7 rounded-lg bg-[#1a1a1a] flex items-center justify-center">
             <GraduationCap className="h-3.5 w-3.5 text-white" />
@@ -85,7 +85,7 @@ export function AppLayout() {
           </button>
         </div>
       </aside>
-      <main className="flex-1 min-h-screen pb-16 md:pb-0 overflow-x-hidden min-w-0">
+      <main className="flex-1 min-h-screen pb-16 md:pb-0 overflow-x-hidden min-w-0 md:ml-52">
         <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-8">
           <Routes>
             <Route path="/" element={<DashboardPage />} />
