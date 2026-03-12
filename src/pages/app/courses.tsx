@@ -116,12 +116,15 @@ export function CoursesPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-[12px] text-[#aaa]">{sc.lessons.length} уроков</span>
                   <button onClick={async () => {
+                    // Create course and wait for DB confirmation
                     const course = addCourse(sc.title, sc.description);
-                    // Wait for course row to exist in Supabase (FK constraint for lessons.course_id)
-                    try { await (course as any)._saved; } catch {}
+                    const saveResult = await (course as any)._saved;
+                    if (saveResult?.error) { console.error("Course save error:", saveResult.error); return; }
+                    // Now create lessons sequentially
                     for (const sl of sc.lessons) {
                       const today = new Date().toISOString().slice(0, 10);
-                      addLesson(null, sl.title, sl.date || today, sl.notes || undefined, sl.sections, course.id, sl.order_index);
+                      const lesson = addLesson(null, sl.title, sl.date || today, sl.notes || undefined, sl.sections, course.id, sl.order_index);
+                      await (lesson as any)._saved;
                     }
                   }}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1a1a1a] text-white text-[12px] font-medium hover:bg-[#333] cursor-pointer">

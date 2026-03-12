@@ -188,7 +188,9 @@ export function useStore(userId?: string) {
     };
     _data = { ..._data, courses: [c, ...(_data.courses || [])] };
     notify();
-    (c as any)._saved = db().from("courses").upsert(c, { onConflict: "id" });
+    const cp = db().from("courses").upsert(c, { onConflict: "id" });
+    cp.then(({ error }: any) => { if (error) console.error("Course save error:", error); });
+    (c as any)._saved = cp;
     return c;
   }, []);
 
