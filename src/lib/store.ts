@@ -102,16 +102,24 @@ export function useStore() {
     return () => { _listeners.delete(rerender); };
   }, [rerender]);
 
-  // Load from Supabase once
+  // Load from Supabase once, or push local data if Supabase is empty
   useEffect(() => {
     if (_supabaseLoaded || !supabase) return;
     _supabaseLoaded = true;
     loadFromSupabase().then((remote) => {
       if (!remote) return;
-      // Merge: Supabase is source of truth if it has data
-      if (remote.students.length > 0 || remote.lessons.length > 0 || remote.homework.length > 0) {
+      const remoteHasData = remote.students.length > 0 || remote.lessons.length > 0 || remote.homework.length > 0;
+      const localHasData = _data.students.length > 0 || _data.lessons.length > 0 || _data.homework.length > 0;
+
+      if (remoteHasData) {
+        // Supabase has data — use it as source of truth
         _data = { ...remote, templates: _data.templates || [] };
         notify();
+      } else if (localHasData) {
+        // Supabase is empty but localStorage has data — push to Supabase
+        for (const s of _data.students) sbInsert("students", s);
+        for (const l of _data.lessons) sbInsert("lessons", l);
+        for (const h of _data.homework) sbInsert("homework", h);
       }
     });
   }, []);
