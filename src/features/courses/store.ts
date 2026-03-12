@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { insert, update, remove, query } from '@/lib/db'
+import { insert, update, remove, removeWhere, query } from '@/lib/db'
 import type { Course } from '@/types/database'
 
 function uid() { return crypto.randomUUID() }
@@ -47,9 +47,12 @@ export function useCourses(tutorId?: string) {
     await update('courses', id, data)
   }, [])
 
-  const deleteCourse = useCallback(async (id: string) => {
+  const deleteCourse = useCallback(async (id: string, deleteLessons = true) => {
     _courses = _courses.filter(c => c.id !== id)
     notify()
+    if (deleteLessons) {
+      await removeWhere('lessons', 'course_id', id)
+    }
     await remove('courses', id)
   }, [])
 

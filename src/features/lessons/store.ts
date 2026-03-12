@@ -74,11 +74,9 @@ export function useLessons(tutorId?: string) {
     notify()
   }, [])
 
-  /** Unlink lessons from a deleted course */
-  const unlinkCourse = useCallback((courseId: string) => {
-    _lessons = _lessons.map(l =>
-      l.course_id === courseId ? { ...l, course_id: null } : l,
-    )
+  /** Remove lessons belonging to a course (cascade delete) */
+  const removeLessonsByCourse = useCallback((courseId: string) => {
+    _lessons = _lessons.filter(l => l.course_id !== courseId)
     notify()
   }, [])
 
@@ -88,6 +86,6 @@ export function useLessons(tutorId?: string) {
     updateLesson,
     deleteLesson,
     removeLessonsForStudent,
-    unlinkCourse,
+    removeLessonsByCourse,
   }
 }

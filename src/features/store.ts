@@ -61,7 +61,10 @@ export function useStore(userId?: string) {
     courses: courseStore.courses,
     addCourse: courseStore.addCourse,
     updateCourse: courseStore.updateCourse,
-    deleteCourse: courseStore.deleteCourse,
+    deleteCourse: async (id: string, deleteLessons = true) => {
+      if (deleteLessons) lessonStore.removeLessonsByCourse(id)
+      await courseStore.deleteCourse(id, deleteLessons)
+    },
 
     // Homework
     homework: homeworkStore.homework,
