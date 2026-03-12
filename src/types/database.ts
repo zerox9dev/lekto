@@ -11,6 +11,7 @@ export interface Course {
   id: string;
   title: string;
   description: string | null;
+  share_id: string;
   tutor_id: string;
   created_at: string;
 }

@@ -5,6 +5,7 @@ import { LoginPage } from "@/pages/login";
 import { AppLayout } from "@/pages/app/layout";
 import { SectionEditorPage } from "@/pages/app/section-editor";
 import { StudentView } from "@/pages/student-view";
+import { CourseView } from "@/pages/course-view";
 
 function ProtectedApp() {
   const { user, loading } = useAuth();
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/app/students/:id/lesson/:lessonId/edit" element={<ProtectedEditor />} />
           <Route path="/app/*" element={<ProtectedApp />} />
           <Route path="/s/:shareId" element={<StudentView />} />
+          <Route path="/c/:shareId" element={<CourseView />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

@@ -179,6 +179,7 @@ export function useStore(userId?: string) {
   const addCourse = useCallback((title: string, description?: string) => {
     const c: Course = {
       id: uid(), title, description: description || null,
+      share_id: Math.random().toString(36).slice(2, 10),
       tutor_id: _currentUserId, created_at: new Date().toISOString(),
     };
     _data = { ..._data, courses: [c, ...(_data.courses || [])] };

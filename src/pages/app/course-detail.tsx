@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowUp, ArrowDown, X, Plus, ChevronRight, Search, ChevronDown } from "lucide-react";
+import { ArrowUp, ArrowDown, X, Plus, ChevronRight, Search, ChevronDown, Link2, Check } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { SectionPlayer } from "@/components/section-player";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -16,6 +16,7 @@ export function CourseDetailPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [expandedLesson, setExpandedLesson] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const courseLessons = useMemo(() =>
     lessons.filter((l) => l.course_id === id).sort((a, b) => (a.order_index || 0) - (b.order_index || 0)),
@@ -67,11 +68,23 @@ export function CourseDetailPage() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-1.5 text-[13px] text-[#888]">
-        <Link to="/app/courses" className="hover:text-[#1a1a1a]">Курсы</Link>
-        <ChevronRight className="h-3.5 w-3.5" />
-        <span className="text-[#1a1a1a] font-medium truncate">{course.title}</span>
+      {/* Breadcrumb + Share */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 text-[13px] text-[#888] min-w-0">
+          <Link to="/app/courses" className="hover:text-[#1a1a1a] shrink-0">Курсы</Link>
+          <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+          <span className="text-[#1a1a1a] font-medium truncate">{course.title}</span>
+        </div>
+        <button onClick={() => {
+          const url = `${window.location.origin}/c/${course.share_id}`;
+          navigator.clipboard.writeText(url);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        }}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#e8e5de] text-[12px] font-medium hover:bg-[#f0ede6] cursor-pointer shrink-0">
+          {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Link2 className="h-3.5 w-3.5 text-[#888]" />}
+          {copied ? "Скопировано!" : "Поделиться"}
+        </button>
       </div>
 
       {/* Title */}
