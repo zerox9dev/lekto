@@ -21,11 +21,13 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Trash2, Pencil, ChevronRight, Library, Download } from "lucide-react";
 import { useStore } from "@/features/store";
+import { useTranslation } from "@/lib/i18n";
 import { STARTER_COURSES } from "@/features/courses/data/starter-courses";
 import * as Dialog from "@radix-ui/react-dialog";
 
 export function CoursesPage() {
   const { courses, lessons, addCourse, updateCourse, deleteCourse, addLesson, updateLesson, addHomework, students } = useStore();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -57,12 +59,12 @@ export function CoursesPage() {
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-lg md:text-xl font-bold tracking-tight font-serif">Курсы</h1>
-          <p className="text-[13px] text-[#888] mt-0.5">{courses.length} {courses.length === 1 ? "курс" : "курсов"}</p>
+          <h1 className="text-lg md:text-xl font-bold tracking-tight font-serif">{t("coursesTitle")}</h1>
+          <p className="text-[13px] text-[#888] mt-0.5">{courses.length} {courses.length === 1 ? t("courseSingle") : t("coursesPlural")}</p>
         </div>
         <button onClick={handleNew}
           className="inline-flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-[#1a1a1a] text-white text-[13px] font-medium hover:bg-[#333] cursor-pointer shrink-0">
-          <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Добавить курс</span><span className="sm:hidden">Новый</span>
+          <Plus className="h-4 w-4" /> <span className="hidden sm:inline">{t("addCourse")}</span><span className="sm:hidden">{t("newCourse")}</span>
         </button>
       </div>
 
@@ -71,8 +73,8 @@ export function CoursesPage() {
           <div className="mx-auto w-12 h-12 rounded-2xl bg-[#f0ede6] flex items-center justify-center mb-4">
             <Library className="h-5 w-5 text-[#888]" />
           </div>
-          <p className="text-[15px] font-medium text-[#1a1a1a] mb-1">Пока нет курсов</p>
-          <p className="text-[13px] text-[#888]">Создайте курс, чтобы группировать уроки</p>
+          <p className="text-[15px] font-medium text-[#1a1a1a] mb-1">{t("noCoursesYet")}</p>
+          <p className="text-[13px] text-[#888]">{t("createCourseHint")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

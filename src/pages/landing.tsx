@@ -1,6 +1,27 @@
 import { Link } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import { GraduationCap, School, Globe, Library, BookOpen, PenLine, LinkIcon, BarChart3, FileText, TrendingUp, Smartphone, Palette } from "lucide-react";
 import s from "./landing.module.css";
+
+function useReveal() {
+  const ref = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { el.classList.add(s.revealVisible); observer.unobserve(el); } },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  return ref;
+}
+
+function Reveal({ children, className = "", id }: { children: React.ReactNode; className?: string; id?: string }) {
+  const ref = useReveal();
+  return <section ref={ref} id={id} className={`${s.reveal} ${className}`}>{children}</section>;
+}
 
 const AUDIENCE = [
   { icon: GraduationCap, title: "Репетиторы", desc: "Ведут уроки один на один и хотят всё в одном месте", bg: s.audienceEmoji1 },
@@ -136,7 +157,7 @@ export function LandingPage() {
       </section>
 
       {/* ── Who this is for ── */}
-      <section id="audience" className={s.section}>
+      <Reveal id="audience" className={s.section}>
         <h2 className={s.sectionTitle}>Для кого это</h2>
         <p className={s.sectionDesc}>Помогаем репетиторам организовать работу и сделать обучение удобнее</p>
         <div className={s.audienceGrid}>
@@ -148,10 +169,10 @@ export function LandingPage() {
             </div>
           ))}
         </div>
-      </section>
+      </Reveal>
 
       {/* ── Features ── */}
-      <section id="features" className={s.section}>
+      <Reveal id="features" className={s.section}>
         <h2 className={s.sectionTitle}>Всё что нужно для занятий</h2>
         <p className={s.sectionDesc}>Каждая функция решает реальную проблему репетитора</p>
         <div className={s.featuresGrid}>
@@ -163,10 +184,10 @@ export function LandingPage() {
             </div>
           ))}
         </div>
-      </section>
+      </Reveal>
 
       {/* ── What you get – horizontal scroll ── */}
-      <section className={s.section}>
+      <Reveal className={s.section}>
         <h2 className={s.sectionTitle}>Что вы получаете</h2>
         <p className={s.sectionDesc}>Всё для продуктивных занятий</p>
         <div className={s.benefitsWrap}>
@@ -195,10 +216,10 @@ export function LandingPage() {
             <div className={s.statLabel}>регистраций для учеников</div>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* ── Pricing ── */}
-      <section id="pricing" className={s.section}>
+      <Reveal id="pricing" className={s.section}>
         <h2 className={s.sectionTitle}>Простые цены</h2>
         <p className={s.sectionDesc}>Начните бесплатно, обновитесь когда нужно</p>
         <div className={s.pricingGrid}>
@@ -225,7 +246,7 @@ export function LandingPage() {
             <a href="https://github.com/zerox9dev/lekto" target="_blank" rel="noopener noreferrer" className={s.pricingCtaOutline}>GitHub</a>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* ── Footer ── */}
       <footer className={s.footer}>

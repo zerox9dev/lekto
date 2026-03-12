@@ -1,29 +1,30 @@
 import { useStore } from "@/features/store";
+import { useTranslation } from "@/lib/i18n";
 import { Users, BookOpen, ClipboardList, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function DashboardPage() {
   const { students, lessons, homework } = useStore();
+  const { t } = useTranslation();
 
   const totalStudents = students.length;
   const totalLessons = lessons.length;
   const totalHomework = homework.length;
   const recentLessons = [...lessons].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
   const pendingHw = homework.filter((h) => {
-    // homework without completed status
     return true;
   });
 
   const stats = [
-    { label: "Учеников", value: totalStudents, icon: Users, color: "bg-[#2d5a3d]", href: "/app/students" },
-    { label: "Уроков", value: totalLessons, icon: BookOpen, color: "bg-[#4a6fa5]", href: "/app/lessons" },
-    { label: "Домашек", value: totalHomework, icon: ClipboardList, color: "bg-[#8b6914]", href: "/app/homework" },
+    { label: t("studentsCount"), value: totalStudents, icon: Users, color: "bg-[#2d5a3d]", href: "/app/students" },
+    { label: t("lessonsCount"), value: totalLessons, icon: BookOpen, color: "bg-[#4a6fa5]", href: "/app/lessons" },
+    { label: t("homeworkCount"), value: totalHomework, icon: ClipboardList, color: "bg-[#8b6914]", href: "/app/homework" },
   ];
 
   return (
     <div>
-      <h1 className="text-[22px] font-bold font-serif text-[#1a1a1a] mb-1">Главная</h1>
-      <p className="text-[14px] text-[#888] mb-6">Обзор вашей активности</p>
+      <h1 className="text-[22px] font-bold font-serif text-[#1a1a1a] mb-1">{t("dashboardTitle")}</h1>
+      <p className="text-[14px] text-[#888] mb-6">{t("dashboardDesc")}</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
         {stats.map((s) => (
@@ -42,9 +43,9 @@ export function DashboardPage() {
       </div>
 
       <div className="bg-white rounded-2xl border border-[#e8e5de] p-4">
-        <h2 className="text-[16px] font-semibold text-[#1a1a1a] mb-3">Последние уроки</h2>
+        <h2 className="text-[16px] font-semibold text-[#1a1a1a] mb-3">{t("recentLessons")}</h2>
         {recentLessons.length === 0 ? (
-          <p className="text-[14px] text-[#888] py-4 text-center">Пока нет уроков</p>
+          <p className="text-[14px] text-[#888] py-4 text-center">{t("noLessonsYet")}</p>
         ) : (
           <div className="space-y-2">
             {recentLessons.map((lesson) => {

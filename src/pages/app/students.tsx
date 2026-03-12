@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Copy, ExternalLink, Trash2, Pencil, Check, ChevronRight } from "lucide-react";
 import { useStore } from "@/features/store";
+import { useTranslation } from "@/lib/i18n";
 import * as Dialog from "@radix-ui/react-dialog";
 
 export function StudentsPage() {
   const { students, lessons, homework, addStudent, updateStudent, deleteStudent } = useStore();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -50,12 +52,12 @@ export function StudentsPage() {
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-lg md:text-xl font-bold tracking-tight font-serif">Ученики</h1>
-          <p className="text-[13px] text-[#888] mt-0.5">{students.length} {students.length === 1 ? "ученик" : "учеников"}</p>
+          <h1 className="text-lg md:text-xl font-bold tracking-tight font-serif">{t("students")}</h1>
+          <p className="text-[13px] text-[#888] mt-0.5">{students.length} {students.length === 1 ? t("studentSingle") : t("studentsPlural")}</p>
         </div>
         <button onClick={handleNew}
           className="inline-flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-[#1a1a1a] text-white text-[13px] font-medium hover:bg-[#333] cursor-pointer shrink-0">
-          <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Добавить</span><span className="sm:hidden">Новый</span>
+          <Plus className="h-4 w-4" /> <span className="hidden sm:inline">{t("addStudent")}</span><span className="sm:hidden">{t("newStudent")}</span>
         </button>
       </div>
 
@@ -64,8 +66,8 @@ export function StudentsPage() {
           <div className="mx-auto w-12 h-12 rounded-2xl bg-[#f0ede6] flex items-center justify-center mb-4">
             <Plus className="h-5 w-5 text-[#888]" />
           </div>
-          <p className="text-[15px] font-medium text-[#1a1a1a] mb-1">Пока нет учеников</p>
-          <p className="text-[13px] text-[#888]">Добавьте первого ученика, чтобы начать</p>
+          <p className="text-[15px] font-medium text-[#1a1a1a] mb-1">{t("noStudentsYet")}</p>
+          <p className="text-[13px] text-[#888]">{t("addFirstStudent")}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -81,7 +83,7 @@ export function StudentsPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-[14px] font-medium truncate">{s.name}</p>
                   <p className="text-[12px] text-[#888] truncate">
-                    {lessonCount} уроков · {completedHw}/{hwCount} заданий
+                    {lessonCount} {t("lessonsN")} · {completedHw}/{hwCount} {t("tasksN")}
                     {s.telegram && <span className="hidden sm:inline"> · @{s.telegram.replace(/^@/, "")}</span>}
                   </p>
                 </div>
@@ -106,24 +108,24 @@ export function StudentsPage() {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
           <Dialog.Content className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-md rounded-t-2xl md:rounded-2xl bg-white p-5 md:p-6 shadow-xl z-50 space-y-5 overflow-x-hidden">
-            <Dialog.Title className="text-lg font-bold">{editId ? "Редактировать ученика" : "Новый ученик"}</Dialog.Title>
+            <Dialog.Title className="text-lg font-bold">{editId ? t("editStudent") : t("newStudentDialog")}</Dialog.Title>
             <div className="space-y-3">
               <div>
-                <label className="text-[12px] font-medium text-[#888] mb-1 block">Имя *</label>
-                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Иван Петров"
+                <label className="text-[12px] font-medium text-[#888] mb-1 block">{t("nameLabel")}</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("namePlaceholder")}
                   className="w-full h-10 rounded-xl border border-[#e8e5de] px-3 text-[14px] outline-none focus:border-[#ccc]" autoFocus />
               </div>
               <div>
-                <label className="text-[12px] font-medium text-[#888] mb-1 block">Telegram</label>
+                <label className="text-[12px] font-medium text-[#888] mb-1 block">{t("telegramLabel")}</label>
                 <input value={telegram} onChange={(e) => setTelegram(e.target.value)} placeholder="@username"
                   className="w-full h-10 rounded-xl border border-[#e8e5de] px-3 text-[14px] outline-none focus:border-[#ccc]" />
               </div>
             </div>
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-2">
-              <Dialog.Close asChild><button className="px-4 py-2.5 sm:py-2 rounded-full text-[13px] font-medium text-[#888] hover:bg-[#f0ede6] cursor-pointer">Отмена</button></Dialog.Close>
+              <Dialog.Close asChild><button className="px-4 py-2.5 sm:py-2 rounded-full text-[13px] font-medium text-[#888] hover:bg-[#f0ede6] cursor-pointer">{t("cancel")}</button></Dialog.Close>
               <button onClick={handleSave} disabled={!name.trim()}
                 className="px-4 py-2.5 sm:py-2 rounded-full bg-[#1a1a1a] text-white text-[13px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">
-                {editId ? "Сохранить" : "Добавить"}
+                {editId ? t("save") : t("add")}
               </button>
             </div>
           </Dialog.Content>
