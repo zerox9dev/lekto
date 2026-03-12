@@ -119,7 +119,7 @@ export function CoursesPage() {
                     const course = addCourse(sc.title, sc.description);
                     for (const sl of sc.lessons) {
                       const today = new Date().toISOString().slice(0, 10);
-                      const lesson = addLesson(null, sl.title, sl.date || today, sl.notes, sl.sections);
+                      const lesson = addLesson(null, sl.title, sl.date || today, sl.notes || undefined, sl.sections);
                       updateLesson(lesson.id, { course_id: course.id, order_index: sl.order_index });
                       if (sl.homework) {
                         for (const hw of sl.homework) {
