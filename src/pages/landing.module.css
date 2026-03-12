@@ -678,30 +678,122 @@
   background: white;
 }
 
-/* Flashcards */
-.prevCards {
-  display: flex;
-  gap: 10px;
+/* Quiz preview */
+.prevQuiz {
   margin-top: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #faf8f5;
 }
-.prevCard {
-  width: 130px;
-  height: 80px;
-  border-radius: 12px;
+.prevQuizQ {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+.prevQuizOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.prevQuizOpt {
+  padding: 8px 12px;
+  border-radius: 8px;
   border: 1px solid #e8e5de;
   background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 500;
-  color: #1a1a1a;
-  flex-shrink: 0;
-}
-.prevCardBack {
-  background: #faf8f5;
-  color: #888;
   font-size: 12px;
+  color: #666;
+}
+.prevQuizCorrect {
+  border-color: #2d5a3d;
+  background: #eef6eb;
+  color: #2d5a3d;
+  font-weight: 500;
+}
+
+/* Student phone mockup */
+.prevPhone {
+  width: 200px;
+  background: white;
+  border-left: 1px solid #e8e5de;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.prevPhoneBar {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e8e5de;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.prevPhoneContent {
+  padding: 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.prevPhoneCard {
+  border-radius: 12px;
+  border: 1px solid #e8e5de;
+  background: #faf8f5;
+  padding: 24px 16px;
+  text-align: center;
+}
+.prevPhoneCardFront {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.prevPhoneCardBack {
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+  padding: 4px 0;
+}
+.prevPhoneDots {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+.prevPhoneDotActive {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #1a1a1a;
+}
+.prevPhoneDotInactive {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ddd;
+}
+.prevPhoneFill {
+  border-radius: 10px;
+  border: 1px solid #e8e5de;
+  padding: 12px;
+}
+.prevPhoneFillLabel {
+  font-size: 10px;
+  color: #888;
+  margin-bottom: 6px;
+}
+.prevPhoneFillText {
+  font-size: 13px;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+.prevPhoneFillInput {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #eef6eb;
+  color: #2d5a3d;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #2d5a3d;
 }
 
 /* Homework row */
@@ -756,7 +848,7 @@
   .footerInner { flex-direction: column; gap: 16px; text-align: center; }
   .previewWindow { height: auto; }
   .prevSidebar { display: none; }
-  .prevCards { display: none; }
+  .prevPhone { display: none; }
   .prevStats { gap: 4px; }
   .prevStatVal { font-size: 16px; }
   .prevTopbarBtn { display: none; }

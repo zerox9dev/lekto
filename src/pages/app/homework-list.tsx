@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useStore } from "@/features/store";
+import { useTranslation } from "@/lib/i18n";
 import { ClipboardList, Search, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -15,6 +16,7 @@ const typeIcons: Record<string, string> = {
 
 export function HomeworkPage() {
   const { students, lessons, homework } = useStore();
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
 
   const sorted = [...homework]
@@ -33,8 +35,8 @@ export function HomeworkPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[22px] font-bold font-serif text-[#1a1a1a] mb-1">Домашние задания</h1>
-          <p className="text-[14px] text-[#888]">{homework.length} заданий</p>
+          <h1 className="text-[22px] font-bold font-serif text-[#1a1a1a] mb-1">{t("homeworkPageTitle")}</h1>
+          <p className="text-[14px] text-[#888]">{homework.length} {t("tasksN")}</p>
         </div>
       </div>
 
@@ -42,7 +44,7 @@ export function HomeworkPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#888]" />
         <input
           value={search} onChange={(e) => setSearch(e.target.value)}
-          placeholder="Поиск по названию, ученику или уроку..."
+          placeholder={t("searchHomework")}
           className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#e8e5de] text-[14px] placeholder:text-[#aaa] focus:outline-none focus:border-[#2d5a3d]"
         />
       </div>
@@ -50,7 +52,7 @@ export function HomeworkPage() {
       {sorted.length === 0 ? (
         <div className="bg-white rounded-2xl border border-[#e8e5de] p-8 text-center">
           <ClipboardList className="h-8 w-8 text-[#ccc] mx-auto mb-2" />
-          <p className="text-[14px] text-[#888]">{search ? "Ничего не найдено" : "Пока нет заданий"}</p>
+          <p className="text-[14px] text-[#888]">{search ? t("nothingFound") : t("noTasksYet")}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -77,7 +79,7 @@ export function HomeworkPage() {
                     <span>{student?.name || "—"}</span>
                     {lesson && <><span>·</span><span>{lesson.title}</span></>}
                     <span>·</span>
-                    <span>{sections.length} {sections.length === 1 ? "секция" : "секций"}</span>
+                    <span>{sections.length} {sections.length === 1 ? t("sectionSingle") : t("sectionsPlural")}</span>
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-[#ccc] shrink-0 ml-2" />

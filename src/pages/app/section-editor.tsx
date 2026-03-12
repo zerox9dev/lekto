@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Eye, EyeOff, AlertCircle, FileDown, Bookmark, Trash2, Sparkles, Loader } from "lucide-react";
 import { useStore } from "@/features/store";
+import { useTranslation } from "@/lib/i18n";
 import { generateContent } from "@/lib/ai";
 import { SectionsListEditor, validateSections, typeLabels } from "@/components/sections-editor";
 import { SectionPlayer } from "@/components/section-player";
@@ -12,6 +13,7 @@ export function SectionEditorPage() {
   const navigate = useNavigate();
   const { students, homework, lessons, addHomework, updateHomework, addLesson, updateLesson, templates, addTemplate, deleteTemplate } = useStore();
 
+  const { t } = useTranslation();
   const student = students.find((s) => s.id === studentId);
   const isHomework = !!hwId;
   const isNewHomework = hwId === "new";
@@ -48,7 +50,7 @@ export function SectionEditorPage() {
 
   const validationErrors = useMemo(() => validateSections(sections), [sections]);
 
-  const pageTitle = isHomework ? "Конструктор домашки" : "Конструктор урока";
+  const pageTitle = isHomework ? t("hwConstructor") : t("lessonConstructor");
 
   const handleSave = () => {
     if (!title.trim()) return;
@@ -95,8 +97,8 @@ export function SectionEditorPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f5f3ee]">
         <div className="text-center">
-          <p className="text-[14px] text-[#888]">Ученик не найден</p>
-          <button onClick={() => navigate("/app")} className="text-[13px] text-[#888] underline mt-2 cursor-pointer">← Назад</button>
+          <p className="text-[14px] text-[#888]">{t("studentNotFound")}</p>
+          <button onClick={() => navigate("/app")} className="text-[13px] text-[#888] underline mt-2 cursor-pointer">{t("back")}</button>
         </div>
       </div>
     );

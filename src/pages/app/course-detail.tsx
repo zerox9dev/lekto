@@ -2,12 +2,14 @@ import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowUp, ArrowDown, X, Plus, ChevronRight, Search, ChevronDown, Link2, Check } from "lucide-react";
 import { useStore } from "@/features/store";
+import { useTranslation } from "@/lib/i18n";
 import { SectionPlayer } from "@/components/section-player";
 import * as Dialog from "@radix-ui/react-dialog";
 
 export function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { courses, lessons, updateCourse, updateLesson } = useStore();
+  const { t } = useTranslation();
   const course = courses.find((c) => c.id === id);
   const [editTitle, setEditTitle] = useState(false);
   const [editDesc, setEditDesc] = useState(false);
@@ -31,8 +33,8 @@ export function CourseDetailPage() {
   if (!course) {
     return (
       <div className="text-center py-20">
-        <p className="text-[15px] text-[#888]">Курс не найден</p>
-        <Link to="/app/courses" className="text-[13px] text-[#1a1a1a] underline mt-2 inline-block">← Назад к курсам</Link>
+        <p className="text-[15px] text-[#888]">{t("courseNotFound")}</p>
+        <Link to="/app/courses" className="text-[13px] text-[#1a1a1a] underline mt-2 inline-block">{t("backToCourses")}</Link>
       </div>
     );
   }
@@ -83,7 +85,7 @@ export function CourseDetailPage() {
         }}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#e8e5de] text-[12px] font-medium hover:bg-[#f0ede6] cursor-pointer shrink-0">
           {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Link2 className="h-3.5 w-3.5 text-[#888]" />}
-          {copied ? "Скопировано!" : "Поделиться"}
+          {copied ? t("copiedLink") : t("share")}
         </button>
       </div>
 
@@ -92,7 +94,7 @@ export function CourseDetailPage() {
         <div className="flex items-center gap-2">
           <input value={titleVal} onChange={(e) => setTitleVal(e.target.value)} autoFocus onKeyDown={(e) => e.key === "Enter" && saveTitle()}
             className="text-lg md:text-xl font-bold font-serif bg-transparent border-b border-[#e8e5de] outline-none flex-1" />
-          <button onClick={saveTitle} className="px-3 py-1 rounded-full bg-[#1a1a1a] text-white text-[12px] cursor-pointer">ОК</button>
+          <button onClick={saveTitle} className="px-3 py-1 rounded-full bg-[#1a1a1a] text-white text-[12px] cursor-pointer">{t("ok")}</button>
         </div>
       ) : (
         <h1 onClick={() => { setTitleVal(course.title); setEditTitle(true); }}
@@ -104,27 +106,27 @@ export function CourseDetailPage() {
         <div className="space-y-2">
           <textarea value={descVal} onChange={(e) => setDescVal(e.target.value)} autoFocus
             className="w-full h-20 rounded-xl border border-[#e8e5de] px-3 py-2 text-[14px] outline-none focus:border-[#ccc] resize-none" />
-          <button onClick={saveDesc} className="px-3 py-1 rounded-full bg-[#1a1a1a] text-white text-[12px] cursor-pointer">Сохранить</button>
+          <button onClick={saveDesc} className="px-3 py-1 rounded-full bg-[#1a1a1a] text-white text-[12px] cursor-pointer">{t("save")}</button>
         </div>
       ) : (
         <p onClick={() => { setDescVal(course.description || ""); setEditDesc(true); }}
           className="text-[14px] text-[#888] cursor-pointer hover:text-[#555]">
-          {course.description || "Добавить описание..."}
+          {course.description || t("addDescription")}
         </p>
       )}
 
       {/* Lessons in course */}
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[15px] font-semibold">Уроки ({courseLessons.length})</h2>
+        <h2 className="text-[15px] font-semibold">{t("lessonsInCourse")} ({courseLessons.length})</h2>
         <button onClick={() => { setSearch(""); setAddOpen(true); }}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1a1a1a] text-white text-[12px] font-medium hover:bg-[#333] cursor-pointer">
-          <Plus className="h-3.5 w-3.5" /> Добавить урок
+          <Plus className="h-3.5 w-3.5" /> {t("addLessonToCourse")}
         </button>
       </div>
 
       {courseLessons.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-[#e8e5de] bg-white py-10 text-center">
-          <p className="text-[14px] text-[#888]">В курсе пока нет уроков</p>
+          <p className="text-[14px] text-[#888]">{t("noLessonsInCourse")}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -162,7 +164,7 @@ export function CourseDetailPage() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-[13px] text-[#aaa] text-center py-2">Контент пока не добавлен</p>
+                  <p className="text-[13px] text-[#aaa] text-center py-2">{t("noContentYet")}</p>
                 )}
               </div>
             )}
@@ -176,15 +178,15 @@ export function CourseDetailPage() {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
           <Dialog.Content className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-md rounded-t-2xl md:rounded-2xl bg-white p-5 md:p-6 shadow-xl z-50 space-y-4 overflow-x-hidden max-h-[80vh]">
-            <Dialog.Title className="text-lg font-bold">Добавить урок в курс</Dialog.Title>
+            <Dialog.Title className="text-lg font-bold">{t("addLessonToCourseDialog")}</Dialog.Title>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#888]" />
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Поиск уроков..."
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("searchLessons")}
                 className="w-full h-10 rounded-xl border border-[#e8e5de] pl-9 pr-3 text-[14px] outline-none focus:border-[#ccc]" autoFocus />
             </div>
             <div className="space-y-1 max-h-60 overflow-y-auto">
               {unlinkedLessons.length === 0 ? (
-                <p className="text-[13px] text-[#888] text-center py-4">Нет доступных уроков</p>
+                <p className="text-[13px] text-[#888] text-center py-4">{t("noAvailableLessons")}</p>
               ) : unlinkedLessons.map((l) => (
                 <button key={l.id} onClick={() => { addLessonToCourse(l.id); setAddOpen(false); }}
                   className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-[#f0ede6] transition-colors cursor-pointer">

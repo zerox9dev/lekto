@@ -116,7 +116,7 @@ export function CoursesPage() {
                 <h3 className="text-[15px] font-semibold font-serif mb-1">{sc.title}</h3>
                 <p className="text-[13px] text-[#888] line-clamp-2 mb-3">{sc.description}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-[12px] text-[#aaa]">{sc.lessons.length} уроков</span>
+                  <span className="text-[12px] text-[#aaa]">{sc.lessons.length} {t("lessonsN")}</span>
                   <button onClick={async () => {
                     const course = await addCourse(sc.title, sc.description);
                     const today = new Date().toISOString().slice(0, 10);
@@ -125,7 +125,7 @@ export function CoursesPage() {
                     }
                   }}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1a1a1a] text-white text-[12px] font-medium hover:bg-[#333] cursor-pointer">
-                    <Download className="h-3.5 w-3.5" /> Добавить
+                    <Download className="h-3.5 w-3.5" /> {t("add")}
                   </button>
                 </div>
               </div>
@@ -138,24 +138,24 @@ export function CoursesPage() {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
           <Dialog.Content className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-md rounded-t-2xl md:rounded-2xl bg-white p-5 md:p-6 shadow-xl z-50 space-y-5 overflow-x-hidden">
-            <Dialog.Title className="text-lg font-bold">{editId ? "Редактировать курс" : "Новый курс"}</Dialog.Title>
+            <Dialog.Title className="text-lg font-bold">{editId ? t("editCourse") : t("newCourseDialog")}</Dialog.Title>
             <div className="space-y-3">
               <div>
-                <label className="text-[12px] font-medium text-[#888] mb-1 block">Название *</label>
-                <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Английский B2"
+                <label className="text-[12px] font-medium text-[#888] mb-1 block">{t("courseNameLabel")}</label>
+                <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("courseNamePlaceholder")}
                   className="w-full h-10 rounded-xl border border-[#e8e5de] px-3 text-[14px] outline-none focus:border-[#ccc]" autoFocus />
               </div>
               <div>
-                <label className="text-[12px] font-medium text-[#888] mb-1 block">Описание</label>
-                <textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Описание курса..."
+                <label className="text-[12px] font-medium text-[#888] mb-1 block">{t("courseDescLabel")}</label>
+                <textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={t("courseDescPlaceholder")}
                   className="w-full h-20 rounded-xl border border-[#e8e5de] px-3 py-2 text-[14px] outline-none focus:border-[#ccc] resize-none" />
               </div>
             </div>
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-2">
-              <Dialog.Close asChild><button className="px-4 py-2.5 sm:py-2 rounded-full text-[13px] font-medium text-[#888] hover:bg-[#f0ede6] cursor-pointer">Отмена</button></Dialog.Close>
+              <Dialog.Close asChild><button className="px-4 py-2.5 sm:py-2 rounded-full text-[13px] font-medium text-[#888] hover:bg-[#f0ede6] cursor-pointer">{t("cancel")}</button></Dialog.Close>
               <button onClick={handleSave} disabled={!title.trim()}
                 className="px-4 py-2.5 sm:py-2 rounded-full bg-[#1a1a1a] text-white text-[13px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">
-                {editId ? "Сохранить" : "Создать"}
+                {editId ? t("save") : t("create")}
               </button>
             </div>
           </Dialog.Content>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useStore } from "@/features/store";
+import { useTranslation } from "@/lib/i18n";
 import { BookOpen, Search, Plus, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -11,6 +12,7 @@ const typeLabels: Record<string, string> = {
 
 export function LessonsPage() {
   const { students, lessons } = useStore();
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
 
   const sorted = [...lessons]
@@ -26,8 +28,8 @@ export function LessonsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[22px] font-bold font-serif text-[#1a1a1a] mb-1">Уроки</h1>
-          <p className="text-[14px] text-[#888]">{lessons.length} уроков</p>
+          <h1 className="text-[22px] font-bold font-serif text-[#1a1a1a] mb-1">{t("lessonsPageTitle")}</h1>
+          <p className="text-[14px] text-[#888]">{lessons.length} {t("lessonsN")}</p>
         </div>
       </div>
 
@@ -35,7 +37,7 @@ export function LessonsPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#888]" />
         <input
           value={search} onChange={(e) => setSearch(e.target.value)}
-          placeholder="Поиск по названию или ученику..."
+          placeholder={t("searchByTitleOrStudent")}
           className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#e8e5de] text-[14px] placeholder:text-[#aaa] focus:outline-none focus:border-[#2d5a3d]"
         />
       </div>
@@ -43,7 +45,7 @@ export function LessonsPage() {
       {sorted.length === 0 ? (
         <div className="bg-white rounded-2xl border border-[#e8e5de] p-8 text-center">
           <BookOpen className="h-8 w-8 text-[#ccc] mx-auto mb-2" />
-          <p className="text-[14px] text-[#888]">{search ? "Ничего не найдено" : "Пока нет уроков"}</p>
+          <p className="text-[14px] text-[#888]">{search ? t("nothingFound") : t("noLessonsYet")}</p>
         </div>
       ) : (
         <div className="space-y-2">

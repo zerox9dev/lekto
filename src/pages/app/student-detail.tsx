@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, BookOpen, Pencil, Trash2, Copy, Check, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle, CopyPlus, X, Bookmark, Sparkles, Loader } from "lucide-react";
 import { useStore } from "@/features/store";
 import { generateContent } from "@/lib/ai";
+import { useTranslation } from "@/lib/i18n";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, TrueFalseContent, OpenAnswerContent, Homework, Lesson } from "@/types/database";
 import { typeLabels, typeIcons } from "@/components/sections-editor";
@@ -112,6 +113,7 @@ function LessonCard({ lesson, homeworkItems, studentId, onEditLesson, onDeleteLe
   onSaveAsTemplate: (h: Homework) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const { t } = useTranslation();
   const completedHw = homeworkItems.filter((h) => h.completed).length;
   const navigate = useNavigate();
 
@@ -169,7 +171,7 @@ function LessonCard({ lesson, homeworkItems, studentId, onEditLesson, onDeleteLe
               onClick={() => navigate(`/app/students/${studentId}/lesson/${lesson.id}/edit`)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
             >
-              <Pencil className="h-3 w-3" /> Редактировать секции ({lesson.sections.length})
+              <Pencil className="h-3 w-3" /> {t("editSections")} ({lesson.sections.length})
             </button>
           )}
           {(!lesson.sections || lesson.sections.length === 0) && (
@@ -177,13 +179,13 @@ function LessonCard({ lesson, homeworkItems, studentId, onEditLesson, onDeleteLe
               onClick={() => navigate(`/app/students/${studentId}/lesson/${lesson.id}/edit`)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#888] hover:bg-[#f0ede6] transition-colors cursor-pointer"
             >
-              <Plus className="h-3 w-3" /> Добавить интерактивный контент
+              <Plus className="h-3 w-3" /> {t("addInteractiveContent")}
             </button>
           )}
 
           {homeworkItems.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[11px] font-medium text-[#888] uppercase tracking-wider">Домашние задания</p>
+              <p className="text-[11px] font-medium text-[#888] uppercase tracking-wider">{t("homeworkSection")}</p>
               {homeworkItems.map((h) => {
                 const scores = h.scores || {};
                 const avgScore = Object.keys(scores).length > 0
@@ -212,7 +214,7 @@ function LessonCard({ lesson, homeworkItems, studentId, onEditLesson, onDeleteLe
           )}
           <div className="flex gap-2">
             <button onClick={onNewHw} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#888] hover:bg-[#f0ede6] transition-colors cursor-pointer">
-              <Plus className="h-3.5 w-3.5" /> Добавить домашку
+              <Plus className="h-3.5 w-3.5" /> {t("addHomework")}
             </button>
             <button onClick={onGenerateHw} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#888] hover:bg-[#f0ede6] transition-colors cursor-pointer">
               <Sparkles className="h-3.5 w-3.5" /> AI
@@ -231,6 +233,7 @@ function LessonCard({ lesson, homeworkItems, studentId, onEditLesson, onDeleteLe
 export function StudentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { students, lessons, homework, addLesson, updateLesson, deleteLesson, addHomework, updateHomework, deleteHomework, templates, addTemplate, deleteTemplate } = useStore();
 
   const student = students.find((s) => s.id === id);
@@ -251,8 +254,8 @@ export function StudentDetailPage() {
   if (!student) {
     return (
       <div className="py-20 text-center">
-        <p className="text-[14px] text-[#888]">Ученик не найден</p>
-        <Link to="/app" className="text-[13px] text-[#888] underline mt-2 inline-block">← Назад</Link>
+        <p className="text-[14px] text-[#888]">{t("studentNotFound")}</p>
+        <Link to="/app" className="text-[13px] text-[#888] underline mt-2 inline-block">{t("back")}</Link>
       </div>
     );
   }
@@ -324,9 +327,9 @@ export function StudentDetailPage() {
             <div className="flex items-center gap-2 md:gap-3 mt-1 flex-wrap">
               {student.telegram && <span className="text-[12px] text-[#888]">@{student.telegram.replace(/^@/, "")}</span>}
               <button onClick={copyLink} className="inline-flex items-center gap-1 text-[12px] text-[#888] hover:text-[#666] cursor-pointer">
-                {copied ? <><Check className="h-3 w-3 text-emerald-500" /> Скопировано</> : <><Copy className="h-3 w-3" /> Ссылка</>}
+                {copied ? <><Check className="h-3 w-3 text-emerald-500" /> {t("copied")}</> : <><Copy className="h-3 w-3" /> {t("link")}</>}
               </button>
-              <a href={`/s/${student.share_id}`} target="_blank" className="inline-flex items-center gap-1 text-[12px] text-[#888] hover:text-[#666]"><ExternalLink className="h-3 w-3" /> Портал</a>
+              <a href={`/s/${student.share_id}`} target="_blank" className="inline-flex items-center gap-1 text-[12px] text-[#888] hover:text-[#666]"><ExternalLink className="h-3 w-3" /> {t("portal")}</a>
             </div>
           </div>
         </div>
@@ -334,19 +337,19 @@ export function StudentDetailPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-2 md:gap-3">
-        <div className="rounded-xl border border-[#e8e5de] bg-white px-3 md:px-4 py-2.5 md:py-3 text-center"><p className="text-[18px] md:text-[20px] font-bold">{studentLessons.length}</p><p className="text-[10px] md:text-[11px] text-[#888]">уроков</p></div>
-        <div className="rounded-xl border border-[#e8e5de] bg-white px-3 md:px-4 py-2.5 md:py-3 text-center"><p className="text-[18px] md:text-[20px] font-bold">{completedHw}/{studentHomework.length}</p><p className="text-[10px] md:text-[11px] text-[#888]">заданий</p></div>
-        <div className="rounded-xl border border-[#e8e5de] bg-white px-3 md:px-4 py-2.5 md:py-3 text-center"><p className="text-[18px] md:text-[20px] font-bold">{avgScore !== null ? `${avgScore}%` : "—"}</p><p className="text-[10px] md:text-[11px] text-[#888]">средний балл</p></div>
+        <div className="rounded-xl border border-[#e8e5de] bg-white px-3 md:px-4 py-2.5 md:py-3 text-center"><p className="text-[18px] md:text-[20px] font-bold">{studentLessons.length}</p><p className="text-[10px] md:text-[11px] text-[#888]">{t("lessonsLabel")}</p></div>
+        <div className="rounded-xl border border-[#e8e5de] bg-white px-3 md:px-4 py-2.5 md:py-3 text-center"><p className="text-[18px] md:text-[20px] font-bold">{completedHw}/{studentHomework.length}</p><p className="text-[10px] md:text-[11px] text-[#888]">{t("tasksLabel")}</p></div>
+        <div className="rounded-xl border border-[#e8e5de] bg-white px-3 md:px-4 py-2.5 md:py-3 text-center"><p className="text-[18px] md:text-[20px] font-bold">{avgScore !== null ? `${avgScore}%` : "—"}</p><p className="text-[10px] md:text-[11px] text-[#888]">{t("avgScore")}</p></div>
       </div>
 
       {/* Lessons */}
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-[14px] font-semibold">Уроки</h2>
-          <button onClick={openNewLesson} className="inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 rounded-lg bg-[#1a1a1a] text-white text-[12px] font-medium hover:bg-[#333] cursor-pointer shrink-0"><Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Добавить урок</span><span className="sm:hidden">Урок</span></button>
+          <h2 className="text-[14px] font-semibold">{t("lessonsSection")}</h2>
+          <button onClick={openNewLesson} className="inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 rounded-lg bg-[#1a1a1a] text-white text-[12px] font-medium hover:bg-[#333] cursor-pointer shrink-0"><Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t("addLesson")}</span><span className="sm:hidden">{t("lessonShort")}</span></button>
         </div>
         {studentLessons.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[#e8e5de] bg-white py-12 md:py-16 text-center"><p className="text-[14px] text-[#888]">Уроков пока нет</p></div>
+          <div className="rounded-2xl border border-dashed border-[#e8e5de] bg-white py-12 md:py-16 text-center"><p className="text-[14px] text-[#888]">{t("noLessons")}</p></div>
         ) : (
           studentLessons.map((l) => (
             <LessonCard key={l.id} lesson={l} homeworkItems={studentHomework.filter((h) => h.lesson_id === l.id)} studentId={student.id}
@@ -364,22 +367,22 @@ export function StudentDetailPage() {
           <Dialog.Content className="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-lg h-full md:h-auto md:max-h-[90vh] overflow-y-auto overflow-x-hidden md:rounded-2xl bg-white shadow-xl z-50">
             {/* Header */}
             <div className="sticky top-0 bg-white border-b border-[#e8e5de] px-4 md:px-6 py-3 md:py-4 flex items-center justify-between z-10">
-              <Dialog.Title className="text-base md:text-lg font-bold truncate">{editLessonId ? "Редактировать урок" : "Новый урок"}</Dialog.Title>
+              <Dialog.Title className="text-base md:text-lg font-bold truncate">{editLessonId ? t("editLesson") : t("newLesson")}</Dialog.Title>
               <Dialog.Close asChild><button className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-[#f0ede6] cursor-pointer"><X className="h-4 w-4 text-[#888]" /></button></Dialog.Close>
             </div>
 
             <div className="px-4 md:px-6 py-4 space-y-4">
-              <div><label className="text-[12px] font-medium text-[#888] mb-1 block">Название *</label>
-                <input value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} placeholder="Present Simple — урок 5" className="w-full h-10 rounded-xl border border-[#e8e5de] px-3 text-[14px] outline-none focus:border-[#ccc]" autoFocus /></div>
-              <div><label className="text-[12px] font-medium text-[#888] mb-1 block">Дата</label>
+              <div><label className="text-[12px] font-medium text-[#888] mb-1 block">{t("titleRequired")}</label>
+                <input value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} placeholder={t("titlePlaceholder")} className="w-full h-10 rounded-xl border border-[#e8e5de] px-3 text-[14px] outline-none focus:border-[#ccc]" autoFocus /></div>
+              <div><label className="text-[12px] font-medium text-[#888] mb-1 block">{t("dateLabel")}</label>
                 <input type="date" value={lessonDate} onChange={(e) => setLessonDate(e.target.value)} className="w-full h-10 rounded-xl border border-[#e8e5de] px-3 text-[14px] outline-none focus:border-[#ccc]" /></div>
-              <div><label className="text-[12px] font-medium text-[#888] mb-1 block">Конспект / Заметки</label>
-                <textarea value={lessonNotes} onChange={(e) => setLessonNotes(e.target.value)} placeholder="Что прошли на уроке, правила, ссылки на материалы..." rows={3}
+              <div><label className="text-[12px] font-medium text-[#888] mb-1 block">{t("notesLabel")}</label>
+                <textarea value={lessonNotes} onChange={(e) => setLessonNotes(e.target.value)} placeholder={t("notesPlaceholder")} rows={3}
                   className="w-full rounded-xl border border-[#e8e5de] px-3 py-2.5 text-[14px] outline-none focus:border-[#ccc] resize-y min-h-[80px]" /></div>
 
               {!editLessonId && (
                 <div className="border border-dashed border-[#e8e5de] rounded-xl p-3 space-y-2">
-                  <p className="text-[12px] font-medium text-[#888]">AI-генерация</p>
+                  <p className="text-[12px] font-medium text-[#888]">{t("aiGeneration")}</p>
                   <div className="flex gap-2">
                     <select id="ai-lang" defaultValue="polish" className="h-9 rounded-lg border border-[#e8e5de] px-2 text-[13px] flex-1">
                       <option value="polish">Польский</option>
@@ -413,7 +416,7 @@ export function StudentDetailPage() {
                     }}
                     className="w-full h-9 rounded-lg bg-[#f0ede6] text-[13px] font-medium text-[#1a1a1a] hover:bg-[#e8e5de] disabled:opacity-40 cursor-pointer flex items-center justify-center gap-1.5">
                     {aiLoading ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                    {aiLoading ? "Генерирую..." : "Сгенерировать с AI"}
+                    {aiLoading ? t("generating") : t("generateWithAi")}
                   </button>
                   {aiError && <p className="text-[12px] text-red-500">{aiError}</p>}
                 </div>
@@ -422,10 +425,10 @@ export function StudentDetailPage() {
 
             {/* Footer */}
             <div className="sticky bottom-0 bg-white border-t border-[#e8e5de] px-4 md:px-6 py-3 md:py-4 flex justify-end gap-2">
-              <Dialog.Close asChild><button className="px-4 py-2.5 sm:py-2 rounded-full text-[13px] font-medium text-[#888] hover:bg-[#f0ede6] cursor-pointer">Отмена</button></Dialog.Close>
+              <Dialog.Close asChild><button className="px-4 py-2.5 sm:py-2 rounded-full text-[13px] font-medium text-[#888] hover:bg-[#f0ede6] cursor-pointer">{t("cancel")}</button></Dialog.Close>
               <button onClick={saveLesson} disabled={!lessonTitle.trim()}
                 className="px-5 py-2.5 sm:py-2 rounded-full bg-[#1a1a1a] text-white text-[13px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">
-                {editLessonId ? "Сохранить" : "Создать"}
+                {editLessonId ? t("save") : t("create")}
               </button>
             </div>
           </Dialog.Content>

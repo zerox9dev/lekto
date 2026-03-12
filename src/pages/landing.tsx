@@ -102,14 +102,12 @@ export function LandingPage() {
               <div className={s.prevNavItem}>Курсы</div>
               <div className={s.prevNavItem}>Настройки</div>
             </div>
-            {/* Main */}
+            {/* Main content */}
             <div className={s.prevMain}>
               <div className={s.prevContent}>
-                {/* Page header like real cabinet */}
                 <div className={s.prevPageHeader}>
                   <div className={s.prevBackBtn}>←</div>
                   <div className={s.prevPageTitle}>Piotr Nowak</div>
-                  <span className={s.prevShareBtn}>Поделиться</span>
                   <span className={s.prevAddBtn}>+ Урок</span>
                 </div>
                 {/* Stats */}
@@ -118,10 +116,7 @@ export function LandingPage() {
                   <div className={s.prevStatCard}><div className={s.prevStatVal}>8</div><div className={s.prevStatLbl}>Домашек</div></div>
                   <div className={s.prevStatCard}><div className={s.prevStatVal}>85%</div><div className={s.prevStatLbl}>Средний балл</div></div>
                 </div>
-                {/* Lessons */}
-                <div className={s.prevLesson}>
-                  <span className={s.prevDot} /><span className={s.prevLessonName}>Lesson 1: Greetings &amp; Basics</span><span className={s.prevDate}>12 окт</span>
-                </div>
+                {/* Lesson expanded */}
                 <div className={`${s.prevLesson} ${s.prevLessonOpen}`}>
                   <div className={s.prevLessonHeader}>
                     <span className={s.prevDot} /><span className={s.prevLessonName}>Lesson 2: Numbers &amp; Colors</span><span className={s.prevDate}>15 окт</span>
@@ -132,13 +127,15 @@ export function LandingPage() {
                       <span className={s.prevTag}>Карточки</span>
                       <span className={s.prevTag}>Тест</span>
                       <span className={s.prevTag}>Пропуски</span>
-                      <span className={s.prevTag}>Пары</span>
                     </div>
-                    <div className={s.prevCards}>
-                      <div className={s.prevCard}>Dzień dobry</div>
-                      <div className={`${s.prevCard} ${s.prevCardBack}`}>Доброе утро</div>
-                      <div className={s.prevCard}>Dziękuję</div>
-                      <div className={`${s.prevCard} ${s.prevCardBack}`}>Спасибо</div>
+                    {/* Quiz preview */}
+                    <div className={s.prevQuiz}>
+                      <div className={s.prevQuizQ}>Jak masz na imię?</div>
+                      <div className={s.prevQuizOptions}>
+                        <div className={s.prevQuizOpt}>Mam pięć lat</div>
+                        <div className={`${s.prevQuizOpt} ${s.prevQuizCorrect}`}>Mam na imię Piotr</div>
+                        <div className={s.prevQuizOpt}>Jestem z Polski</div>
+                      </div>
                     </div>
                     <div className={s.prevHw}>
                       <span className={s.prevHwCheck}>✓</span>
@@ -147,10 +144,38 @@ export function LandingPage() {
                     </div>
                   </div>
                 </div>
+                {/* More lessons */}
+                <div className={s.prevLesson}>
+                  <span className={s.prevDot} /><span className={s.prevLessonName}>Lesson 1: Greetings &amp; Basics</span><span className={s.prevDate}>12 окт</span>
+                </div>
                 <div className={s.prevLesson}>
                   <span className={`${s.prevDot} ${s.prevDotGray}`} /><span className={s.prevLessonName}>Lesson 3: Food &amp; Drink</span><span className={s.prevDate}>18 окт</span>
                 </div>
               </div>
+            </div>
+            {/* Student phone mockup */}
+            <div className={s.prevPhone}>
+              <div className={s.prevPhoneBar}>Ученик · Piotr</div>
+              <div className={s.prevPhoneContent}>
+                <div className={s.prevPhoneCard}>
+                  <div className={s.prevPhoneCardFront}>Dzień dobry</div>
+                </div>
+                <div className={s.prevPhoneCardBack}>Доброе утро</div>
+                <div className={s.prevPhoneDots}>
+                  <span className={s.prevPhoneDotActive} />
+                  <span className={s.prevPhoneDotInactive} />
+                  <span className={s.prevPhoneDotInactive} />
+                </div>
+                <div className={s.prevPhoneFill}>
+                  <div className={s.prevPhoneFillLabel}>Вставьте слово:</div>
+                  <div className={s.prevPhoneFillText}>Mam na ___ Piotr</div>
+                  <div className={s.prevPhoneFillInput}>imię</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
             </div>
           </div>
         </div>
