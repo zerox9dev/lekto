@@ -1,5 +1,5 @@
 import { Routes, Route, NavLink, Link, useLocation } from "react-router-dom";
-import { Users, Settings, LogOut, Sparkles } from "lucide-react";
+import { Users, Settings, LogOut, GraduationCap } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { StudentsPage } from "./students";
 import { StudentDetailPage } from "./student-detail";
@@ -55,7 +55,7 @@ export function AppLayout() {
       <aside className="hidden md:flex h-screen w-52 flex-col border-r border-[#e8e5de] bg-white py-4 px-3 sticky top-0">
         <Link to="/" className="flex items-center gap-2.5 px-3 mb-6">
           <div className="h-7 w-7 rounded-lg bg-[#1a1a1a] flex items-center justify-center">
-            <Sparkles className="h-3.5 w-3.5 text-white" />
+            <GraduationCap className="h-3.5 w-3.5 text-white" />
           </div>
           <span className="font-semibold font-serif text-[14px] tracking-tight">Lekto</span>
         </Link>
