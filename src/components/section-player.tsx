@@ -46,13 +46,38 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
     onScore(Math.round((correct / questions.length) * 100));
   };
 
-  const allAnswered = isMulti
-    ? multiAnswers.every((s) => s.size > 0)
-    : !singleAnswers.includes(-1);
+  // Auto-check for single-choice: on each click
+  const selectSingle = (qi: number, oi: number) => {
+    if (submitted) return;
+    const next = singleAnswers.map((a, i) => i === qi ? oi : a);
+    setSingleAnswers(next);
+    // Auto-submit when all answered
+    if (!next.includes(-1)) {
+      setTimeout(() => {
+        let correct = 0;
+        questions.forEach((q, i) => {
+          if (getCorrectIndices(q).includes(next[i])) correct++;
+        });
+        setSubmitted(true);
+        onScore(Math.round((correct / questions.length) * 100));
+      }, 300);
+    }
+  };
+
+  // Auto-check for multi-choice when confirmed per question
+  const selectMulti = (qi: number, oi: number) => {
+    if (submitted) return;
+    toggleMulti(qi, oi);
+  };
+
+  const confirmMulti = () => {
+    if (submitted || multiAnswers.some((s) => s.size === 0)) return;
+    handleSubmit();
+  };
 
   return (
     <div className="space-y-4">
-      {isMulti && <p className="text-[12px] text-[#888]">Выбери все правильные ответы</p>}
+      {isMulti && <p className="text-[12px] text-[#888]">Выбери все правильные ответы и нажми «Готово»</p>}
       {questions.map((q, qi) => {
         const expected = getCorrectIndices(q);
         return (
@@ -68,11 +93,7 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
 
                 return (
                   <button key={oi}
-                    onClick={() => {
-                      if (submitted) return;
-                      if (isMulti) toggleMulti(qi, oi);
-                      else setSingleAnswers((prev) => prev.map((a, i) => i === qi ? oi : a));
-                    }}
+                    onClick={() => isMulti ? selectMulti(qi, oi) : selectSingle(qi, oi)}
                     disabled={submitted}
                     className={`w-full text-left px-3 md:px-4 py-2.5 md:py-3 rounded-xl text-[13px] md:text-[14px] border transition-colors cursor-pointer flex items-center gap-2.5 md:gap-3 min-h-[44px] ${
                       isCorrect ? "border-emerald-300 bg-emerald-50 text-emerald-700" :
@@ -108,9 +129,9 @@ function QuizPlayer({ section, onScore }: { section: HomeworkSection; onScore: (
           </div>
         );
       })}
-      {!submitted && (
-        <button onClick={handleSubmit} disabled={!allAnswered}
-          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">Проверить</button>
+      {isMulti && !submitted && (
+        <button onClick={confirmMulti} disabled={multiAnswers.some((s) => s.size === 0)}
+          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">Готово</button>
       )}
       {submitted && (
         <div className="rounded-xl bg-[#f5f3ee] px-4 py-3">
@@ -151,14 +172,15 @@ function FillBlanksPlayer({ section, onScore }: { section: HomeworkSection; onSc
   const [results, setResults] = useState<boolean[]>([]);
 
   const updateAnswer = (idx: number, value: string) => {
-    setAnswers((prev) => {
-      const next = [...prev];
-      next[idx] = value;
-      return next;
-    });
+    const next = [...answers];
+    next[idx] = value;
+    setAnswers(next);
   };
 
-  const handleSubmit = () => {
+  const autoCheck = (idx: number) => {
+    if (submitted) return;
+    const allFilled = answers.slice(0, expectedCount).every((a) => a.trim());
+    if (!allFilled) return;
     const res = content.answers.map((a, i) =>
       a.trim().toLowerCase() === (answers[i] || "").trim().toLowerCase()
     );
@@ -178,6 +200,8 @@ function FillBlanksPlayer({ section, onScore }: { section: HomeworkSection; onSc
               key={`b-${seg.index}`}
               value={answers[seg.index] || ""}
               onChange={(e) => updateAnswer(seg.index, e.target.value)}
+              onBlur={() => autoCheck(seg.index)}
+              onKeyDown={(e) => e.key === "Enter" && autoCheck(seg.index)}
               disabled={submitted}
               className={`inline-block w-24 md:w-32 h-8 mx-0.5 md:mx-1 px-2 md:px-3 rounded-lg border text-[13px] md:text-[14px] text-center outline-none ${
                 submitted
@@ -190,12 +214,6 @@ function FillBlanksPlayer({ section, onScore }: { section: HomeworkSection; onSc
       </div>
       {submitted && (
         <p className="text-[13px] text-[#888] break-words">Правильные ответы: {content.answers.join(", ")}</p>
-      )}
-      {!submitted && (
-        <button onClick={handleSubmit} disabled={answers.slice(0, expectedCount).some((a) => !a.trim())}
-          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">
-          Проверить
-        </button>
       )}
     </div>
   );
@@ -211,9 +229,17 @@ function MatchingPlayer({ section, onScore }: { section: HomeworkSection; onScor
     return indices;
   });
 
-  const handleSubmit = () => {
-    setSubmitted(true);
-    onScore(Math.round((answers.filter((a, i) => shuffledRight[a!] === i).length / content.pairs.length) * 100));
+  const selectPair = (i: number, value: string) => {
+    const na = [...answers];
+    na[i] = value === "" ? null : Number(value);
+    setAnswers(na);
+    // Auto-check when all pairs selected
+    if (!na.includes(null)) {
+      setTimeout(() => {
+        setSubmitted(true);
+        onScore(Math.round((na.filter((a, idx) => shuffledRight[a!] === idx).length / content.pairs.length) * 100));
+      }, 300);
+    }
   };
 
   return (
@@ -222,7 +248,7 @@ function MatchingPlayer({ section, onScore }: { section: HomeworkSection; onScor
         <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
           <span className="text-[14px] md:text-[15px] font-medium sm:min-w-[120px] break-words">{pair.left}</span>
           <span className="text-[#ccc] hidden sm:block">→</span>
-          <select value={answers[i] ?? ""} onChange={(e) => setAnswers((prev) => { const na = [...prev]; na[i] = e.target.value === "" ? null : Number(e.target.value); return na; })}
+          <select value={answers[i] ?? ""} onChange={(e) => selectPair(i, e.target.value)}
             disabled={submitted}
             className={`w-full sm:w-auto h-11 md:h-10 rounded-xl border px-3 text-[14px] bg-white sm:min-w-[140px] ${
               submitted ? shuffledRight[answers[i]!] === i ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50" : "border-[#e8e5de]"
@@ -232,10 +258,6 @@ function MatchingPlayer({ section, onScore }: { section: HomeworkSection; onScor
           </select>
         </div>
       ))}
-      {!submitted && (
-        <button onClick={handleSubmit} disabled={answers.includes(null)}
-          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">Проверить</button>
-      )}
     </div>
   );
 }
@@ -314,10 +336,18 @@ function TrueFalsePlayer({ section, onScore }: { section: HomeworkSection; onSco
   const [answers, setAnswers] = useState<(boolean | null)[]>(() => new Array(c.questions.length).fill(null));
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = () => {
-    const correct = c.questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0);
-    setSubmitted(true);
-    onScore(Math.round((correct / c.questions.length) * 100));
+  const selectTF = (qi: number, val: boolean) => {
+    if (submitted) return;
+    const next = answers.map((a, i) => i === qi ? val : a);
+    setAnswers(next);
+    // Auto-check when all answered
+    if (!next.includes(null)) {
+      setTimeout(() => {
+        const correct = c.questions.reduce((acc, q, i) => acc + (next[i] === q.correct ? 1 : 0), 0);
+        setSubmitted(true);
+        onScore(Math.round((correct / c.questions.length) * 100));
+      }, 300);
+    }
   };
 
   return (
@@ -329,7 +359,7 @@ function TrueFalsePlayer({ section, onScore }: { section: HomeworkSection; onSco
           <div key={qi} className="space-y-2">
             <p className="text-[14px] md:text-[15px] font-medium">{qi + 1}. {q.statement}</p>
             <div className="flex gap-2 pl-0.5 md:pl-1">
-              <button onClick={() => !submitted && setAnswers((prev) => prev.map((a, i) => i === qi ? true : a))}
+              <button onClick={() => selectTF(qi, true)}
                 disabled={submitted}
                 className={`flex-1 py-2.5 md:py-2.5 rounded-xl text-[13px] md:text-[14px] font-medium border cursor-pointer transition-colors min-h-[44px] ${
                   submitted && q.correct === true ? "border-emerald-300 bg-emerald-50 text-emerald-700" :
@@ -337,7 +367,7 @@ function TrueFalsePlayer({ section, onScore }: { section: HomeworkSection; onSco
                   answered === true && !submitted ? "border-[#ccc] bg-[#f5f3ee]" :
                   "border-[#e8e5de] hover:border-[#d0ccc4]"
                 }`}>✓ Верно</button>
-              <button onClick={() => !submitted && setAnswers((prev) => prev.map((a, i) => i === qi ? false : a))}
+              <button onClick={() => selectTF(qi, false)}
                 disabled={submitted}
                 className={`flex-1 py-2.5 md:py-2.5 rounded-xl text-[13px] md:text-[14px] font-medium border cursor-pointer transition-colors min-h-[44px] ${
                   submitted && q.correct === false ? "border-emerald-300 bg-emerald-50 text-emerald-700" :
@@ -354,10 +384,6 @@ function TrueFalsePlayer({ section, onScore }: { section: HomeworkSection; onSco
           </div>
         );
       })}
-      {!submitted && (
-        <button onClick={handleSubmit} disabled={answers.includes(null)}
-          className="w-full sm:w-auto px-5 py-3 md:py-2.5 rounded-full bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer">Проверить</button>
-      )}
       {submitted && (
         <div className="rounded-xl bg-[#f5f3ee] px-4 py-3">
           <p className="text-[14px] font-medium">Результат: {c.questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0)}/{c.questions.length}</p>
