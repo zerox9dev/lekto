@@ -108,7 +108,6 @@ Return JSON: { "notes": "...", "sections": [...] }`
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.7,
         response_format: { type: "json_object" },
       }),
     })
