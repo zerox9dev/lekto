@@ -1,0 +1,16 @@
+{
+  "name": "Lekto - Платформа для репетиторів",
+  "short_name": "Lekto",
+  "description": "Уроки, інтерактивні домашні завдання та прогрес учнів для репетиторів",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#f5f3ee",
+  "background_color": "#f5f3ee",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
