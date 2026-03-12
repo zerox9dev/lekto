@@ -82,11 +82,14 @@ export function LandingPage() {
             </div>
             {/* Main */}
             <div className={s.prevMain}>
-              <div className={s.prevTopbar}>
-                <span className={s.prevTopbarTitle}>Piotr Nowak</span>
-                <span className={s.prevTopbarBtn}>+ Добавить урок</span>
-              </div>
               <div className={s.prevContent}>
+                {/* Page header like real cabinet */}
+                <div className={s.prevPageHeader}>
+                  <div className={s.prevBackBtn}>←</div>
+                  <div className={s.prevPageTitle}>Piotr Nowak</div>
+                  <span className={s.prevShareBtn}>Поделиться</span>
+                  <span className={s.prevAddBtn}>+ Урок</span>
+                </div>
                 {/* Stats */}
                 <div className={s.prevStats}>
                   <div className={s.prevStatCard}><div className={s.prevStatVal}>12</div><div className={s.prevStatLbl}>Уроков</div></div>
@@ -101,23 +104,25 @@ export function LandingPage() {
                   <div className={s.prevLessonHeader}>
                     <span className={s.prevDot} /><span className={s.prevLessonName}>Lesson 2: Numbers &amp; Colors</span><span className={s.prevDate}>15 окт</span>
                   </div>
-                  <div className={s.prevTags}>
-                    <span className={s.prevTag}>Теория</span>
-                    <span className={s.prevTag}>Карточки</span>
-                    <span className={s.prevTag}>Тест</span>
-                    <span className={s.prevTag}>Пропуски</span>
-                    <span className={s.prevTag}>Пары</span>
-                  </div>
-                  <div className={s.prevCards}>
-                    <div className={s.prevCard}>Dzień dobry</div>
-                    <div className={`${s.prevCard} ${s.prevCardBack}`}>Доброе утро</div>
-                    <div className={s.prevCard}>Dziękuję</div>
-                    <div className={`${s.prevCard} ${s.prevCardBack}`}>Спасибо</div>
-                  </div>
-                  <div className={s.prevHw}>
-                    <span className={s.prevHwCheck}>✓</span>
-                    <span className={s.prevHwName}>Домашка: Numbers &amp; Colors</span>
-                    <span className={s.prevHwBadge}>92%</span>
+                  <div className={s.prevLessonBody}>
+                    <div className={s.prevTags}>
+                      <span className={s.prevTag}>Теория</span>
+                      <span className={s.prevTag}>Карточки</span>
+                      <span className={s.prevTag}>Тест</span>
+                      <span className={s.prevTag}>Пропуски</span>
+                      <span className={s.prevTag}>Пары</span>
+                    </div>
+                    <div className={s.prevCards}>
+                      <div className={s.prevCard}>Dzień dobry</div>
+                      <div className={`${s.prevCard} ${s.prevCardBack}`}>Доброе утро</div>
+                      <div className={s.prevCard}>Dziękuję</div>
+                      <div className={`${s.prevCard} ${s.prevCardBack}`}>Спасибо</div>
+                    </div>
+                    <div className={s.prevHw}>
+                      <span className={s.prevHwCheck}>✓</span>
+                      <span className={s.prevHwName}>Домашка: Numbers &amp; Colors</span>
+                      <span className={s.prevHwBadge}>92%</span>
+                    </div>
                   </div>
                 </div>
                 <div className={s.prevLesson}>

@@ -439,81 +439,111 @@
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid #e8e5de;
-  background: white;
+  background: #f5f3ee;
 }
 .previewWindow {
   display: flex;
-  height: 480px;
+  min-height: 460px;
   font-family: 'Inter', -apple-system, sans-serif;
 }
 
-/* Preview sidebar */
+/* Sidebar — matches real cabinet */
 .prevSidebar {
-  width: 160px;
-  background: #f5f3ee;
+  width: 208px;
+  background: white;
   border-right: 1px solid #e8e5de;
-  padding: 16px 0;
+  padding: 16px 12px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .prevLogo {
   font-family: Georgia, serif;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: #1a1a1a;
-  padding: 0 14px 20px;
+  padding: 0 12px 20px;
+  letter-spacing: -0.02em;
 }
 .prevNavItem {
-  padding: 8px 14px;
-  font-size: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
   color: #888;
+  border-radius: 999px;
 }
 .prevNavActive {
-  color: #1a1a1a;
-  font-weight: 600;
-  background: rgba(0,0,0,0.04);
-  border-right: 2px solid #1a1a1a;
+  color: white;
+  background: #1a1a1a;
 }
 
-/* Preview main */
+/* Main area */
 .prevMain {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  background: #f5f3ee;
 }
 .prevTopbar {
-  height: 48px;
-  border-bottom: 1px solid #e8e5de;
+  display: none;
+}
+.prevContent {
+  flex: 1;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Page header */
+.prevPageHeader {
   display: flex;
   align-items: center;
-  padding: 0 20px;
   gap: 12px;
+  margin-bottom: 16px;
 }
-.prevTopbarTitle {
-  font-family: Georgia, serif;
+.prevBackBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
   font-size: 14px;
+}
+.prevPageTitle {
+  font-family: Georgia, serif;
+  font-size: 18px;
   font-weight: 600;
   color: #1a1a1a;
   flex: 1;
 }
-.prevTopbarBtn {
+.prevShareBtn {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid #e8e5de;
+  background: none;
+  font-size: 11px;
+  color: #888;
+}
+.prevAddBtn {
   height: 28px;
   padding: 0 12px;
-  border-radius: 7px;
+  border-radius: 8px;
   background: #1a1a1a;
   color: white;
   font-size: 11px;
   font-weight: 500;
   display: flex;
   align-items: center;
-}
-.prevContent {
-  flex: 1;
-  padding: 16px 20px;
-  overflow: hidden;
+  gap: 4px;
 }
 
-/* Stats */
+/* Stats — matches real: rounded-xl border bg-white */
 .prevStats {
   display: flex;
   gap: 8px;
@@ -521,102 +551,112 @@
 }
 .prevStatCard {
   flex: 1;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
   border: 1px solid #e8e5de;
+  background: white;
+  text-align: center;
 }
 .prevStatVal {
   font-size: 20px;
   font-weight: 700;
   color: #1a1a1a;
-  font-family: Georgia, serif;
 }
 .prevStatLbl {
   font-size: 10px;
   color: #888;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
-/* Lessons */
+/* Lesson cards — matches real: rounded-xl border bg-white */
 .prevLesson {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border: 1px solid #e8e5de;
-  border-radius: 10px;
-  margin-bottom: 6px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  background: white;
 }
 .prevLessonOpen {
   flex-direction: column;
   align-items: stretch;
   gap: 0;
+  padding: 0;
 }
 .prevLessonHeader {
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 14px 16px;
 }
 .prevDot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #2d5a3d;
   flex-shrink: 0;
 }
 .prevDotGray { background: #ccc; }
 .prevLessonName {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: #1a1a1a;
   flex: 1;
 }
 .prevDate {
-  font-size: 11px;
+  font-size: 12px;
   color: #888;
+}
+
+/* Expanded lesson content */
+.prevLessonBody {
+  padding: 0 16px 14px;
+  border-top: 1px solid #f0ede6;
 }
 
 /* Tags */
 .prevTags {
   display: flex;
   gap: 6px;
-  margin-top: 10px;
+  margin-top: 12px;
   flex-wrap: wrap;
 }
 .prevTag {
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 10px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 11px;
   font-weight: 500;
   border: 1px solid #e8e5de;
   color: #666;
-  background: #faf8f5;
+  background: white;
 }
 
 /* Flashcards */
 .prevCards {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 10px;
+  margin-top: 12px;
 }
 .prevCard {
-  width: 120px;
-  height: 72px;
-  border-radius: 10px;
+  width: 130px;
+  height: 80px;
+  border-radius: 12px;
   border: 1px solid #e8e5de;
-  background: #faf8f5;
+  background: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: #1a1a1a;
   flex-shrink: 0;
 }
 .prevCardBack {
-  background: white;
+  background: #faf8f5;
   color: #888;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 /* Homework row */
@@ -624,15 +664,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: #faf8f5;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #e8e5de;
+  background: white;
 }
 .prevHwCheck {
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
   background: #2d5a3d;
   color: white;
   font-size: 10px;
@@ -642,14 +683,14 @@
   flex-shrink: 0;
 }
 .prevHwName {
-  font-size: 11px;
+  font-size: 12px;
   color: #1a1a1a;
   font-weight: 500;
   flex: 1;
 }
 .prevHwBadge {
   padding: 2px 8px;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 10px;
   font-weight: 600;
   background: #ddefd7;
