@@ -20,8 +20,8 @@ CREATE POLICY "Anon read courses" ON courses FOR SELECT TO anon USING (true);
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Trash2, Pencil, ChevronRight, Library, Download } from "lucide-react";
-import { useStore } from "@/lib/store";
-import { STARTER_COURSES } from "@/lib/starter-courses";
+import { useStore } from "@/features/store";
+import { STARTER_COURSES } from "@/features/courses/data/starter-courses";
 import * as Dialog from "@radix-ui/react-dialog";
 
 export function CoursesPage() {
@@ -116,17 +116,11 @@ export function CoursesPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-[12px] text-[#aaa]">{sc.lessons.length} уроков</span>
                   <button onClick={async () => {
-                    // Create course and wait for DB confirmation
-                    const course = addCourse(sc.title, sc.description);
-                    const courseResult = await (course as any)._saved;
-                    if (courseResult?.error) { console.error("Course save failed:", courseResult.error); return; }
-                    // Course exists in DB — create lessons (can be parallel, FK satisfied)
-                    const lessonPromises = sc.lessons.map((sl) => {
-                      const today = new Date().toISOString().slice(0, 10);
-                      const lesson = addLesson(null, sl.title, sl.date || today, sl.notes || undefined, sl.sections, course.id, sl.order_index);
-                      return (lesson as any)._saved;
-                    });
-                    await Promise.all(lessonPromises);
+                    const course = await addCourse(sc.title, sc.description);
+                    const today = new Date().toISOString().slice(0, 10);
+                    for (const sl of sc.lessons) {
+                      await addLesson(null, sl.title, sl.date || today, sl.notes || undefined, sl.sections, course.id, sl.order_index);
+                    }
                   }}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1a1a1a] text-white text-[12px] font-medium hover:bg-[#333] cursor-pointer">
                     <Download className="h-3.5 w-3.5" /> Добавить

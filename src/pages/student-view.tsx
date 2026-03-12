@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { BookOpen, GraduationCap, CheckCircle2, Circle, ChevronRight, ArrowLeft, Loader2 } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { useStore } from "@/features/store";
 import { supabase } from "@/lib/supabase";
 import { SectionPlayer } from "@/components/section-player";
 import type { Homework, Lesson, Student, Course } from "@/types/database";

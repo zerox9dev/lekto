@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, BookOpen, Pencil, Trash2, Copy, Check, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle, CopyPlus, X, Bookmark } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { useStore } from "@/features/store";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, TrueFalseContent, OpenAnswerContent, Homework, Lesson } from "@/types/database";
 import { typeLabels, typeIcons } from "@/components/sections-editor";
@@ -259,7 +259,7 @@ export function StudentDetailPage() {
     navigate(`/app/students/${student.id}/homework/${h.id}/edit`);
   };
   const duplicateHw = (h: Homework, lessonId: string) => {
-    addHomework({ lesson_id: lessonId, student_id: student.id, tutor_id: "local", title: h.title + " (копия)",
+    addHomework({ lesson_id: lessonId, student_id: student.id, tutor_id: student.tutor_id, title: h.title + " (копия)",
       sections: (h.sections || []).map((s) => ({ ...s, id: crypto.randomUUID() })), completed: false, student_answers: null, scores: null });
   };
 

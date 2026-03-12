@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Eye, EyeOff, AlertCircle, FileDown, Bookmark, Trash2 } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { useStore } from "@/features/store";
 import { SectionsListEditor, validateSections, typeLabels } from "@/components/sections-editor";
 import { SectionPlayer } from "@/components/section-player";
 import type { HomeworkSection } from "@/types/database";
@@ -59,7 +59,7 @@ export function SectionEditorPage() {
         addHomework({
           lesson_id: hwLessonId,
           student_id: studentId!,
-          tutor_id: "local",
+          tutor_id: student!.tutor_id,
           title: title.trim(),
           sections,
           completed: false,

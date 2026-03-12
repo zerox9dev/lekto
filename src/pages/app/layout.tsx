@@ -1,7 +1,7 @@
 import { Routes, Route, NavLink, Link, useLocation } from "react-router-dom";
 import { Users, Settings, LogOut, GraduationCap, BookOpen, ClipboardList, LayoutDashboard, Library } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { useStore } from "@/lib/store";
+import { useStore } from "@/features/store";
 import { StudentsPage } from "./students";
 import { StudentDetailPage } from "./student-detail";
 import { SettingsPage } from "./settings";

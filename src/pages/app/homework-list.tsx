@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useStore } from "@/lib/store";
+import { useStore } from "@/features/store";
 import { ClipboardList, Search, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 

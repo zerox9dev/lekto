@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Copy, ExternalLink, Trash2, Pencil, Check, ChevronRight } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { useStore } from "@/features/store";
 import * as Dialog from "@radix-ui/react-dialog";
 
 export function StudentsPage() {

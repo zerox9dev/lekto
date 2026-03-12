@@ -1,4 +1,4 @@
-import { useStore } from "@/lib/store";
+import { useStore } from "@/features/store";
 import { Users, BookOpen, ClipboardList, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 

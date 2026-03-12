@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowUp, ArrowDown, X, Plus, ChevronRight, Search, ChevronDown, Link2, Check } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { useStore } from "@/features/store";
 import { SectionPlayer } from "@/components/section-player";
 import * as Dialog from "@radix-ui/react-dialog";
 
