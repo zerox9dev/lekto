@@ -50,11 +50,50 @@ Deno.serve(async (req) => {
       })
     }
 
+    const lang = language || "polish"
+    const lvl = level || "A1"
+
     let userPrompt = ""
     if (type === "homework" && lessonContent) {
-      userPrompt = `Generate HOMEWORK sections for this lesson:\n\nTopic: ${topic}\nLanguage: ${language || "polish"}\nLevel: ${level || "A1"}\n\nLesson content:\n${lessonContent}\n\nCreate 3-5 graded homework sections (quiz, fill_blanks, matching, ordering, true_false). Return JSON: { "sections": [...] }`
+      userPrompt = `Generate HOMEWORK for this lesson:
+
+Topic: ${topic}
+Language: ${lang}
+Level: ${lvl}
+
+Lesson content:
+${lessonContent}
+
+Create 6-8 homework sections using ALL these types:
+1. "quiz" — 3-4 multiple choice questions
+2. "fill_blanks" — sentence with ___ blanks
+3. "matching" — 4-6 pairs to connect
+4. "ordering" — 4-5 items to arrange
+5. "true_false" — 3-4 true/false statements
+6. "open_answer" — 1 creative writing prompt
+
+Return JSON: { "sections": [...] }`
     } else {
-      userPrompt = `Generate a LESSON with interactive sections:\n\nTopic: ${topic}\nLanguage: ${language || "polish"}\nLevel: ${level || "A1"}\n\nCreate a lesson with:\n1. A "text" section with key concepts\n2. A "cards" section with vocabulary\n3. 1-2 interactive sections (quiz/fill_blanks/matching)\n\nAlso generate a short lesson note (2-3 sentences summary).\n\nReturn JSON: { "notes": "...", "sections": [...] }`
+      userPrompt = `Generate a COMPLETE interactive lesson:
+
+Topic: ${topic}
+Language: ${lang}
+Level: ${lvl}
+
+Create a rich lesson using ALL these section types:
+1. "text" — introduction with key grammar rules and examples (detailed, 3-5 paragraphs)
+2. "cards" — 8-12 vocabulary flashcards (front: ${lang} word/phrase, back: Russian translation)
+3. "quiz" — 4-5 multiple choice questions testing comprehension
+4. "fill_blanks" — 2-3 sentences with ___ blanks to fill
+5. "matching" — 5-6 pairs to connect (word to translation or phrase to meaning)
+6. "ordering" — arrange words into correct sentence order (3-4 items)
+7. "true_false" — 3-4 statements about the grammar rules
+8. "open_answer" — 1 creative prompt for practice
+
+That's 8 sections minimum. Make content educational and appropriate for ${lvl} level.
+Also generate lesson notes (2-3 sentence summary).
+
+Return JSON: { "notes": "...", "sections": [...] }`
     }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
