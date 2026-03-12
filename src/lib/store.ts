@@ -175,6 +175,7 @@ export function useStore(userId?: string) {
       lessons: _data.lessons.filter((l) => l.student_id !== id),
       homework: _data.homework.filter((h) => h.student_id !== id),
       templates: _data.templates,
+      courses: _data.courses,
     };
     notify();
     sbDelete("students", id);
