@@ -1,6 +1,7 @@
 import { Routes, Route, NavLink, Link, useLocation } from "react-router-dom";
 import { Users, Settings, LogOut, GraduationCap, BookOpen, ClipboardList, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { useStore } from "@/lib/store";
 import { StudentsPage } from "./students";
 import { StudentDetailPage } from "./student-detail";
 import { SettingsPage } from "./settings";
@@ -56,7 +57,9 @@ function MobileNav() {
 }
 
 export function AppLayout() {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  // Initialize store with user id for tutor_id binding
+  useStore(user?.id);
   return (
     <div className="min-h-screen flex bg-[#f5f3ee] overflow-x-hidden">
       <aside className="hidden md:flex h-screen w-52 flex-col border-r border-[#e8e5de] bg-white py-4 px-3 sticky top-0">

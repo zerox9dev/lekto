@@ -35,6 +35,7 @@ function saveLocal(data: StoreData) {
 let _data = loadLocal();
 let _listeners: Set<() => void> = new Set();
 let _supabaseLoaded = false;
+let _currentUserId: string = "local";
 
 function notify() {
   saveLocal(_data);
@@ -61,22 +62,22 @@ function sbDeleteWhere(table: string, col: string, val: string) {
   d.from(table).delete().eq(col, val).then(() => {});
 }
 
-// ── Load from Supabase on first mount ──
-async function loadFromSupabase(): Promise<StoreData | null> {
+// ── Load from Supabase (only this tutor's data) ──
+async function loadFromSupabase(userId: string): Promise<StoreData | null> {
   const d = db();
   if (!d) return null;
   try {
     const [sRes, lRes, hRes] = await Promise.all([
-      d.from("students").select().order("created_at", { ascending: false }),
-      d.from("lessons").select().order("date", { ascending: false }),
-      d.from("homework").select().order("created_at", { ascending: false }),
+      d.from("students").select().eq("tutor_id", userId).order("created_at", { ascending: false }),
+      d.from("lessons").select().eq("tutor_id", userId).order("date", { ascending: false }),
+      d.from("homework").select().eq("tutor_id", userId).order("created_at", { ascending: false }),
     ]);
     if (sRes.error || lRes.error || hRes.error) return null;
     return {
       students: sRes.data || [],
       lessons: lRes.data || [],
       homework: hRes.data || [],
-      templates: loadLocal().templates || [], // templates stay local only
+      templates: loadLocal().templates || [],
     };
   } catch { return null; }
 }
@@ -93,9 +94,13 @@ if (typeof window !== "undefined") {
   });
 }
 
-export function useStore() {
+export function useStore(userId?: string) {
   const [, setTick] = useState(0);
   const rerender = useCallback(() => setTick((t) => t + 1), []);
+
+  // Track current user id
+  if (userId) _currentUserId = userId;
+  const tutorId = _currentUserId;
 
   useEffect(() => {
     _listeners.add(rerender);
@@ -104,39 +109,36 @@ export function useStore() {
 
   // Load from Supabase once, or push local data if Supabase is empty
   useEffect(() => {
-    if (_supabaseLoaded || !supabase) return;
+    if (_supabaseLoaded || !supabase || tutorId === "local") return;
     _supabaseLoaded = true;
-    loadFromSupabase().then(async (remote) => {
+    loadFromSupabase(tutorId).then(async (remote) => {
       if (!remote) return;
       const remoteHasData = remote.students.length > 0 || remote.lessons.length > 0 || remote.homework.length > 0;
       const localHasData = _data.students.length > 0 || _data.lessons.length > 0 || _data.homework.length > 0;
 
       if (remoteHasData) {
-        // Supabase has data — use it as source of truth
         _data = { ...remote, templates: _data.templates || [] };
         notify();
       } else if (localHasData) {
-        // Supabase is empty but localStorage has data — push to Supabase sequentially
-        // Students first, then lessons (FK depends on students), then homework (FK depends on lessons)
+        // Migrate local data: stamp tutor_id then push
         const d = db();
         if (d) {
           try {
-            if (_data.students.length > 0) {
-              await d.from("students").upsert(_data.students, { onConflict: "id" });
-            }
-            if (_data.lessons.length > 0) {
-              await d.from("lessons").upsert(_data.lessons, { onConflict: "id" });
-            }
-            if (_data.homework.length > 0) {
-              await d.from("homework").upsert(_data.homework, { onConflict: "id" });
-            }
+            const students = _data.students.map((s) => ({ ...s, tutor_id: tutorId }));
+            const lessons = _data.lessons.map((l) => ({ ...l, tutor_id: tutorId }));
+            const homework = _data.homework.map((h) => ({ ...h, tutor_id: tutorId }));
+            _data = { ..._data, students, lessons, homework };
+            notify();
+            if (students.length > 0) await d.from("students").upsert(students, { onConflict: "id" });
+            if (lessons.length > 0) await d.from("lessons").upsert(lessons, { onConflict: "id" });
+            if (homework.length > 0) await d.from("homework").upsert(homework, { onConflict: "id" });
           } catch (e) {
             console.error("Lekto: failed to push local data to Supabase", e);
           }
         }
       }
     });
-  }, []);
+  }, [tutorId]);
 
   // ── Students ──
   const students = _data.students;
@@ -147,7 +149,7 @@ export function useStore() {
       name,
       telegram: telegram || null,
       share_id: shareSlug(),
-      tutor_id: "local",
+      tutor_id: _currentUserId,
       created_at: new Date().toISOString(),
     };
     _data = { ..._data, students: [s, ..._data.students] };
@@ -182,7 +184,7 @@ export function useStore() {
     const l: Lesson = {
       id: uid(),
       student_id: studentId,
-      tutor_id: "local",
+      tutor_id: _currentUserId,
       title,
       date,
       notes: notes || null,
@@ -237,7 +239,6 @@ export function useStore() {
   const deleteHomework = useCallback((id: string) => {
     _data = { ..._data, homework: _data.homework.filter((h) => h.id !== id) };
     notify();
-    sbDelete("homework", id);
   }, []);
 
   // ── Templates (local only) ──
