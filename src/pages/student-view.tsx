@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { BookOpen, GraduationCap, CheckCircle2, Circle, ChevronRight, ArrowLeft, Loader2, ClipboardList } from "lucide-react";
+import { BookOpen, CheckCircle2, Circle, ChevronRight, ArrowLeft, Loader2, ClipboardList } from "lucide-react";
 import { useStore } from "@/features/store";
 import { supabase } from "@/lib/supabase";
 import { SectionPlayer } from "@/components/section-player";
@@ -214,10 +214,7 @@ export function StudentView() {
     <div className="min-h-screen bg-[#f5f3ee]">
       <header className="bg-white border-b border-[#e8e5de] sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 md:px-6 h-14 flex items-center gap-2.5">
-          <div className="h-7 w-7 rounded-lg bg-[#1a1a1a] flex items-center justify-center">
-            <GraduationCap className="h-3.5 w-3.5 text-white" />
-          </div>
-          <span className="font-semibold text-[14px] tracking-tight">Lekto</span>
+          <span className="font-bold font-serif text-[18px] tracking-tight text-[#1a1a1a]">Lekto</span>
         </div>
       </header>
 

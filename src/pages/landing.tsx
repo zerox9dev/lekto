@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { GraduationCap } from "lucide-react";
 import s from "./landing.module.css";
 
 const AUDIENCE = [
@@ -46,7 +45,7 @@ export function LandingPage() {
       {/* ── Floating Pill Navbar ── */}
       <div className={s.navWrap}>
         <nav className={s.nav}>
-          <Link to="/" className={s.logo}><GraduationCap style={{ width: 20, height: 20 }} /> Lekto</Link>
+          <Link to="/" className={s.logo}>Lekto</Link>
           <div className={s.navLinks}>
             <a href="#features" className={s.navLink}>Возможности</a>
             <a href="#audience" className={s.navLink}>Для кого</a>
