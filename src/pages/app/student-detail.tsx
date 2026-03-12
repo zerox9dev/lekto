@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, BookOpen, Pencil, Trash2, Copy, Check, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle, CopyPlus, X, Bookmark } from "lucide-react";
+import { ArrowLeft, Plus, BookOpen, Pencil, Trash2, Copy, Check, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle, CopyPlus, X, Bookmark, Sparkles, Loader } from "lucide-react";
 import { useStore } from "@/features/store";
+import { generateContent } from "@/lib/ai";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { HomeworkSection, QuizQuestion, FillBlanksContent, MatchingContent, OrderingContent, CardsContent, TrueFalseContent, OpenAnswerContent, Homework, Lesson } from "@/types/database";
 import { typeLabels, typeIcons } from "@/components/sections-editor";
@@ -220,6 +221,8 @@ export function StudentDetailPage() {
 
   // Lesson dialog state (for basic fields: title, date, notes)
   const [lessonOpen, setLessonOpen] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const [editLessonId, setEditLessonId] = useState<string | null>(null);
   const [lessonTitle, setLessonTitle] = useState("");
   const [lessonDate, setLessonDate] = useState(new Date().toISOString().slice(0, 10));
@@ -336,7 +339,47 @@ export function StudentDetailPage() {
                 <textarea value={lessonNotes} onChange={(e) => setLessonNotes(e.target.value)} placeholder="Что прошли на уроке, правила, ссылки на материалы..." rows={3}
                   className="w-full rounded-xl border border-[#e8e5de] px-3 py-2.5 text-[14px] outline-none focus:border-[#ccc] resize-y min-h-[80px]" /></div>
 
-              <p className="text-[11px] text-[#888]">💡 Интерактивный контент (тесты, карточки) можно добавить после создания урока через конструктор секций</p>
+              {!editLessonId && (
+                <div className="border border-dashed border-[#e8e5de] rounded-xl p-3 space-y-2">
+                  <p className="text-[12px] font-medium text-[#888]">AI-генерация</p>
+                  <div className="flex gap-2">
+                    <select id="ai-lang" defaultValue="polish" className="h-9 rounded-lg border border-[#e8e5de] px-2 text-[13px] flex-1">
+                      <option value="polish">Польский</option>
+                      <option value="english">Английский</option>
+                      <option value="german">Немецкий</option>
+                      <option value="french">Французский</option>
+                      <option value="spanish">Испанский</option>
+                      <option value="ukrainian">Украинский</option>
+                      <option value="czech">Чешский</option>
+                    </select>
+                    <select id="ai-level" defaultValue="A1" className="h-9 rounded-lg border border-[#e8e5de] px-2 text-[13px] w-20">
+                      <option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option>
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={!lessonTitle.trim() || aiLoading}
+                    onClick={async () => {
+                      setAiLoading(true); setAiError(null);
+                      try {
+                        const lang = (document.getElementById("ai-lang") as HTMLSelectElement)?.value || "polish";
+                        const level = (document.getElementById("ai-level") as HTMLSelectElement)?.value || "A1";
+                        const result = await generateContent({ type: "lesson", topic: lessonTitle.trim(), language: lang, level });
+                        if (result.notes && !lessonNotes.trim()) setLessonNotes(result.notes);
+                        // Save lesson with AI sections
+                        const l = await addLesson(student.id, lessonTitle.trim(), lessonDate, result.notes || lessonNotes.trim() || undefined, result.sections);
+                        setLessonOpen(false);
+                        navigate(`/app/students/${student.id}/lesson/${l.id}/edit`);
+                      } catch (e: any) { setAiError(e.message || "Ошибка AI") }
+                      setAiLoading(false);
+                    }}
+                    className="w-full h-9 rounded-lg bg-[#f0ede6] text-[13px] font-medium text-[#1a1a1a] hover:bg-[#e8e5de] disabled:opacity-40 cursor-pointer flex items-center justify-center gap-1.5">
+                    {aiLoading ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                    {aiLoading ? "Генерирую..." : "Сгенерировать с AI"}
+                  </button>
+                  {aiError && <p className="text-[12px] text-red-500">{aiError}</p>}
+                </div>
+              )}
             </div>
 
             {/* Footer */}
