@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { BookOpen, GraduationCap, CheckCircle2, Circle, ChevronRight, ArrowLeft, Loader2 } from "lucide-react";
+import { BookOpen, GraduationCap, CheckCircle2, Circle, ChevronRight, ArrowLeft, Loader2, ClipboardList } from "lucide-react";
 import { useStore } from "@/features/store";
 import { supabase } from "@/lib/supabase";
 import { SectionPlayer } from "@/components/section-player";
@@ -36,16 +36,16 @@ function LessonView({ lesson, homeworkItems, onBack }: { lesson: Lesson; homewor
       {hasLesson && hasHomework && (
         <div className="flex gap-1 bg-[#f0ede6] rounded-xl p-1">
           <button onClick={() => setTab("lesson")}
-            className={`flex-1 py-2.5 rounded-lg text-[13px] md:text-[14px] font-medium transition-colors cursor-pointer ${
+            className={`flex-1 py-2.5 rounded-lg text-[13px] md:text-[14px] font-medium transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5 ${
               tab === "lesson" ? "bg-white text-[#1a1a1a]" : "text-[#888] hover:text-[#666]"
             }`}>
-            📖 Урок
+            <BookOpen className="h-3.5 w-3.5" /> Урок
           </button>
           <button onClick={() => setTab("homework")}
-            className={`flex-1 py-2.5 rounded-lg text-[13px] md:text-[14px] font-medium transition-colors cursor-pointer ${
+            className={`flex-1 py-2.5 rounded-lg text-[13px] md:text-[14px] font-medium transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5 ${
               tab === "homework" ? "bg-white text-[#1a1a1a]" : "text-[#888] hover:text-[#666]"
             }`}>
-            ✏️ Домашка {completedHw > 0 && <span className="text-emerald-500 ml-1">{completedHw}/{homeworkItems.length}</span>}
+            <ClipboardList className="h-3.5 w-3.5" /> Домашка {completedHw > 0 && <span className="text-emerald-500 ml-1">{completedHw}/{homeworkItems.length}</span>}
           </button>
         </div>
       )}
