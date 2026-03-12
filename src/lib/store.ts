@@ -128,10 +128,10 @@ export function useStore(userId?: string) {
     };
     _data = { ..._data, lessons: [l, ..._data.lessons] };
     notify();
-    (l as any)._saved = new Promise<void>((resolve) => {
+    (l as any)._saved = new Promise<{ error: any } | null>((resolve) => {
       db().from("lessons").upsert(l, { onConflict: "id" }).then(({ error }: any) => {
         if (error) console.error("Lesson save error:", error);
-        resolve();
+        resolve(error ? { error } : null);
       });
     });
     return l;
@@ -191,10 +191,10 @@ export function useStore(userId?: string) {
     };
     _data = { ..._data, courses: [c, ...(_data.courses || [])] };
     notify();
-    (c as any)._saved = new Promise<void>((resolve) => {
+    (c as any)._saved = new Promise<{ error: any } | null>((resolve) => {
       db().from("courses").upsert(c, { onConflict: "id" }).then(({ error }: any) => {
         if (error) console.error("Course save error:", error);
-        resolve();
+        resolve(error ? { error } : null);
       });
     });
     return c;

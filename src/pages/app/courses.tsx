@@ -118,14 +118,15 @@ export function CoursesPage() {
                   <button onClick={async () => {
                     // Create course and wait for DB confirmation
                     const course = addCourse(sc.title, sc.description);
-                    const saveResult = await (course as any)._saved;
-                    if (saveResult?.error) { console.error("Course save error:", saveResult.error); return; }
-                    // Now create lessons sequentially
-                    for (const sl of sc.lessons) {
+                    const courseResult = await (course as any)._saved;
+                    if (courseResult?.error) { console.error("Course save failed:", courseResult.error); return; }
+                    // Course exists in DB — create lessons (can be parallel, FK satisfied)
+                    const lessonPromises = sc.lessons.map((sl) => {
                       const today = new Date().toISOString().slice(0, 10);
                       const lesson = addLesson(null, sl.title, sl.date || today, sl.notes || undefined, sl.sections, course.id, sl.order_index);
-                      await (lesson as any)._saved;
-                    }
+                      return (lesson as any)._saved;
+                    });
+                    await Promise.all(lessonPromises);
                   }}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1a1a1a] text-white text-[12px] font-medium hover:bg-[#333] cursor-pointer">
                     <Download className="h-3.5 w-3.5" /> Добавить
