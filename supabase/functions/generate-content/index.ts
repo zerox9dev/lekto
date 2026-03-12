@@ -8,7 +8,7 @@ const corsHeaders = {
 const SYSTEM_PROMPT = `You are an expert tutor content generator. You create interactive educational content in structured JSON format.
 
 SECTION TYPES you can use:
-- "text" — informational block. content: { text: "..." }
+- "text" — informational block. content: { text: "..." } Use \\n\\n between paragraphs for readability.
 - "cards" — flashcards. content: { cards: [{ front: "...", back: "..." }] }
 - "quiz" — multiple choice. content: [{ question: "...", options: ["A","B","C","D"], correct: 0, explanation: "..." }]
 - "fill_blanks" — fill in blanks (use ___ for blanks). content: { text: "I ___ a student", answers: ["am"] }

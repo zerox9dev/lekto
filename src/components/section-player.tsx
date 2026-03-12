@@ -485,7 +485,13 @@ export function SectionPlayer({ section, onScore }: { section: HomeworkSection; 
       {section.type === "true_false" && <TrueFalsePlayer section={section} onScore={handle} />}
       {section.type === "open_answer" && <OpenAnswerPlayer section={section} onSubmitAnswer={handleOpenAnswer} />}
       {section.type === "media" && <MediaPlayer section={section} />}
-      {section.type === "text" && <div className="text-[14px] md:text-[15px] text-[#666] whitespace-pre-wrap leading-relaxed break-words">{(section.content as { text: string }).text}</div>}
+      {section.type === "text" && (
+        <div className="text-[14px] md:text-[15px] text-[#666] leading-relaxed break-words space-y-3">
+          {((section.content as { text: string }).text || "").split(/\n\n+/).map((paragraph, i) => (
+            <p key={i} className="whitespace-pre-wrap">{paragraph.trim()}</p>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
