@@ -116,7 +116,8 @@ export function CourseDetailPage() {
       ) : (
         <div className="space-y-2">
           {courseLessons.map((l, idx) => (
-            <div key={l.id} className="rounded-xl border border-[#e8e5de] bg-white px-3 md:px-4 py-3 flex items-center gap-3 group">
+            <div key={l.id}>
+            <div className="rounded-xl border border-[#e8e5de] bg-white px-3 md:px-4 py-3 flex items-center gap-3 group">
               <span className="text-[12px] text-[#aaa] w-5 text-center shrink-0">{idx + 1}</span>
               <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setExpandedLesson(expandedLesson === l.id ? null : l.id)}>
                 <p className="text-[14px] font-medium truncate">{l.title}</p>
@@ -152,6 +153,7 @@ export function CourseDetailPage() {
                 )}
               </div>
             )}
+            </div>
           ))}
         </div>
       )}
