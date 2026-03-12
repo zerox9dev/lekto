@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowUp, ArrowDown, X, Plus, ChevronRight, Search } from "lucide-react";
+import { ArrowUp, ArrowDown, X, Plus, ChevronRight, Search, ChevronDown } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { SectionPlayer } from "@/components/section-player";
 import * as Dialog from "@radix-ui/react-dialog";
 
 export function CourseDetailPage() {
@@ -14,6 +15,7 @@ export function CourseDetailPage() {
   const [descVal, setDescVal] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [expandedLesson, setExpandedLesson] = useState<string | null>(null);
 
   const courseLessons = useMemo(() =>
     lessons.filter((l) => l.course_id === id).sort((a, b) => (a.order_index || 0) - (b.order_index || 0)),
@@ -116,9 +118,9 @@ export function CourseDetailPage() {
           {courseLessons.map((l, idx) => (
             <div key={l.id} className="rounded-xl border border-[#e8e5de] bg-white px-3 md:px-4 py-3 flex items-center gap-3 group">
               <span className="text-[12px] text-[#aaa] w-5 text-center shrink-0">{idx + 1}</span>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setExpandedLesson(expandedLesson === l.id ? null : l.id)}>
                 <p className="text-[14px] font-medium truncate">{l.title}</p>
-                <p className="text-[12px] text-[#888]">{l.date}</p>
+                <p className="text-[12px] text-[#888]">{l.notes || l.date}</p>
               </div>
               <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button onClick={() => moveLesson(l.id, -1)} disabled={idx === 0}
@@ -134,7 +136,22 @@ export function CourseDetailPage() {
                   <X className="h-3.5 w-3.5 text-[#888] hover:text-red-500" />
                 </button>
               </div>
+              <ChevronDown className={`h-4 w-4 text-[#aaa] transition-transform shrink-0 ${expandedLesson === l.id ? "rotate-180" : ""}`} />
             </div>
+            {expandedLesson === l.id && (
+              <div className="rounded-xl border border-[#e8e5de] bg-[#faf9f6] px-4 py-4 -mt-1 space-y-3">
+                {l.notes && <p className="text-[13px] text-[#666] italic">{l.notes}</p>}
+                {l.sections && l.sections.length > 0 ? (
+                  l.sections.map((sec) => (
+                    <div key={sec.id} className="bg-white rounded-xl border border-[#e8e5de] p-3">
+                      <SectionPlayer section={sec} answer={undefined} onAnswer={() => {}} />
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-[13px] text-[#aaa] text-center py-2">Контент пока не добавлен</p>
+                )}
+              </div>
+            )}
           ))}
         </div>
       )}
