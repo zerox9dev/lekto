@@ -1,5 +1,5 @@
 import { Routes, Route, NavLink, Link, useLocation } from "react-router-dom";
-import { Users, Settings, LogOut, BookOpen, ClipboardList, LayoutDashboard, Library } from "lucide-react";
+import { Users, Settings, LogOut, BookOpen, ClipboardList, LayoutDashboard, Library, MessageCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useStore } from "@/features/store";
 import { StudentsPage } from "./students";
@@ -96,6 +96,15 @@ export function AppLayout() {
           </Routes>
         </div>
       </main>
+      {/* Support button */}
+      <a
+        href="https://t.me/mirvald"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 h-11 px-4 rounded-full bg-[#1a1a1a] text-white text-[13px] font-medium flex items-center gap-2 hover:bg-[#333] transition-colors shadow-sm"
+      >
+        <MessageCircle className="h-4 w-4" /> Поддержка
+      </a>
       <MobileNav />
     </div>
   );

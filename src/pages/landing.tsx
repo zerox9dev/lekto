@@ -232,8 +232,8 @@ export function LandingPage() {
           <span className={s.footerCopy}>Lekto © 2025</span>
           <div className={s.footerLinks}>
             <a href="https://github.com/zerox9dev/lekto" target="_blank" rel="noopener noreferrer" className={s.footerLink}>GitHub</a>
+            <a href="https://t.me/mirvald" target="_blank" rel="noopener noreferrer" className={s.footerLink}>Поддержка</a>
             <a href="/privacy" className={s.footerLink}>Конфиденциальность</a>
-            <a href="mailto:zerox9dev.work@icloud.com" className={s.footerLink}>Контакты</a>
           </div>
         </div>
       </footer>
