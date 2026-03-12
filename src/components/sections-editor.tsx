@@ -414,8 +414,9 @@ function MediaEditor({ section, onChange }: { section: HomeworkSection; onChange
       const id = crypto.randomUUID();
       let url = "";
       if (supabase) {
-        const path = `uploads/${id}_${file.name}`;
-        const { error: upErr } = await supabase.storage.from("media").upload(path, file);
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = `uploads/${id}_${safeName}`;
+        const { error: upErr } = await supabase.storage.from("media").upload(path, file, { contentType: file.type });
         if (upErr) { setError(`Ошибка загрузки: ${upErr.message}`); continue; }
         const { data: pubData } = supabase.storage.from("media").getPublicUrl(path);
         url = pubData.publicUrl;
