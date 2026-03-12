@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { BookOpen, GraduationCap, CheckCircle2, Circle, ChevronRight, ArrowLeft } from "lucide-react";
+import { BookOpen, GraduationCap, CheckCircle2, Circle, ChevronRight, ArrowLeft, Loader2 } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { supabase } from "@/lib/supabase";
 import { SectionPlayer } from "@/components/section-player";
-import type { Homework, Lesson } from "@/types/database";
+import type { Homework, Lesson, Student } from "@/types/database";
 
 // ── Lesson View (full page for one lesson) ──
 
@@ -98,12 +99,51 @@ function LessonView({ lesson, homeworkItems, onBack }: { lesson: Lesson; homewor
 
 export function StudentView() {
   const { shareId } = useParams<{ shareId: string }>();
-  const { students, lessons, homework } = useStore();
+  const store = useStore();
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
 
-  const student = students.find((s) => s.share_id === shareId);
-  const studentLessons = student ? lessons.filter((l) => l.student_id === student.id).sort((a, b) => b.date.localeCompare(a.date)) : [];
-  const studentHomework = student ? homework.filter((h) => h.student_id === student.id) : [];
+  // Try Supabase first (for public student access), fallback to localStorage
+  const [remoteStudent, setRemoteStudent] = useState<Student | null>(null);
+  const [remoteLessons, setRemoteLessons] = useState<Lesson[]>([]);
+  const [remoteHomework, setRemoteHomework] = useState<Homework[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [tried, setTried] = useState(false);
+
+  useEffect(() => {
+    if (!shareId || !supabase) { setLoading(false); setTried(true); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: s } = await (supabase as any).from("students").select().eq("share_id", shareId).single();
+        if (cancelled || !s) { setLoading(false); setTried(true); return; }
+        setRemoteStudent(s);
+        const { data: ls } = await (supabase as any).from("lessons").select().eq("student_id", s.id).order("date", { ascending: false });
+        if (!cancelled) setRemoteLessons(ls || []);
+        const { data: hw } = await (supabase as any).from("homework").select().eq("student_id", s.id).order("created_at", { ascending: false });
+        if (!cancelled) setRemoteHomework(hw || []);
+      } catch {}
+      if (!cancelled) { setLoading(false); setTried(true); }
+    })();
+    return () => { cancelled = true; };
+  }, [shareId]);
+
+  // Use remote data if available, otherwise fallback to localStorage
+  const localStudent = store.students.find((s) => s.share_id === shareId) || null;
+  const student = remoteStudent || localStudent;
+  const studentLessons = student
+    ? (remoteStudent ? remoteLessons : store.lessons.filter((l) => l.student_id === student.id)).sort((a, b) => b.date.localeCompare(a.date))
+    : [];
+  const studentHomework = student
+    ? (remoteStudent ? remoteHomework : store.homework.filter((h) => h.student_id === student.id))
+    : [];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f5f3ee] flex items-center justify-center px-4">
+        <Loader2 className="h-6 w-6 animate-spin text-[#888]" />
+      </div>
+    );
+  }
 
   if (!student) {
     return (

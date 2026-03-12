@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { supabase } from "./supabase";
 import type { Student, Lesson, Homework, HomeworkTemplate } from "@/types/database";
 
 function uid() {
@@ -19,7 +20,7 @@ interface StoreData {
   templates: HomeworkTemplate[];
 }
 
-function load(): StoreData {
+function loadLocal(): StoreData {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
@@ -27,16 +28,57 @@ function load(): StoreData {
   return { students: [], lessons: [], homework: [], templates: [] };
 }
 
-function save(data: StoreData) {
+function saveLocal(data: StoreData) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
-let _data = load();
+let _data = loadLocal();
 let _listeners: Set<() => void> = new Set();
+let _supabaseLoaded = false;
 
 function notify() {
-  save(_data);
+  saveLocal(_data);
   _listeners.forEach((fn) => fn());
+}
+
+// ── Supabase sync helpers (fire-and-forget) ──
+const db = () => supabase ? (supabase as any) : null;
+
+function sbInsert(table: string, row: any) {
+  const d = db(); if (!d) return;
+  d.from(table).upsert(row, { onConflict: "id" }).then(() => {});
+}
+function sbUpdate(table: string, id: string, patch: any) {
+  const d = db(); if (!d) return;
+  d.from(table).update(patch).eq("id", id).then(() => {});
+}
+function sbDelete(table: string, id: string) {
+  const d = db(); if (!d) return;
+  d.from(table).delete().eq("id", id).then(() => {});
+}
+function sbDeleteWhere(table: string, col: string, val: string) {
+  const d = db(); if (!d) return;
+  d.from(table).delete().eq(col, val).then(() => {});
+}
+
+// ── Load from Supabase on first mount ──
+async function loadFromSupabase(): Promise<StoreData | null> {
+  const d = db();
+  if (!d) return null;
+  try {
+    const [sRes, lRes, hRes] = await Promise.all([
+      d.from("students").select().order("created_at", { ascending: false }),
+      d.from("lessons").select().order("date", { ascending: false }),
+      d.from("homework").select().order("created_at", { ascending: false }),
+    ]);
+    if (sRes.error || lRes.error || hRes.error) return null;
+    return {
+      students: sRes.data || [],
+      lessons: lRes.data || [],
+      homework: hRes.data || [],
+      templates: loadLocal().templates || [], // templates stay local only
+    };
+  } catch { return null; }
 }
 
 // Listen for changes from other tabs
@@ -60,6 +102,20 @@ export function useStore() {
     return () => { _listeners.delete(rerender); };
   }, [rerender]);
 
+  // Load from Supabase once
+  useEffect(() => {
+    if (_supabaseLoaded || !supabase) return;
+    _supabaseLoaded = true;
+    loadFromSupabase().then((remote) => {
+      if (!remote) return;
+      // Merge: Supabase is source of truth if it has data
+      if (remote.students.length > 0 || remote.lessons.length > 0 || remote.homework.length > 0) {
+        _data = { ...remote, templates: _data.templates || [] };
+        notify();
+      }
+    });
+  }, []);
+
   // ── Students ──
   const students = _data.students;
 
@@ -74,12 +130,14 @@ export function useStore() {
     };
     _data = { ..._data, students: [s, ..._data.students] };
     notify();
+    sbInsert("students", s);
     return s;
   }, []);
 
   const updateStudent = useCallback((id: string, data: Partial<Student>) => {
     _data = { ..._data, students: _data.students.map((s) => (s.id === id ? { ...s, ...data } : s)) };
     notify();
+    sbUpdate("students", id, data);
   }, []);
 
   const deleteStudent = useCallback((id: string) => {
@@ -90,6 +148,9 @@ export function useStore() {
       templates: _data.templates,
     };
     notify();
+    sbDelete("students", id);
+    sbDeleteWhere("lessons", "student_id", id);
+    sbDeleteWhere("homework", "student_id", id);
   }, []);
 
   // ── Lessons ──
@@ -109,12 +170,14 @@ export function useStore() {
     };
     _data = { ..._data, lessons: [l, ..._data.lessons] };
     notify();
+    sbInsert("lessons", l);
     return l;
   }, []);
 
   const updateLesson = useCallback((id: string, data: Partial<Lesson>) => {
     _data = { ..._data, lessons: _data.lessons.map((l) => (l.id === id ? { ...l, ...data } : l)) };
     notify();
+    sbUpdate("lessons", id, data);
   }, []);
 
   const deleteLesson = useCallback((id: string) => {
@@ -124,6 +187,8 @@ export function useStore() {
       lessons: _data.lessons.filter((l) => l.id !== id),
     };
     notify();
+    sbDelete("lessons", id);
+    sbDeleteWhere("homework", "lesson_id", id);
   }, []);
 
   // ── Homework ──
@@ -137,20 +202,23 @@ export function useStore() {
     };
     _data = { ..._data, homework: [h, ..._data.homework] };
     notify();
+    sbInsert("homework", h);
     return h;
   }, []);
 
   const updateHomework = useCallback((id: string, data: Partial<Homework>) => {
     _data = { ..._data, homework: _data.homework.map((h) => (h.id === id ? { ...h, ...data } : h)) };
     notify();
+    sbUpdate("homework", id, data);
   }, []);
 
   const deleteHomework = useCallback((id: string) => {
     _data = { ..._data, homework: _data.homework.filter((h) => h.id !== id) };
     notify();
+    sbDelete("homework", id);
   }, []);
 
-  // ── Templates ──
+  // ── Templates (local only) ──
   const templates = _data.templates || [];
 
   const addTemplate = useCallback((title: string, sections: Homework["sections"]) => {
