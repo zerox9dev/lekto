@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { LandingPage } from "@/pages/landing/index";
 import { LoginPage } from "@/pages/login";
@@ -32,16 +33,19 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginRoute />} />
-          <Route path="/app/students/:id/homework/:hwId/edit" element={<ProtectedEditor />} />
-          <Route path="/app/students/:id/lesson/:lessonId/edit" element={<ProtectedEditor />} />
-          <Route path="/app/*" element={<ProtectedApp />} />
-          <Route path="/s/:shareId" element={<StudentView />} />
-          <Route path="/c/:shareId" element={<CourseView />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginRoute />} />
+            <Route path="/app/students/:id/homework/:hwId/edit" element={<ProtectedEditor />} />
+            <Route path="/app/students/:id/lesson/:lessonId/edit" element={<ProtectedEditor />} />
+            <Route path="/app/*" element={<ProtectedApp />} />
+            <Route path="/s/:shareId" element={<StudentView />} />
+            <Route path="/c/:shareId" element={<CourseView />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+          <Analytics />
+        </>
       </BrowserRouter>
     </AuthProvider>
   );

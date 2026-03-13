@@ -3,4 +3,4 @@ Allow: /
 Disallow: /app/
 Disallow: /login
 
-Sitemap: https://lekto.online/sitemap.xml
+Sitemap: https://lekto.vercel.app/sitemap.xml
