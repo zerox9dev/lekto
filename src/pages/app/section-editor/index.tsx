@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Eye, EyeOff, AlertCircle, Bookmark, GraduationCap, Loader } from "lucide-react";
 import { useStore } from "@/features/store";
@@ -13,7 +13,6 @@ export function SectionEditorPage() {
   const { id: studentId, hwId, lessonId } = useParams<{ id: string; hwId?: string; lessonId?: string }>();
   const navigate = useNavigate();
   const { students, homework, lessons, addHomework, updateHomework, updateLesson, templates, addTemplate, deleteTemplate } = useStore();
-
   const { t } = useTranslation();
   const student = students.find((s) => s.id === studentId);
   const isHomework = !!hwId;
@@ -32,18 +31,19 @@ export function SectionEditorPage() {
   const [showErrors, setShowErrors] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [mobilePreview, setMobilePreview] = useState(false);
-  const [initialized, setInitialized] = useState(false);
-  const autosaveTimer = useRef<number | null>(null);
 
   useEffect(() => {
-    if (existingHw) { setTitle(existingHw.title); setSections(existingHw.sections || []); }
-    else if (existingLesson) { setTitle(existingLesson.title); setSections(existingLesson.sections || []); }
-    setInitialized(true);
+    if (existingHw) {
+      setTitle(existingHw.title);
+      setSections(existingHw.sections || []);
+    } else if (existingLesson) {
+      setTitle(existingLesson.title);
+      setSections(existingLesson.sections || []);
+    }
   }, [existingHw?.id, existingLesson?.id]);
 
   const validationErrors = useMemo(() => validateSections(sections), [sections]);
   const pageTitle = isHomework ? t("hwConstructor") : t("lessonConstructor");
-  const canAutosave = (isHomework && !isNewHomework && !!existingHw) || (isLesson && !isNewLesson && !!existingLesson);
 
   const persistChanges = async (shouldNavigate = false) => {
     if (!title.trim()) return;
@@ -59,7 +59,7 @@ export function SectionEditorPage() {
         await updateHomework(hwId!, { title: title.trim(), sections });
       }
     } else if (isLesson && !isNewLesson) {
-      await updateLesson(lessonId!, { sections: sections.length > 0 ? sections : undefined });
+      await updateLesson(lessonId!, { title: title.trim(), sections: sections.length > 0 ? sections : undefined });
     }
     setSaveState("saved");
     if (shouldNavigate) setTimeout(() => navigate(`/app/students/${studentId}`), 250);
@@ -73,26 +73,6 @@ export function SectionEditorPage() {
       setSaveState("error");
     }
   };
-
-  useEffect(() => {
-    if (!initialized || !canAutosave) return;
-    if (!title.trim()) {
-      setSaveState("idle");
-      return;
-    }
-    if (autosaveTimer.current) window.clearTimeout(autosaveTimer.current);
-    setSaveState("saving");
-    autosaveTimer.current = window.setTimeout(async () => {
-      try {
-        await persistChanges(false);
-      } catch {
-        setSaveState("error");
-      }
-    }, 30000);
-    return () => {
-      if (autosaveTimer.current) window.clearTimeout(autosaveTimer.current);
-    };
-  }, [canAutosave, initialized, title, sections]);
 
   if (!student) {
     return (
@@ -111,8 +91,7 @@ export function SectionEditorPage() {
         <h1 className="text-[14px] md:text-[15px] font-semibold truncate">{pageTitle}</h1>
         <span className="text-[12px] text-[#888] truncate hidden sm:block">· {student.name}</span>
         <div className="flex-1" />
-        <button onClick={() => setMobilePreview(!mobilePreview)}
-          className={`md:hidden h-8 px-3 rounded-lg flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors ${mobilePreview ? "bg-[#1a1a1a] text-white" : "hover:bg-[#f0ede6] text-[#888]"}`}>
+        <button onClick={() => setMobilePreview(!mobilePreview)} className={`md:hidden h-8 px-3 rounded-lg flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors ${mobilePreview ? "bg-[#1a1a1a] text-white" : "hover:bg-[#f0ede6] text-[#888]"}`}>
           {mobilePreview ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
           {mobilePreview ? t("editor") : t("preview")}
         </button>
@@ -121,19 +100,15 @@ export function SectionEditorPage() {
             <AlertCircle className="h-3.5 w-3.5" /> {validationErrors.length} {t("errors")}
           </span>
         )}
-        {canAutosave && (
-          <span className={`text-[12px] shrink-0 hidden sm:flex items-center gap-1 ${
-            saveState === "error" ? "text-red-500" : "text-[#888]"
-          }`}>
+        {saveState !== "idle" && (
+          <span className={`text-[12px] shrink-0 hidden sm:flex items-center gap-1 ${saveState === "error" ? "text-red-500" : "text-[#888]"}`}>
             {saveState === "saving" && <Loader className="h-3.5 w-3.5 animate-spin" />}
             {saveState === "saved" && t("saved")}
             {saveState === "saving" && t("savingLabel")}
             {saveState === "error" && t("saveError")}
-            {saveState === "idle" && t("autosaveLabel")}
           </span>
         )}
-        <button onClick={handleSave} disabled={!title.trim() || saveState === "saving"}
-          className="h-8 px-4 rounded-lg bg-[#1a1a1a] text-white text-[13px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer flex items-center gap-1.5 shrink-0 transition-colors">
+        <button onClick={handleSave} disabled={!title.trim() || saveState === "saving"} className="h-8 px-4 rounded-lg bg-[#1a1a1a] text-white text-[13px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer flex items-center gap-1.5 shrink-0 transition-colors">
           {saveState === "saving" ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
           {isNewHomework ? t("save") : t("saveAndClose")}
         </button>
@@ -149,17 +124,13 @@ export function SectionEditorPage() {
                 className="w-full h-10 rounded-xl border border-[#e8e5de] px-3 text-[14px] outline-none focus:border-[#ccc]" autoFocus />
             </div>
             {isHomework && isNewHomework && (
-              <TemplatePicker templates={templates}
-                onSelect={(tpl) => { setTitle(tpl.title); setSections(tpl.sections.map((s) => ({ ...s, id: crypto.randomUUID() }))); setSaveState("idle"); }}
-                onDelete={deleteTemplate} />
+              <TemplatePicker templates={templates} onSelect={(tpl) => { setTitle(tpl.title); setSections(tpl.sections.map((s) => ({ ...s, id: crypto.randomUUID() }))); setSaveState("idle"); }} onDelete={deleteTemplate} />
             )}
-            <AiPanel title={title} isHomework={isHomework} hwLessonId={hwLessonId} lessons={lessons}
-              onGenerated={(s) => { setSections((prev) => [...prev, ...s]); setSaveState("idle"); }} />
+            <AiPanel title={title} isHomework={isHomework} hwLessonId={hwLessonId} lessons={lessons} onGenerated={(s) => { setSections((prev) => [...prev, ...s]); setSaveState("idle"); }} />
             <SectionsListEditor sections={sections} onChange={(s) => { setSections(s); setSaveState("idle"); }} showErrors={showErrors} />
             {sections.length > 0 && (
               <div className="flex items-center gap-2 pt-2">
-                <button onClick={() => addTemplate(title || "Шаблон", sections)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium text-amber-600 hover:bg-amber-50 cursor-pointer">
+                <button onClick={() => addTemplate(title || "Шаблон", sections)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium text-amber-600 hover:bg-amber-50 cursor-pointer">
                   <Bookmark className="h-3 w-3" /> {t("saveAsTemplate")}
                 </button>
               </div>
