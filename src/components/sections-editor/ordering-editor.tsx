@@ -7,7 +7,7 @@ export function OrderingEditor({ section, onChange }: { section: HomeworkSection
   const c = section.content as OrderingContent;
   return (
     <div className="space-y-2">
-      <p className="text-[11px] text-[#888]">{t("orderingHint")}</p>
+      <p className="text-[11px] text-[#888]">{t("wordOrderHint")}</p>
       {c.items.map((item, i) => (
         <div key={i} className="flex gap-2 items-center">
           <span className="text-[11px] text-[#888] w-5 text-center shrink-0">{i + 1}</span>

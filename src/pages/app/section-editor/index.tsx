@@ -88,7 +88,7 @@ export function SectionEditorPage() {
       } catch {
         setSaveState("error");
       }
-    }, 800);
+    }, 30000);
     return () => {
       if (autosaveTimer.current) window.clearTimeout(autosaveTimer.current);
     };

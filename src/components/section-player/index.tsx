@@ -2,7 +2,7 @@ import type { HomeworkSection } from "@/types/database";
 import { QuizPlayer } from "./quiz-player";
 import { FillBlanksPlayer } from "./fill-blanks-player";
 import { MatchingPlayer } from "./matching-player";
-import { OrderingPlayer } from "./ordering-player";
+import { WordOrderPlayer } from "./word-order-player";
 import { CardsPlayer } from "./cards-player";
 import { TrueFalsePlayer } from "./true-false-player";
 import { OpenAnswerPlayer } from "./open-answer-player";
@@ -11,7 +11,7 @@ import { MediaPlayer } from "./media-player";
 
 const typeLabels: Record<string, string> = {
   quiz: "Тест", fill_blanks: "Вставить слово", matching: "Соединить пары",
-  ordering: "Расставить по порядку", cards: "Карточки", text: "Задание",
+  ordering: "Word order", cards: "Карточки", text: "Задание",
   true_false: "Верно / Неверно", open_answer: "Открытый ответ", media: "Медиа",
 };
 
@@ -29,7 +29,7 @@ export function SectionPlayer({ section, onScore }: { section: HomeworkSection; 
       {section.type === "quiz" && <QuizPlayer section={section} onScore={handle} />}
       {section.type === "fill_blanks" && <FillBlanksPlayer section={section} onScore={handle} />}
       {section.type === "matching" && <MatchingPlayer section={section} onScore={handle} />}
-      {section.type === "ordering" && <OrderingPlayer section={section} onScore={handle} />}
+      {section.type === "ordering" && <WordOrderPlayer section={section} onScore={handle} />}
       {section.type === "cards" && <CardsPlayer section={section} />}
       {section.type === "true_false" && <TrueFalsePlayer section={section} onScore={handle} />}
       {section.type === "open_answer" && <OpenAnswerPlayer section={section} onSubmitAnswer={handleOpenAnswer} />}

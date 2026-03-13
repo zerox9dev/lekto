@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 const typeLabels: Record<string, string> = {
   quiz: "Тест", fill_blanks: "Вставить слово", matching: "Соединить пары",
-  ordering: "Порядок", cards: "Карточки", text: "Текст", true_false: "Верно/Неверно",
+  ordering: "Word order", cards: "Карточки", text: "Текст", true_false: "Верно/Неверно",
   open_answer: "Открытый ответ", media: "Медиа",
 };
 

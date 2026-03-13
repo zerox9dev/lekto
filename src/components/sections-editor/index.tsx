@@ -32,11 +32,11 @@ export type { ValidationError } from "./validation";
 
 export const typeLabels: Record<HomeworkType, string> = {
   quiz: "Тест", fill_blanks: "Вставить слово", matching: "Соединить пары",
-  ordering: "Порядок", cards: "Карточки", text: "Текст",
+  ordering: "Word order", cards: "Карточки", text: "Текст",
   true_false: "Верно / Неверно", open_answer: "Открытый ответ", media: "Медиа",
 };
 export const typeIcons: Record<HomeworkType, string> = {
-  quiz: "Т", fill_blanks: "В", matching: "П", ordering: "С", cards: "К", text: "Tx",
+  quiz: "Т", fill_blanks: "В", matching: "П", ordering: "W", cards: "К", text: "Tx",
   true_false: "В/Н", open_answer: "О", media: "М",
 };
 export const typeIconComponents: Record<HomeworkType, any> = {
@@ -50,6 +50,18 @@ export const typeIconComponents: Record<HomeworkType, any> = {
   open_answer: MessageSquareQuote,
   media: Image,
 };
+
+const addableSectionTypes: HomeworkType[] = [
+  "quiz",
+  "fill_blanks",
+  "matching",
+  "ordering",
+  "cards",
+  "text",
+  "true_false",
+  "open_answer",
+  "media",
+];
 
 // ── Section Editor wrapper ──
 
@@ -102,7 +114,7 @@ export function emptySection(type: HomeworkType): HomeworkSection {
     case "quiz": return { id, type, title: "Тест", content: [{ question: "", options: ["", ""], correct: 0 }] };
     case "fill_blanks": return { id, type, title: "Вставить слово", content: { text: "", answers: [] } };
     case "matching": return { id, type, title: "Соединить пары", content: { pairs: [{ left: "", right: "" }] } };
-    case "ordering": return { id, type, title: "Порядок", content: { items: ["", ""], correct_order: [0, 1] } };
+    case "ordering": return { id, type, title: "Word order", content: { items: ["", ""], correct_order: [0, 1] } };
     case "cards": return { id, type, title: "Карточки", content: { cards: [{ front: "", back: "" }] } };
     case "text": return { id, type, title: "Задание", content: { text: "" } };
     case "true_false": return { id, type, title: "Верно / Неверно", content: { questions: [{ statement: "", correct: true }] } };
@@ -123,14 +135,14 @@ export function AddSectionPicker({ onAdd }: { onAdd: (section: HomeworkSection) 
     <div className="rounded-xl border border-dashed border-[#e8e5de] p-3 md:p-4">
       <p className="text-[12px] text-[#888] mb-3">{t("addSectionLabel")}</p>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5 md:gap-2">
-        {(Object.entries(typeLabels) as [HomeworkType, string][]).map(([key, label]) => (
+        {addableSectionTypes.map((key) => (
           <button key={key} onClick={() => onAdd(emptySection(key))}
             className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-2 md:py-2.5 rounded-xl text-[11px] md:text-[12px] font-medium bg-[#f5f3ee] text-[#666] hover:bg-[#f0ede6] border border-[#e8e5de] hover:border-[#e8e5de] cursor-pointer transition-colors">
             {(() => {
               const Icon = typeIconComponents[key];
               return <Icon className="h-3.5 w-3.5 shrink-0" />;
             })()}
-            <span className="truncate">{label}</span>
+            <span className="truncate">{typeLabels[key]}</span>
           </button>
         ))}
       </div>
