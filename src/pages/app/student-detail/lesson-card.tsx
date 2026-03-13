@@ -24,12 +24,16 @@ export function LessonCard({ lesson, homeworkItems, studentId, onEditLesson, onD
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => navigate(`/app/students/${studentId}/lesson/${lesson.id}/edit`)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border border-[#e8e5de] text-[#666] hover:bg-[#f5f3ee] transition-colors cursor-pointer">
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border border-[#e8e5de] hover:bg-[#f5f3ee] transition-colors cursor-pointer ${
+              hasLessonContent ? "text-[#1a1a1a]" : "text-[#666]"
+            }`}>
             {hasLessonContent ? <Check className="h-3 w-3" /> : <Circle className="h-3 w-3" />}
             {t("lessonNotesButton")}
           </button>
           <button onClick={hasHomework ? () => onEditHw(homeworkItems[0]) : onNewHw}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border border-[#e8e5de] text-[#666] hover:bg-[#f5f3ee] transition-colors cursor-pointer">
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border border-[#e8e5de] hover:bg-[#f5f3ee] transition-colors cursor-pointer ${
+              hasHomework ? "text-[#1a1a1a]" : "text-[#666]"
+            }`}>
             {hasHomework ? <Check className="h-3 w-3" /> : <Circle className="h-3 w-3" />}
             {t("homeworkTitle")}
           </button>
