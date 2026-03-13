@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Eye, EyeOff, AlertCircle, Bookmark } from "lucide-react";
+import { ArrowLeft, Save, Eye, EyeOff, AlertCircle, Bookmark, GraduationCap } from "lucide-react";
 import { useStore } from "@/features/store";
 import { useTranslation } from "@/lib/i18n";
 import { SectionsListEditor, validateSections } from "@/components/sections-editor";
@@ -117,8 +117,16 @@ export function SectionEditorPage() {
           </div>
         </div>
         <div className={`${mobilePreview ? "flex" : "hidden"} md:flex flex-col w-full md:w-[45%] bg-[#f5f3ee] overflow-hidden`}>
-          <div className="px-4 md:px-5 py-3 border-b border-[#e8e5de] bg-[#f5f3ee] shrink-0">
-            <p className="text-[12px] font-semibold text-[#888] uppercase tracking-wider">{t("preview")}</p>
+          <div className="px-4 md:px-5 py-3 border-b border-[#e8e5de] bg-[#f5f3ee] shrink-0 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[11px] font-semibold text-[#888] uppercase tracking-wider">{t("studentPreviewLabel")}</p>
+              <div className="h-9 w-9 rounded-xl bg-white border border-[#e8e5de] flex items-center justify-center shrink-0">
+                <GraduationCap className="h-4 w-4 text-[#666]" />
+              </div>
+            </div>
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+              <p className="text-[12px] font-medium text-amber-900">{t("studentPreviewDesc")}</p>
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-6">
             {sections.length === 0 ? (

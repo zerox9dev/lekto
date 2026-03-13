@@ -1,5 +1,20 @@
 import { useMemo } from "react";
-import { Trash2, CopyPlus, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
+import {
+  Trash2,
+  CopyPlus,
+  ChevronDown,
+  ChevronUp,
+  AlertCircle,
+  ListChecks,
+  ScanText,
+  GitCompareArrows,
+  ArrowUpWideNarrow,
+  PanelsTopLeft,
+  FileText,
+  CircleHelp,
+  MessageSquareQuote,
+  Image,
+} from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import type { HomeworkType, HomeworkSection } from "@/types/database";
 import { QuizEditor } from "./quiz-editor";
@@ -24,6 +39,17 @@ export const typeIcons: Record<HomeworkType, string> = {
   quiz: "Т", fill_blanks: "В", matching: "П", ordering: "С", cards: "К", text: "Tx",
   true_false: "В/Н", open_answer: "О", media: "М",
 };
+export const typeIconComponents: Record<HomeworkType, any> = {
+  quiz: ListChecks,
+  fill_blanks: ScanText,
+  matching: GitCompareArrows,
+  ordering: ArrowUpWideNarrow,
+  cards: PanelsTopLeft,
+  text: FileText,
+  true_false: CircleHelp,
+  open_answer: MessageSquareQuote,
+  media: Image,
+};
 
 // ── Section Editor wrapper ──
 
@@ -37,12 +63,13 @@ export function SectionEditor({ section, onChange, onDelete, onDuplicate, onMove
   const { t } = useTranslation();
   const editors: Record<HomeworkType, any> = { quiz: QuizEditor, fill_blanks: FillBlanksEditor, matching: MatchingEditor, ordering: OrderingEditor, cards: CardsEditor, text: TextEditor, true_false: TrueFalseEditor, open_answer: OpenAnswerEditor, media: MediaEditor };
   const Editor = editors[section.type];
+  const Icon = typeIconComponents[section.type];
   const hasErrors = errors.length > 0;
 
   return (
     <div className={`rounded-xl border overflow-hidden ${hasErrors ? "border-red-200" : "border-[#e8e5de]"} bg-white`}>
       <div className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 border-b ${hasErrors ? "bg-red-50 border-red-100" : "bg-[#f5f3ee] border-[#e8e5de]"} overflow-x-auto`}>
-        <span className="text-[14px]">{typeIcons[section.type]}</span>
+        <Icon className="h-3.5 w-3.5 text-[#666] shrink-0" />
         <span className="text-[12px] font-medium text-[#666] truncate">{typeLabels[section.type]}</span>
         <span className="text-[11px] text-[#888] shrink-0">#{index + 1}</span>
         {hasErrors && <AlertCircle className="h-3.5 w-3.5 text-red-400 shrink-0" />}
@@ -99,7 +126,11 @@ export function AddSectionPicker({ onAdd }: { onAdd: (section: HomeworkSection) 
         {(Object.entries(typeLabels) as [HomeworkType, string][]).map(([key, label]) => (
           <button key={key} onClick={() => onAdd(emptySection(key))}
             className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-2 md:py-2.5 rounded-xl text-[11px] md:text-[12px] font-medium bg-[#f5f3ee] text-[#666] hover:bg-[#f0ede6] border border-[#e8e5de] hover:border-[#e8e5de] cursor-pointer transition-colors">
-            <span>{typeIcons[key]}</span> <span className="truncate">{label}</span>
+            {(() => {
+              const Icon = typeIconComponents[key];
+              return <Icon className="h-3.5 w-3.5 shrink-0" />;
+            })()}
+            <span className="truncate">{label}</span>
           </button>
         ))}
       </div>
@@ -133,6 +164,9 @@ export function SectionsListEditor({ sections, onChange, showErrors }: {
 
   return (
     <div className="space-y-3">
+      <div className="sticky top-0 z-10 -mx-1 px-1 pb-1 bg-white">
+        <AddSectionPicker onAdd={(sec) => onChange([...sections, sec])} />
+      </div>
       {sections.length > 0 && <p className="text-[12px] font-medium text-[#888]">{sections.length} {sections.length === 1 ? t("sectionSingleCount") : t("sectionsCount")}</p>}
       {sections.map((sec, i) => (
         <SectionEditor key={sec.id} section={sec} index={i}
@@ -143,7 +177,6 @@ export function SectionsListEditor({ sections, onChange, showErrors }: {
           isFirst={i === 0} isLast={i === sections.length - 1}
           errors={showErrors ? (errorsPerSection[i] || []) : []} />
       ))}
-      <AddSectionPicker onAdd={(sec) => onChange([...sections, sec])} />
     </div>
   );
 }
