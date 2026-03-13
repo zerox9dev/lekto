@@ -543,6 +543,8 @@
   flex: 1;
   min-width: 0;
   background: #f5f3ee;
+  display: flex;
+  flex-direction: column;
 }
 .prevContent {
   padding: 16px;
@@ -730,6 +732,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.prevMobileNav {
+  display: none;
+}
 
 /* ─── Mobile ─── */
 @media (max-width: 768px) {
@@ -743,11 +748,129 @@
   .statsRow { gap: 24px; }
   .pricingGrid { grid-template-columns: 1fr; }
   .footerInner { flex-direction: column; gap: 16px; text-align: center; }
-  .previewWindow { height: auto; }
+  .previewSection {
+    max-width: 100%;
+    padding: 0 16px 56px;
+  }
+  .previewWrap {
+    border-radius: 20px;
+  }
+  .previewWindow {
+    min-height: 0;
+    display: block;
+  }
+  .prevMain {
+    min-height: 520px;
+  }
   .prevSidebar { display: none; }
-  .prevContent { padding: 18px; }
-  .prevStatsGrid { grid-template-columns: 1fr; }
-  .prevDashboardGrid { grid-template-columns: 1fr; }
-  .prevCalendarGrid { gap: 6px; }
-  .prevCalendarDay { min-height: 62px; }
+  .prevContent {
+    padding: 14px 14px 72px;
+  }
+  .prevDashboardHeader {
+    margin-bottom: 12px;
+  }
+  .prevDashboardTitle {
+    font-size: 18px;
+  }
+  .prevDashboardDesc {
+    font-size: 12px;
+  }
+  .prevStatsGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .prevStatCard {
+    padding: 12px;
+  }
+  .prevStatIcon {
+    width: 26px;
+    height: 26px;
+  }
+  .prevStatSvg {
+    width: 12px;
+    height: 12px;
+  }
+  .prevStatVal {
+    font-size: 16px;
+  }
+  .prevStatLbl {
+    font-size: 11px;
+  }
+  .prevCardHead {
+    gap: 8px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .prevCardTitle {
+    font-size: 13px;
+  }
+  .prevCardMeta {
+    font-size: 11px;
+  }
+  .prevCalendarControls {
+    margin-left: auto;
+  }
+  .prevCalendarToday,
+  .prevCalendarControl {
+    height: 26px;
+  }
+  .prevWeekdays {
+    gap: 3px;
+  }
+  .prevWeekdays span {
+    font-size: 8px;
+    text-align: center;
+  }
+  .prevCalendarGrid {
+    gap: 3px;
+  }
+  .prevCalendarDay {
+    min-height: 54px;
+    padding: 4px;
+    border-radius: 8px;
+  }
+  .prevCalendarDayTop {
+    font-size: 9px;
+    margin-bottom: 3px;
+  }
+  .prevCalendarCountTop {
+    font-size: 7px;
+  }
+  .prevCalendarEvents {
+    gap: 2px;
+  }
+  .prevCalendarEvent {
+    padding: 2px 4px;
+    border-radius: 5px;
+  }
+  .prevCalendarEventTitle {
+    font-size: 7px;
+  }
+  .prevMobileNav {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    border-top: 1px solid #e8e5de;
+    background: white;
+    margin-top: auto;
+  }
+  .prevMobileNavItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 54px;
+    font-size: 9px;
+    font-weight: 500;
+    color: #888;
+  }
+  .prevMobileNavActive {
+    color: #1a1a1a;
+  }
+  .prevMobileNavIcon {
+    width: 16px;
+    height: 16px;
+  }
 }

@@ -143,6 +143,14 @@ export function PreviewSection() {
                 </section>
               </div>
             </div>
+            <div className={s.prevMobileNav}>
+              {nav.map(({ label, icon: Icon, active }) => (
+                <div key={`${label}-mobile`} className={`${s.prevMobileNavItem} ${active ? s.prevMobileNavActive : ""}`}>
+                  <Icon className={s.prevMobileNavIcon} />
+                  <span>{label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
