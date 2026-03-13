@@ -137,7 +137,7 @@ export function CoursesPage() {
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-md rounded-t-2xl md:rounded-2xl bg-white p-5 md:p-6 shadow-xl z-50 space-y-5 overflow-x-hidden">
+          <Dialog.Content className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-md rounded-t-2xl md:rounded-2xl bg-white p-5 md:p-6 z-50 space-y-5 overflow-x-hidden">
             <Dialog.Title className="text-lg font-bold">{editId ? t("editCourse") : t("newCourseDialog")}</Dialog.Title>
             <div className="space-y-3">
               <div>

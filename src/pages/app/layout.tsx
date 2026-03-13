@@ -106,7 +106,7 @@ export function AppLayout() {
         href="https://t.me/mirvald"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 h-11 px-4 rounded-full bg-[#1a1a1a] text-white text-[13px] font-medium flex items-center gap-2 hover:bg-[#333] transition-colors shadow-sm"
+        className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 h-11 px-4 rounded-full bg-[#1a1a1a] text-white text-[13px] font-medium flex items-center gap-2 hover:bg-[#333] transition-colors"
       >
         <MessageCircle className="h-4 w-4" /> {t("support")}
       </a>

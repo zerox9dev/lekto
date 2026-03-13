@@ -12,8 +12,10 @@ interface AuthCtx {
 const Ctx = createContext<AuthCtx>(null!);
 export const useAuth = () => useContext(Ctx);
 
-// Fake user for local dev without Supabase
-const LOCAL_USER = { id: "local", email: "dev@local" } as User;
+// Fake user for local dev without Supabase (DEV only)
+const LOCAL_USER = import.meta.env.DEV
+  ? ({ id: "local", email: "dev@local" } as User)
+  : null;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(supabase ? null : LOCAL_USER);

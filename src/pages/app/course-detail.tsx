@@ -177,7 +177,7 @@ export function CourseDetailPage() {
       <Dialog.Root open={addOpen} onOpenChange={setAddOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-md rounded-t-2xl md:rounded-2xl bg-white p-5 md:p-6 shadow-xl z-50 space-y-4 overflow-x-hidden max-h-[80vh]">
+          <Dialog.Content className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:max-w-md rounded-t-2xl md:rounded-2xl bg-white p-5 md:p-6 z-50 space-y-4 overflow-x-hidden max-h-[80vh]">
             <Dialog.Title className="text-lg font-bold">{t("addLessonToCourseDialog")}</Dialog.Title>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#888]" />
