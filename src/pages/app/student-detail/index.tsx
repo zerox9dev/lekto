@@ -109,8 +109,7 @@ export function StudentDetailPage() {
           studentLessons.map((l) => (
             <LessonCard key={l.id} lesson={l} homeworkItems={studentHomework.filter((h) => h.lesson_id === l.id)} studentId={student.id}
               onEditLesson={() => openEditLesson(l)} onDeleteLesson={() => deleteLesson(l.id)}
-              onNewHw={() => openNewHw(l.id)} onGenerateHw={() => handleGenerateHw(l)} onEditHw={openEditHw} onDeleteHw={deleteHomework} onDuplicateHw={(h) => duplicateHw(h, l.id)}
-              onSaveAsTemplate={(h) => addTemplate(h.title, h.sections || [])} />
+              onNewHw={() => openNewHw(l.id)} onEditHw={openEditHw} />
           ))
         )}
       </div>
