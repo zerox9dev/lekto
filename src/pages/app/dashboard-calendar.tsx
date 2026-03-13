@@ -88,9 +88,10 @@ export function DashboardCalendar({ lessons, students }: { lessons: Lesson[]; st
               </div>
               <div className="flex flex-wrap gap-1">
                 {day.lessons.slice(0, 2).map((lesson) => {
+                  const student = students.find((item) => item.id === lesson.student_id);
                   return (
                     <div key={lesson.id} className="max-w-full rounded-lg bg-[#eef3fb] px-2 py-1">
-                      <p className="text-[10px] font-medium text-[#35527d] whitespace-nowrap truncate">{lesson.title}</p>
+                      <p className="text-[10px] font-medium text-[#35527d] whitespace-nowrap truncate">{student?.name || "—"}</p>
                     </div>
                   );
                 })}

@@ -103,37 +103,37 @@ export function PreviewSection() {
                         <div className={s.prevCalendarEvents}>
                           {day === "3" && (
                             <div className={s.prevCalendarEvent}>
-                              <div className={s.prevCalendarEventTitle}>Food &amp; Drink</div>
+                              <div className={s.prevCalendarEventTitle}>Anna Kowalska</div>
                             </div>
                           )}
                           {day === "7" && (
                             <div className={s.prevCalendarEvent}>
-                              <div className={s.prevCalendarEventTitle}>Past Tense</div>
+                              <div className={s.prevCalendarEventTitle}>Maksym Bondar</div>
                             </div>
                           )}
                           {day === "14" && (
                             <>
                               <div className={s.prevCalendarEvent}>
-                                <div className={s.prevCalendarEventTitle}>Present Simple</div>
+                                <div className={s.prevCalendarEventTitle}>Piotr Nowak</div>
                               </div>
                               <div className={s.prevCalendarEvent}>
-                                <div className={s.prevCalendarEventTitle}>Speaking</div>
+                                <div className={s.prevCalendarEventTitle}>Anna Kowalska</div>
                               </div>
                             </>
                           )}
                           {day === "17" && (
                             <div className={s.prevCalendarEvent}>
-                              <div className={s.prevCalendarEventTitle}>Reading</div>
+                              <div className={s.prevCalendarEventTitle}>Oleh Martyn</div>
                             </div>
                           )}
                           {day === "23" && (
                             <div className={s.prevCalendarEvent}>
-                              <div className={s.prevCalendarEventTitle}>Grammar</div>
+                              <div className={s.prevCalendarEventTitle}>Piotr Nowak</div>
                             </div>
                           )}
                           {day === "28" && (
                             <div className={s.prevCalendarEvent}>
-                              <div className={s.prevCalendarEventTitle}>Revision</div>
+                              <div className={s.prevCalendarEventTitle}>Anna Kowalska</div>
                             </div>
                           )}
                         </div>
