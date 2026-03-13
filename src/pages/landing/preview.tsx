@@ -1,80 +1,146 @@
+import { BookOpen, ClipboardList, LayoutDashboard, Library, Settings, Users } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import s from "./landing.module.css";
 
+const CALENDAR_DAYS = [
+  ["29", false, 0], ["30", false, 0], ["1", true, 1], ["2", true, 0], ["3", true, 2], ["4", true, 0], ["5", true, 0],
+  ["6", true, 0], ["7", true, 1], ["8", true, 0], ["9", true, 0], ["10", true, 0], ["11", true, 1], ["12", true, 0],
+  ["13", true, 0], ["14", true, 2], ["15", true, 0], ["16", true, 0], ["17", true, 1], ["18", true, 0], ["19", true, 0],
+  ["20", true, 1], ["21", true, 0], ["22", true, 0], ["23", true, 1], ["24", true, 0], ["25", true, 0], ["26", true, 0],
+  ["27", true, 0], ["28", true, 1], ["29", true, 0], ["30", true, 0], ["31", true, 0], ["1", false, 0], ["2", false, 0],
+];
+
 export function PreviewSection() {
   const { t } = useTranslation();
+
+  const nav = [
+    { label: t("home"), icon: LayoutDashboard, active: true },
+    { label: t("students"), icon: Users },
+    { label: t("courses"), icon: Library },
+    { label: t("lessons"), icon: BookOpen },
+    { label: t("homework"), icon: ClipboardList },
+  ];
+
+  const stats = [
+    { label: t("studentsCount"), value: "12", icon: Users, tone: s.prevStatToneGreen },
+    { label: t("lessonsCount"), value: "28", icon: BookOpen, tone: s.prevStatToneBlue },
+    { label: t("homeworkCount"), value: "16", icon: ClipboardList, tone: s.prevStatToneGold },
+  ];
+
+  const weekdays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+
   return (
     <section className={s.previewSection}>
       <div className={s.previewWrap}>
         <div className={s.previewWindow}>
-          <div className={s.prevSidebar}>
+          <aside className={s.prevSidebar}>
             <div className={s.prevLogo}>Lekto</div>
-            <div className={`${s.prevNavItem} ${s.prevNavActive}`}>{t("landingPreviewStudents")}</div>
-            <div className={s.prevNavItem}>{t("landingPreviewCourses")}</div>
-            <div className={s.prevNavItem}>{t("landingPreviewSettings")}</div>
-          </div>
-          <div className={s.prevMain}>
-            <div className={s.prevContent}>
-              <div className={s.prevPageHeader}>
-                <div className={s.prevBackBtn}>←</div>
-                <div className={s.prevPageTitle}>Piotr Nowak</div>
-                <span className={s.prevAddBtn}>{t("landingPreviewAddLesson")}</span>
-              </div>
-              <div className={s.prevStats}>
-                <div className={s.prevStatCard}><div className={s.prevStatVal}>12</div><div className={s.prevStatLbl}>{t("landingPreviewLessons")}</div></div>
-                <div className={s.prevStatCard}><div className={s.prevStatVal}>8</div><div className={s.prevStatLbl}>{t("landingPreviewHomework")}</div></div>
-                <div className={s.prevStatCard}><div className={s.prevStatVal}>85%</div><div className={s.prevStatLbl}>{t("landingPreviewAvgScore")}</div></div>
-              </div>
-              <div className={`${s.prevLesson} ${s.prevLessonOpen}`}>
-                <div className={s.prevLessonHeader}>
-                  <span className={s.prevDot} /><span className={s.prevLessonName}>Lesson 2: Numbers &amp; Colors</span><span className={s.prevDate}>15 окт</span>
+            <nav className={s.prevNav}>
+              {nav.map(({ label, icon: Icon, active }) => (
+                <div key={label} className={`${s.prevNavItem} ${active ? s.prevNavActive : ""}`}>
+                  <Icon className={s.prevNavIcon} />
+                  <span>{label}</span>
                 </div>
-                <div className={s.prevLessonBody}>
-                  <div className={s.prevTags}>
-                    <span className={s.prevTag}>{t("landingPreviewTheory")}</span>
-                    <span className={s.prevTag}>{t("landingPreviewCards")}</span>
-                    <span className={s.prevTag}>{t("landingPreviewTest")}</span>
-                    <span className={s.prevTag}>{t("landingPreviewBlanks")}</span>
-                  </div>
-                  <div className={s.prevQuiz}>
-                    <div className={s.prevQuizQ}>Jak masz na imię?</div>
-                    <div className={s.prevQuizOptions}>
-                      <div className={s.prevQuizOpt}>Mam pięć lat</div>
-                      <div className={`${s.prevQuizOpt} ${s.prevQuizCorrect}`}>Mam na imię Piotr</div>
-                      <div className={s.prevQuizOpt}>Jestem z Polski</div>
-                    </div>
-                  </div>
-                  <div className={s.prevHw}>
-                    <span className={s.prevHwCheck}>✓</span>
-                    <span className={s.prevHwName}>{t("homeworkTitle")}: Numbers &amp; Colors</span>
-                    <span className={s.prevHwBadge}>92%</span>
-                  </div>
-                </div>
-              </div>
-              <div className={s.prevLesson}>
-                <span className={s.prevDot} /><span className={s.prevLessonName}>Lesson 1: Greetings &amp; Basics</span><span className={s.prevDate}>12 окт</span>
-              </div>
-              <div className={s.prevLesson}>
-                <span className={`${s.prevDot} ${s.prevDotGray}`} /><span className={s.prevLessonName}>Lesson 3: Food &amp; Drink</span><span className={s.prevDate}>18 окт</span>
+              ))}
+            </nav>
+            <div className={s.prevSidebarFooter}>
+              <div className={s.prevNavItem}>
+                <Settings className={s.prevNavIcon} />
+                <span>{t("settings")}</span>
               </div>
             </div>
-          </div>
-          <div className={s.prevPhone}>
-            <div className={s.prevPhoneBar}>Ученик · Piotr</div>
-            <div className={s.prevPhoneContent}>
-              <div className={s.prevPhoneCard}>
-                <div className={s.prevPhoneCardFront}>Dzień dobry</div>
+          </aside>
+
+          <div className={s.prevMain}>
+            <div className={s.prevContent}>
+              <div className={s.prevDashboardHeader}>
+                <h3 className={s.prevDashboardTitle}>{t("dashboardTitle")}</h3>
+                <p className={s.prevDashboardDesc}>{t("dashboardDesc")}</p>
               </div>
-              <div className={s.prevPhoneCardBack}>Доброе утро</div>
-              <div className={s.prevPhoneDots}>
-                <span className={s.prevPhoneDotActive} />
-                <span className={s.prevPhoneDotInactive} />
-                <span className={s.prevPhoneDotInactive} />
+
+              <div className={s.prevStatsGrid}>
+                {stats.map(({ label, value, icon: Icon, tone }) => (
+                  <div key={label} className={s.prevStatCard}>
+                    <div className={s.prevStatHead}>
+                      <div className={`${s.prevStatIcon} ${tone}`}>
+                        <Icon className={s.prevStatSvg} />
+                      </div>
+                      <div className={s.prevStatText}>
+                        <div className={s.prevStatVal}>{value}</div>
+                        <div className={s.prevStatLbl}>{label}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className={s.prevPhoneFill}>
-                <div className={s.prevPhoneFillLabel}>Вставьте слово:</div>
-                <div className={s.prevPhoneFillText}>Mam na ___ Piotr</div>
-                <div className={s.prevPhoneFillInput}>imię</div>
+
+              <div className={s.prevDashboardGrid}>
+                <section className={s.prevCalendarCard}>
+                  <div className={s.prevCardHead}>
+                    <div>
+                      <h4 className={s.prevCardTitle}>{t("calendarTitle")}</h4>
+                      <p className={s.prevCardMeta}>Март 2026</p>
+                    </div>
+                    <div className={s.prevCalendarControls}>
+                      <span className={s.prevCalendarToday}>{t("today")}</span>
+                      <span className={s.prevCalendarControl}>‹</span>
+                      <span className={s.prevCalendarControl}>›</span>
+                    </div>
+                  </div>
+                  <div className={s.prevWeekdays}>
+                    {weekdays.map((day) => <span key={day}>{day}</span>)}
+                  </div>
+                  <div className={s.prevCalendarGrid}>
+                    {CALENDAR_DAYS.map(([day, currentMonth, lessons], index) => (
+                      <div
+                        key={`${day}-${index}`}
+                        className={`${s.prevCalendarDay} ${currentMonth ? "" : s.prevCalendarDayMuted} ${day === "14" ? s.prevCalendarDayActive : ""}`}
+                      >
+                        <div className={s.prevCalendarDayTop}>
+                          <span>{day}</span>
+                          {Number(lessons) > 0 && <span className={s.prevCalendarCountTop}>{lessons}</span>}
+                        </div>
+                        <div className={s.prevCalendarEvents}>
+                          {day === "3" && (
+                            <div className={s.prevCalendarEvent}>
+                              <div className={s.prevCalendarEventTitle}>Food &amp; Drink</div>
+                            </div>
+                          )}
+                          {day === "7" && (
+                            <div className={s.prevCalendarEvent}>
+                              <div className={s.prevCalendarEventTitle}>Past Tense</div>
+                            </div>
+                          )}
+                          {day === "14" && (
+                            <>
+                              <div className={s.prevCalendarEvent}>
+                                <div className={s.prevCalendarEventTitle}>Present Simple</div>
+                              </div>
+                              <div className={s.prevCalendarEvent}>
+                                <div className={s.prevCalendarEventTitle}>Speaking</div>
+                              </div>
+                            </>
+                          )}
+                          {day === "17" && (
+                            <div className={s.prevCalendarEvent}>
+                              <div className={s.prevCalendarEventTitle}>Reading</div>
+                            </div>
+                          )}
+                          {day === "23" && (
+                            <div className={s.prevCalendarEvent}>
+                              <div className={s.prevCalendarEventTitle}>Grammar</div>
+                            </div>
+                          )}
+                          {day === "28" && (
+                            <div className={s.prevCalendarEvent}>
+                              <div className={s.prevCalendarEventTitle}>Revision</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
               </div>
             </div>
           </div>

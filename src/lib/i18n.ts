@@ -30,6 +30,11 @@ const translations: Record<Lang, Record<string, string>> = {
     studentsCount: "Учеников",
     lessonsCount: "Уроков",
     homeworkCount: "Домашек",
+    calendarTitle: "Календарь занятий",
+    calendarDayPlan: "План на день",
+    calendarEmptyDay: "На этот день уроков нет",
+    today: "Сегодня",
+    moreLabel: "ещё",
     recentLessons: "Последние уроки",
     noLessonsYet: "Пока нет уроков",
 
@@ -380,6 +385,11 @@ const translations: Record<Lang, Record<string, string>> = {
     studentsCount: "Учнів",
     lessonsCount: "Уроків",
     homeworkCount: "Домашок",
+    calendarTitle: "Календар занять",
+    calendarDayPlan: "План на день",
+    calendarEmptyDay: "На цей день уроків немає",
+    today: "Сьогодні",
+    moreLabel: "ще",
     recentLessons: "Останні уроки",
     noLessonsYet: "Поки немає уроків",
 

@@ -473,365 +473,262 @@
 
 /* ─── Preview ─── */
 .previewSection {
-  max-width: 960px;
+  max-width: 680px;
   margin: 40px auto 0;
-  padding: 0 24px 80px;
+  padding: 0 20px 64px;
   position: relative;
   z-index: 2;
   animation: fadeInUp 0.8s ease-out 0.5s both;
 }
 .previewWrap {
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
   border: 1px solid #e8e5de;
   background: #f5f3ee;
 }
 .previewWindow {
   display: flex;
-  min-height: 460px;
+  min-height: 420px;
   font-family: 'Inter', -apple-system, sans-serif;
 }
 
-/* Sidebar — matches real cabinet */
 .prevSidebar {
-  width: 208px;
+  width: 124px;
   background: white;
   border-right: 1px solid #e8e5de;
-  padding: 16px 12px;
+  padding: 10px 8px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
 }
 .prevLogo {
-  font-family: Georgia, serif;
-  font-size: 18px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 14px;
   font-weight: 700;
   color: #1a1a1a;
-  padding: 0 12px 20px;
+  padding: 0 6px 14px;
   letter-spacing: -0.02em;
 }
+.prevNav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
 .prevNavItem {
-  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 8px;
   font-size: 13px;
   font-weight: 500;
   color: #888;
   border-radius: 999px;
 }
+.prevNavIcon {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
 .prevNavActive {
   color: white;
   background: #1a1a1a;
 }
+.prevSidebarFooter {
+  padding-top: 6px;
+  border-top: 1px solid #e8e5de;
+}
 
-/* Main area */
 .prevMain {
   flex: 1;
-  display: flex;
-  flex-direction: column;
   min-width: 0;
   background: #f5f3ee;
 }
-.prevTopbar {
-  display: none;
-}
 .prevContent {
-  flex: 1;
-  padding: 24px;
-  max-width: 720px;
-  margin: 0 auto;
-  width: 100%;
+  padding: 16px;
 }
-
-/* Page header */
-.prevPageHeader {
+.prevDashboardHeader {
+  margin-bottom: 14px;
+}
+.prevDashboardTitle {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 4px;
+}
+.prevDashboardDesc {
+  font-size: 11px;
+  color: #888;
+  margin: 0;
+}
+.prevStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.prevStatCard {
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #e8e5de;
+  background: white;
+}
+.prevStatHead {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 8px;
 }
-.prevBackBtn {
-  width: 32px;
-  height: 32px;
+.prevStatIcon {
+  width: 22px;
+  height: 22px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #888;
-  font-size: 14px;
 }
-.prevPageTitle {
-  font-family: Georgia, serif;
-  font-size: 18px;
-  font-weight: 600;
-  color: #1a1a1a;
-  flex: 1;
-}
-.prevShareBtn {
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 8px;
-  border: 1px solid #e8e5de;
-  background: none;
-  font-size: 11px;
-  color: #888;
-}
-.prevAddBtn {
-  height: 28px;
-  padding: 0 12px;
-  border-radius: 8px;
-  background: #1a1a1a;
+.prevStatToneGreen { background: #2d5a3d; }
+.prevStatToneBlue { background: #4a6fa5; }
+.prevStatToneGold { background: #8b6914; }
+.prevStatSvg {
+  width: 11px;
+  height: 11px;
   color: white;
-  font-size: 11px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Stats — matches real: rounded-xl border bg-white */
-.prevStats {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.prevStatCard {
-  flex: 1;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #e8e5de;
-  background: white;
-  text-align: center;
 }
 .prevStatVal {
-  font-size: 20px;
+  font-size: 15px;
+  line-height: 1;
   font-weight: 700;
   color: #1a1a1a;
 }
 .prevStatLbl {
   font-size: 10px;
   color: #888;
-  margin-top: 1px;
+  margin-top: 2px;
 }
-
-/* Lesson cards — matches real: rounded-xl border bg-white */
-.prevLesson {
-  display: flex;
-  align-items: center;
+.prevStatText {
+  min-width: 0;
+}
+.prevDashboardGrid {
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 10px;
-  padding: 14px 16px;
+}
+.prevCalendarCard {
+  background: white;
   border: 1px solid #e8e5de;
   border-radius: 12px;
-  margin-bottom: 8px;
-  background: white;
+  padding: 10px;
 }
-.prevLessonOpen {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0;
-  padding: 0;
-}
-.prevLessonHeader {
+.prevCardHead {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
+  justify-content: space-between;
+  margin-bottom: 8px;
 }
-.prevDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #2d5a3d;
-  flex-shrink: 0;
-}
-.prevDotGray { background: #ccc; }
-.prevLessonName {
-  font-size: 13px;
-  font-weight: 500;
-  color: #1a1a1a;
-  flex: 1;
-}
-.prevDate {
+.prevCardTitle {
   font-size: 12px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px;
+}
+.prevCardMeta {
+  font-size: 10px;
   color: #888;
+  margin: 0;
 }
-
-/* Expanded lesson content */
-.prevLessonBody {
-  padding: 0 16px 14px;
-  border-top: 1px solid #f0ede6;
-}
-
-/* Tags */
-.prevTags {
+.prevCalendarControls {
   display: flex;
   gap: 6px;
-  margin-top: 12px;
-  flex-wrap: wrap;
 }
-.prevTag {
-  padding: 5px 10px;
+.prevCalendarToday {
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid #e8e5de;
   border-radius: 8px;
-  font-size: 11px;
-  font-weight: 500;
-  border: 1px solid #e8e5de;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
   color: #666;
-  background: white;
+  background: #fff;
 }
-
-/* Quiz preview */
-.prevQuiz {
-  margin-top: 12px;
-  padding: 12px;
-  border-radius: 10px;
-  background: #faf8f5;
+.prevCardHead :global(button) {
+  font: inherit;
 }
-.prevQuizQ {
-  font-size: 13px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin-bottom: 8px;
-}
-.prevQuizOptions {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.prevQuizOpt {
-  padding: 8px 12px;
+.prevCalendarControl {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #e8e5de;
   border-radius: 8px;
-  border: 1px solid #e8e5de;
-  background: white;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: #666;
+  background: #fff;
 }
-.prevQuizCorrect {
-  border-color: #2d5a3d;
-  background: #eef6eb;
-  color: #2d5a3d;
-  font-weight: 500;
-}
-
-/* Student phone mockup */
-.prevPhone {
-  width: 200px;
-  background: white;
-  border-left: 1px solid #e8e5de;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.prevPhoneBar {
-  padding: 12px 14px;
-  border-bottom: 1px solid #e8e5de;
-  font-size: 12px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-.prevPhoneContent {
-  padding: 14px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.prevPhoneCard {
-  border-radius: 12px;
-  border: 1px solid #e8e5de;
-  background: #faf8f5;
-  padding: 24px 16px;
-  text-align: center;
-}
-.prevPhoneCardFront {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-.prevPhoneCardBack {
-  text-align: center;
-  font-size: 13px;
-  color: #888;
-  padding: 4px 0;
-}
-.prevPhoneDots {
-  display: flex;
+.prevWeekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
   gap: 4px;
-  justify-content: center;
+  margin-bottom: 4px;
 }
-.prevPhoneDotActive {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #1a1a1a;
-}
-.prevPhoneDotInactive {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #ddd;
-}
-.prevPhoneFill {
-  border-radius: 10px;
-  border: 1px solid #e8e5de;
-  padding: 12px;
-}
-.prevPhoneFillLabel {
-  font-size: 10px;
+.prevWeekdays span {
+  padding: 2px 1px;
+  font-size: 9px;
+  font-weight: 500;
   color: #888;
-  margin-bottom: 6px;
 }
-.prevPhoneFillText {
-  font-size: 13px;
-  color: #1a1a1a;
-  margin-bottom: 6px;
+.prevCalendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
 }
-.prevPhoneFillInput {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 6px;
-  background: #eef6eb;
-  color: #2d5a3d;
-  font-size: 12px;
-  font-weight: 500;
-  border: 1px solid #2d5a3d;
-}
-
-/* Homework row */
-.prevHw {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 10px 12px;
+.prevCalendarDay {
+  min-height: 74px;
+  border: 1px solid #eee9df;
   border-radius: 10px;
-  border: 1px solid #e8e5de;
-  background: white;
+  padding: 5px;
+  background: #fff;
 }
-.prevHwCheck {
-  width: 20px;
-  height: 20px;
-  border-radius: 6px;
-  background: #2d5a3d;
-  color: white;
-  font-size: 10px;
+.prevCalendarDayMuted {
+  color: #b2aca1;
+}
+.prevCalendarDayActive {
+  border-color: #4a6fa5;
+  background: #f5f8fc;
+}
+.prevCalendarDayTop {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.prevHwName {
-  font-size: 12px;
-  color: #1a1a1a;
-  font-weight: 500;
-  flex: 1;
-}
-.prevHwBadge {
-  padding: 2px 8px;
-  border-radius: 6px;
+  justify-content: space-between;
+  margin-bottom: 4px;
   font-size: 10px;
-  font-weight: 600;
-  background: #ddefd7;
-  color: #2d5a3d;
+  font-weight: 500;
+}
+.prevCalendarCountTop {
+  font-size: 8px;
+  color: #888;
+}
+.prevCalendarEvents {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.prevCalendarEvent {
+  border-radius: 6px;
+  background: #eef3fb;
+  padding: 3px 4px;
+  max-width: 100%;
+}
+.prevCalendarEventTitle {
+  font-size: 8px;
+  font-weight: 500;
+  color: #35527d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ─── Mobile ─── */
@@ -848,8 +745,9 @@
   .footerInner { flex-direction: column; gap: 16px; text-align: center; }
   .previewWindow { height: auto; }
   .prevSidebar { display: none; }
-  .prevPhone { display: none; }
-  .prevStats { gap: 4px; }
-  .prevStatVal { font-size: 16px; }
-  .prevTopbarBtn { display: none; }
+  .prevContent { padding: 18px; }
+  .prevStatsGrid { grid-template-columns: 1fr; }
+  .prevDashboardGrid { grid-template-columns: 1fr; }
+  .prevCalendarGrid { gap: 6px; }
+  .prevCalendarDay { min-height: 62px; }
 }
