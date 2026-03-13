@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useStore } from "@/features/store";
 import { useTranslation } from "@/lib/i18n";
 import { StudentsPage } from "./students";
-import { StudentDetailPage } from "./student-detail";
+import { StudentDetailPage } from "./student-detail/index";
 import { SettingsPage } from "./settings";
 import { DashboardPage } from "./dashboard";
 import { LessonsPage } from "./lessons";

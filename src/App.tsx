@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
-import { LandingPage } from "@/pages/landing";
+import { LandingPage } from "@/pages/landing/index";
 import { LoginPage } from "@/pages/login";
 import { AppLayout } from "@/pages/app/layout";
-import { SectionEditorPage } from "@/pages/app/section-editor";
-import { StudentView } from "@/pages/student-view";
+import { SectionEditorPage } from "@/pages/app/section-editor/index";
+import { StudentView } from "@/pages/student-view/index";
 import { CourseView } from "@/pages/course-view";
 
 function ProtectedApp() {

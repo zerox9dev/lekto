@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Sparkles, Loader, FileDown, Trash2, Bookmark } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { typeLabels } from "@/components/sections-editor";
-import type { Template } from "@/types/database";
+import type { HomeworkTemplate as Template } from "@/types/database";
 
 export function TemplatePicker({ templates, onSelect, onDelete }: {
   templates: Template[]; onSelect: (t: Template) => void; onDelete: (id: string) => void;
