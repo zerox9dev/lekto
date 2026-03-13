@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Trash2,
   CopyPlus,
@@ -146,6 +146,7 @@ export function SectionsListEditor({ sections, onChange, showErrors }: {
   showErrors: boolean;
 }) {
   const { t } = useTranslation();
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(sections[0]?.id || null);
   const validationErrors = useMemo(() => validateSections(sections), [sections]);
   const errorsPerSection = useMemo(() => {
     const map: Record<number, string[]> = {};
@@ -156,27 +157,98 @@ export function SectionsListEditor({ sections, onChange, showErrors }: {
     return map;
   }, [validationErrors]);
 
+  useEffect(() => {
+    if (sections.length === 0) {
+      setActiveSectionId(null);
+      return;
+    }
+    if (!activeSectionId || !sections.some((section) => section.id === activeSectionId)) {
+      setActiveSectionId(sections[0].id);
+    }
+  }, [activeSectionId, sections]);
+
   const moveSection = (i: number, dir: -1 | 1) => {
     const next = [...sections];
     [next[i], next[i + dir]] = [next[i + dir], next[i]];
     onChange(next);
   };
 
+  const addSection = (section: HomeworkSection) => {
+    onChange([...sections, section]);
+    setActiveSectionId(section.id);
+  };
+
+  const activeIndex = sections.findIndex((section) => section.id === activeSectionId);
+  const activeSection = activeIndex >= 0 ? sections[activeIndex] : null;
+
   return (
     <div className="space-y-3">
       <div className="sticky top-0 z-10 -mx-1 px-1 pb-1 bg-white">
-        <AddSectionPicker onAdd={(sec) => onChange([...sections, sec])} />
+        <AddSectionPicker onAdd={addSection} />
       </div>
       {sections.length > 0 && <p className="text-[12px] font-medium text-[#888]">{sections.length} {sections.length === 1 ? t("sectionSingleCount") : t("sectionsCount")}</p>}
-      {sections.map((sec, i) => (
-        <SectionEditor key={sec.id} section={sec} index={i}
-          onChange={(s) => onChange(sections.map((x, j) => j === i ? s : x))}
-          onDelete={() => onChange(sections.filter((_, j) => j !== i))}
-          onDuplicate={() => { const dup = duplicateSection(sec); const next = [...sections]; next.splice(i + 1, 0, dup); onChange(next); }}
-          onMoveUp={() => moveSection(i, -1)} onMoveDown={() => moveSection(i, 1)}
-          isFirst={i === 0} isLast={i === sections.length - 1}
-          errors={showErrors ? (errorsPerSection[i] || []) : []} />
-      ))}
+      {sections.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-[240px_minmax(0,1fr)] gap-3 items-start">
+          <div className="rounded-xl border border-[#e8e5de] bg-white p-2 space-y-1">
+            {sections.map((sec, i) => {
+              const Icon = typeIconComponents[sec.type];
+              const errors = showErrors ? (errorsPerSection[i] || []) : [];
+              const isActive = sec.id === activeSectionId;
+              return (
+                <button
+                  key={sec.id}
+                  onClick={() => setActiveSectionId(sec.id)}
+                  className={`w-full text-left rounded-xl border px-3 py-2.5 transition-colors cursor-pointer ${
+                    isActive ? "border-[#1a1a1a] bg-[#f5f3ee]" : "border-transparent hover:bg-[#f8f6f1]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon className="h-3.5 w-3.5 text-[#666] shrink-0" />
+                    <span className="text-[12px] font-medium text-[#1a1a1a] truncate flex-1">
+                      {sec.title.trim() || typeLabels[sec.type]}
+                    </span>
+                    <span className="text-[10px] text-[#888] shrink-0">#{i + 1}</span>
+                  </div>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <span className="text-[11px] text-[#888] truncate">{typeLabels[sec.type]}</span>
+                    {errors.length > 0 && (
+                      <span className="inline-flex items-center gap-1 text-[10px] text-red-500 shrink-0">
+                        <AlertCircle className="h-3 w-3" /> {errors.length}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {activeSection && (
+            <SectionEditor
+              key={activeSection.id}
+              section={activeSection}
+              index={activeIndex}
+              onChange={(section) => onChange(sections.map((item, index) => index === activeIndex ? section : item))}
+              onDelete={() => {
+                const next = sections.filter((_, index) => index !== activeIndex);
+                onChange(next);
+                setActiveSectionId(next[Math.max(0, activeIndex - 1)]?.id || null);
+              }}
+              onDuplicate={() => {
+                const duplicate = duplicateSection(activeSection);
+                const next = [...sections];
+                next.splice(activeIndex + 1, 0, duplicate);
+                onChange(next);
+                setActiveSectionId(duplicate.id);
+              }}
+              onMoveUp={() => moveSection(activeIndex, -1)}
+              onMoveDown={() => moveSection(activeIndex, 1)}
+              isFirst={activeIndex === 0}
+              isLast={activeIndex === sections.length - 1}
+              errors={showErrors ? (errorsPerSection[activeIndex] || []) : []}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Eye, EyeOff, AlertCircle, Bookmark, GraduationCap } from "lucide-react";
+import { ArrowLeft, Save, Eye, EyeOff, AlertCircle, Bookmark, GraduationCap, Loader } from "lucide-react";
 import { useStore } from "@/features/store";
 import { useTranslation } from "@/lib/i18n";
 import { SectionsListEditor, validateSections } from "@/components/sections-editor";
@@ -30,31 +30,69 @@ export function SectionEditorPage() {
   const [title, setTitle] = useState("");
   const [sections, setSections] = useState<HomeworkSection[]>([]);
   const [showErrors, setShowErrors] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [mobilePreview, setMobilePreview] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+  const autosaveTimer = useRef<number | null>(null);
 
   useEffect(() => {
     if (existingHw) { setTitle(existingHw.title); setSections(existingHw.sections || []); }
     else if (existingLesson) { setTitle(existingLesson.title); setSections(existingLesson.sections || []); }
+    setInitialized(true);
   }, [existingHw?.id, existingLesson?.id]);
 
   const validationErrors = useMemo(() => validateSections(sections), [sections]);
   const pageTitle = isHomework ? t("hwConstructor") : t("lessonConstructor");
+  const canAutosave = (isHomework && !isNewHomework && !!existingHw) || (isLesson && !isNewLesson && !!existingLesson);
 
-  const handleSave = () => {
+  const persistChanges = async (shouldNavigate = false) => {
     if (!title.trim()) return;
-    if (sections.length > 0 && validationErrors.length > 0) { setShowErrors(true); return; }
+    if (sections.length > 0 && validationErrors.length > 0) {
+      if (shouldNavigate) setShowErrors(true);
+      return;
+    }
     if (isHomework) {
       if (isNewHomework) {
-        addHomework({ lesson_id: hwLessonId, student_id: studentId!, tutor_id: student!.tutor_id,
+        await addHomework({ lesson_id: hwLessonId, student_id: studentId!, tutor_id: student!.tutor_id,
           title: title.trim(), sections, completed: false, student_answers: null, scores: null });
-      } else { updateHomework(hwId!, { title: title.trim(), sections }); }
+      } else {
+        await updateHomework(hwId!, { title: title.trim(), sections });
+      }
     } else if (isLesson && !isNewLesson) {
-      updateLesson(lessonId!, { sections: sections.length > 0 ? sections : undefined });
+      await updateLesson(lessonId!, { sections: sections.length > 0 ? sections : undefined });
     }
-    setSaved(true);
-    setTimeout(() => navigate(`/app/students/${studentId}`), 400);
+    setSaveState("saved");
+    if (shouldNavigate) setTimeout(() => navigate(`/app/students/${studentId}`), 250);
   };
+
+  const handleSave = async () => {
+    try {
+      setSaveState("saving");
+      await persistChanges(true);
+    } catch {
+      setSaveState("error");
+    }
+  };
+
+  useEffect(() => {
+    if (!initialized || !canAutosave) return;
+    if (!title.trim()) {
+      setSaveState("idle");
+      return;
+    }
+    if (autosaveTimer.current) window.clearTimeout(autosaveTimer.current);
+    setSaveState("saving");
+    autosaveTimer.current = window.setTimeout(async () => {
+      try {
+        await persistChanges(false);
+      } catch {
+        setSaveState("error");
+      }
+    }, 800);
+    return () => {
+      if (autosaveTimer.current) window.clearTimeout(autosaveTimer.current);
+    };
+  }, [canAutosave, initialized, title, sections]);
 
   if (!student) {
     return (
@@ -83,9 +121,21 @@ export function SectionEditorPage() {
             <AlertCircle className="h-3.5 w-3.5" /> {validationErrors.length} {t("errors")}
           </span>
         )}
-        <button onClick={handleSave} disabled={!title.trim() || saved}
+        {canAutosave && (
+          <span className={`text-[12px] shrink-0 hidden sm:flex items-center gap-1 ${
+            saveState === "error" ? "text-red-500" : "text-[#888]"
+          }`}>
+            {saveState === "saving" && <Loader className="h-3.5 w-3.5 animate-spin" />}
+            {saveState === "saved" && t("saved")}
+            {saveState === "saving" && t("savingLabel")}
+            {saveState === "error" && t("saveError")}
+            {saveState === "idle" && t("autosaveLabel")}
+          </span>
+        )}
+        <button onClick={handleSave} disabled={!title.trim() || saveState === "saving"}
           className="h-8 px-4 rounded-lg bg-[#1a1a1a] text-white text-[13px] font-medium hover:bg-[#333] disabled:opacity-40 cursor-pointer flex items-center gap-1.5 shrink-0 transition-colors">
-          <Save className="h-3.5 w-3.5" /> {saved ? t("saved") : t("save")}
+          {saveState === "saving" ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+          {isNewHomework ? t("save") : t("saveAndClose")}
         </button>
       </header>
 
@@ -94,18 +144,18 @@ export function SectionEditorPage() {
           <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-6 space-y-4">
             <div>
               <label className="text-[12px] font-medium text-[#888] mb-1 block">{t("titleRequired")}</label>
-              <input value={title} onChange={(e) => { setTitle(e.target.value); setSaved(false); }}
+              <input value={title} onChange={(e) => { setTitle(e.target.value); setSaveState("idle"); }}
                 placeholder={isHomework ? t("hwTitlePlaceholder") : t("lessonTitlePlaceholder")}
                 className="w-full h-10 rounded-xl border border-[#e8e5de] px-3 text-[14px] outline-none focus:border-[#ccc]" autoFocus />
             </div>
             {isHomework && isNewHomework && (
               <TemplatePicker templates={templates}
-                onSelect={(tpl) => { setTitle(tpl.title); setSections(tpl.sections.map((s) => ({ ...s, id: crypto.randomUUID() }))); setSaved(false); }}
+                onSelect={(tpl) => { setTitle(tpl.title); setSections(tpl.sections.map((s) => ({ ...s, id: crypto.randomUUID() }))); setSaveState("idle"); }}
                 onDelete={deleteTemplate} />
             )}
             <AiPanel title={title} isHomework={isHomework} hwLessonId={hwLessonId} lessons={lessons}
-              onGenerated={(s) => { setSections((prev) => [...prev, ...s]); setSaved(false); }} />
-            <SectionsListEditor sections={sections} onChange={(s) => { setSections(s); setSaved(false); }} showErrors={showErrors} />
+              onGenerated={(s) => { setSections((prev) => [...prev, ...s]); setSaveState("idle"); }} />
+            <SectionsListEditor sections={sections} onChange={(s) => { setSections(s); setSaveState("idle"); }} showErrors={showErrors} />
             {sections.length > 0 && (
               <div className="flex items-center gap-2 pt-2">
                 <button onClick={() => addTemplate(title || "Шаблон", sections)}
